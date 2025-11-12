@@ -55,42 +55,6 @@ phishing_detector/
 └── README.md
 ```
 
-## Phasen
-
-Das Projekt ist in 4 Phasen unterteilt:
-
-1. **Phase A:** Vorbereitung & Minimalprototyp
-   - Git-Repository & Struktur
-   - Minimal Backend (FastAPI)
-   - Minimal Frontend (React)
-   - Integration Testen
-
-2. **Phase B:** Daten & ML Baseline
-   - Daten sammeln & aufbereiten
-   - Feature Engineering
-   - Training & Evaluation
-   - Persistierung
-
-3. **Phase C:** Verbesserungen & UX
-   - Explainability (LIME/SHAP)
-   - Transformer-Option
-   - Feedback-Loop
-   - Security & Auth
-   - Tests
-
-4. **Phase D:** Deployment & Production
-   - Dockerize
-   - CI/CD
-   - Deployment
-   - Monitoring & Logging
-   - Production-Ready Features
-
-## Detaillierte Anleitungen
-
-- [Phase A Anleitung](PHASE_A_ANLEITUNG.md)
-- [Phase B Anleitung](PHASE_B_ANLEITUNG.md)
-- [Phase C Anleitung](PHASE_C_ANLEITUNG.md)
-- [Phase D Anleitung](PHASE_D_ANLEITUNG.md)
 
 ## Quick Start
 
