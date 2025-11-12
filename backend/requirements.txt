@@ -1,0 +1,16 @@
+#Python 3.8 compatible versions
+
+# Web Framework
+fastapi==0.121.1
+uvicorn[standard]==0.32.1
+
+# Validation
+pydantic==2.12.4
+
+# ML
+scikit-learn==1.5.2
+joblib==1.4.2
+
+# Utilities
+python-multipart==0.0.12
+

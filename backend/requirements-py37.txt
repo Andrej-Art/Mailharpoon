@@ -1,0 +1,17 @@
+# Web Framework (Python 3.7 kompatibel)
+fastapi==0.68.0
+uvicorn[standard]==0.15.0
+
+# Validation (Python 3.7 kompatibel)
+pydantic==1.8.2
+
+# ML (Python 3.7 kompatibel)
+scikit-learn==1.0.2
+joblib==1.1.0
+
+# Utilities
+python-multipart==0.0.5
+
+# HINWEIS: Diese Versionen sind alt und haben weniger Features!
+# Empfehlung: Python 3.11 oder 3.12 installieren und requirements.txt verwenden
+
