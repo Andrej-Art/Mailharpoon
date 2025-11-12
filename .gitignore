@@ -81,3 +81,7 @@ Thumbs.db
 tmp/
 temp/
 
+# Anleitungen (nur lokal, nicht öffentlich)
+PHASE_*_ANLEITUNG.md
+GIT_SETUP.md
+GITHUB_AUTH_SETUP.md
