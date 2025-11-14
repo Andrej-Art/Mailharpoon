@@ -1,5 +1,8 @@
-![Mailharpoon](/images/Mailharpoon_image.png) 
-# Phishing Detector
+<p align="center">
+  <img src="/images/Mailharpoon_image.png" alt="Mailharpoon Logo" width="180" />
+</p>
+
+<h1 align="center">Mailharpoon</h1>
 
 Ein vollständiger Phishing-Detector mit ML-Modellen, Web-Interface und API.
 
