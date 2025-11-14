@@ -1,4 +1,4 @@
-
+![Alt text](/Users/andrejartuschenko/Desktop/phishing_detector/images/Mailharpoon_image.png) 
 # Phishing Detector
 
 Ein vollständiger Phishing-Detector mit ML-Modellen, Web-Interface und API.
