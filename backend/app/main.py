@@ -10,7 +10,7 @@ app = FastAPI(
     description="API für Phishing-Detection mit ML-Modellen"
 )
 
-# CORS Middleware (für Frontend-Kommunikation)
+# CORS Middleware (Frontend-Kommunikation)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # In Production: spezifische Domains wie ["http://localhost:5173"]

@@ -12,14 +12,24 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    // Validierung: Mindestens Text oder URL muss angegeben werden
+    const trimmedText = emailText.trim()
+    const trimmedUrl = url.trim()
+    
+    if (!trimmedText && !trimmedUrl) {
+      setError('Bitte gib mindestens E-Mail-Text oder URL ein')
+      return
+    }
+    
     setLoading(true)
     setError(null)
     setResult(null)
 
     try {
       const response = await axios.post(`${API_URL}/predict`, {
-        text: emailText,
-        url: url || null
+        text: trimmedText || null,
+        url: trimmedUrl || null
       })
       setResult(response.data)
     } catch (err) {
@@ -55,14 +65,13 @@ function App() {
             {/* E-Mail-Text */}
             <div>
               <label htmlFor="emailText" className="block text-sm font-medium text-gray-700 mb-2">
-                E-Mail-Text *
+                E-Mail-Text (optional)
               </label>
               <textarea
                 id="emailText"
                 value={emailText}
                 onChange={(e) => setEmailText(e.target.value)}
                 rows={6}
-                required
                 className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="Füge hier den E-Mail-Text ein..."
               />
@@ -81,6 +90,13 @@ function App() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="https://example.com"
               />
+            </div>
+            
+            {/* Hinweis */}
+            <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+              <p className="text-sm text-blue-800">
+                <strong>Hinweis:</strong> Gib mindestens E-Mail-Text oder URL ein, um die Analyse durchzuführen.
+              </p>
             </div>
 
             {/* Buttons */}
