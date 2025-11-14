@@ -1,3 +1,4 @@
+
 # Phishing Detector
 
 Ein vollständiger Phishing-Detector mit ML-Modellen, Web-Interface und API.
@@ -22,38 +23,6 @@ React Frontend → HTTP(s) → FastAPI Backend → ML Service → Database
                                             Feedback Loop
 ```
 
-## Projektstruktur
-
-```
-phishing_detector/
-├── backend/
-│   ├── app/
-│   │   ├── main.py              # FastAPI Hauptdatei
-│   │   ├── schemas.py           # Pydantic Schemas
-│   │   ├── models/              # Database Models
-│   │   ├── services/            # Business Logic
-│   │   │   ├── preprocessing.py
-│   │   │   ├── feature_extraction.py
-│   │   │   ├── model_loader.py
-│   │   │   ├── explainer.py
-│   │   │   └── auth.py
-│   │   └── database.py          # Database Setup
-│   ├── train.py                 # Training Script
-│   ├── requirements.txt
-│   └── Dockerfile
-├── frontend/
-│   ├── src/
-│   │   ├── App.jsx
-│   │   ├── main.jsx
-│   │   └── components/
-│   ├── package.json
-│   └── Dockerfile
-├── data/                         # Datasets (gitignored)
-├── models/                       # Gespeicherte Modelle (gitignored)
-├── tests/
-├── docker-compose.yml
-└── README.md
-```
 
 
 ## Quick Start
