@@ -13,12 +13,12 @@ function App() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    // Validierung: Mindestens Text oder URL muss angegeben werden
+    // Validation: At least text or URL must be provided
     const trimmedText = emailText.trim()
     const trimmedUrl = url.trim()
     
     if (!trimmedText && !trimmedUrl) {
-      setError('Bitte gib mindestens E-Mail-Text oder URL ein')
+      setError('Please enter at least email text or URL')
       return
     }
     
@@ -33,7 +33,7 @@ function App() {
       })
       setResult(response.data)
     } catch (err) {
-      setError(err.response?.data?.detail || err.message || 'Ein Fehler ist aufgetreten')
+      setError(err.response?.data?.detail || err.message || 'An error occurred')
     } finally {
       setLoading(false)
     }
@@ -68,10 +68,10 @@ function App() {
             </span>
           </h1>
           <p className="text-xl sm:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-light">
-            Schütze dich vor Phishing-Angriffen
+            Protect yourself from phishing attacks
           </p>
           <p className="text-base text-gray-500 max-w-2xl mx-auto mt-3">
-            Analysiere E-Mails und URLs auf verdächtige Muster mit KI-gestützter Technologie
+            Analyze emails and URLs for suspicious patterns with AI-powered technology
           </p>
         </div>
 
@@ -87,7 +87,7 @@ function App() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                   </div>
-                  <span>E-Mail-Text</span>
+                  <span>Email Text</span>
                   <span className="text-sm font-normal text-gray-500">(optional)</span>
                 </span>
               </label>
@@ -97,7 +97,7 @@ function App() {
                 onChange={(e) => setEmailText(e.target.value)}
                 rows={7}
                 className="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl shadow-sm focus:ring-4 focus:ring-cyan-200 focus:border-cyan-400 transition-all duration-300 resize-none text-gray-800 placeholder-gray-400 hover:border-gray-300"
-                placeholder="Füge hier den E-Mail-Text ein, den du analysieren möchtest..."
+                placeholder="Enter the email text you want to analyze here..."
               />
             </div>
 
@@ -107,7 +107,7 @@ function App() {
                 <div className="w-full border-t border-gray-200"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-gray-500 font-medium">ODER</span>
+                <span className="px-4 bg-white text-gray-500 font-medium">OR</span>
               </div>
             </div>
 
@@ -145,7 +145,7 @@ function App() {
                   </div>
                 </div>
                 <p className="text-sm text-gray-700 leading-relaxed">
-                  <strong className="font-bold text-gray-900">Tipp:</strong> Gib mindestens E-Mail-Text oder URL ein. Du kannst auch nur eine URL testen, um zu prüfen, ob sie sicher ist.
+                  <strong className="font-bold text-gray-900">Tip:</strong> Enter at least email text or URL. You can also test just a URL to check if it's safe.
                 </p>
               </div>
             </div>
@@ -163,14 +163,14 @@ function App() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <span>Analysiere...</span>
+                    <span>Analyzing...</span>
                   </span>
                 ) : (
                   <span className="flex items-center justify-center gap-3">
                     <svg className="w-6 h-6 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span>Jetzt analysieren</span>
+                    <span>Analyze now</span>
                   </span>
                 )}
               </button>
@@ -180,7 +180,7 @@ function App() {
                   onClick={handleReset}
                   className="px-8 py-5 border-2 border-gray-300 rounded-2xl font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-4 focus:ring-gray-200 transition-all duration-300 hover:shadow-lg"
                 >
-                  Zurücksetzen
+                  Reset
                 </button>
               )}
             </div>
@@ -197,7 +197,7 @@ function App() {
                 </svg>
               </div>
               <div className="flex-1 pt-1">
-                <h3 className="text-xl font-bold text-red-900 mb-2">Fehler aufgetreten</h3>
+                <h3 className="text-xl font-bold text-red-900 mb-2">Error occurred</h3>
                 <p className="text-red-800 leading-relaxed">{error}</p>
               </div>
             </div>
@@ -209,21 +209,21 @@ function App() {
           <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/50 p-8 sm:p-10 animate-in slide-in-from-bottom duration-500">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
               <h2 className="text-3xl sm:text-4xl font-black text-gray-900">
-                Analyseergebnis
+                Analysis Result
               </h2>
               {result.label === 'phish' ? (
                 <div className="flex items-center gap-3 bg-gradient-to-r from-red-100 to-orange-100 px-6 py-3 rounded-2xl border-2 border-red-200 shadow-lg">
                   <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
-                  <span className="text-red-900 font-bold text-lg">⚠️ Warnung</span>
+                  <span className="text-red-900 font-bold text-lg">⚠️ Warning</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-3 bg-gradient-to-r from-green-100 to-emerald-100 px-6 py-3 rounded-2xl border-2 border-green-200 shadow-lg">
                   <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span className="text-green-900 font-bold text-lg">✓ Sicher</span>
+                  <span className="text-green-900 font-bold text-lg">✓ Safe</span>
                 </div>
               )}
             </div>
@@ -238,12 +238,12 @@ function App() {
                 {result.label === 'phish' ? (
                   <>
                     <span className="w-4 h-4 bg-white rounded-full mr-4 animate-pulse shadow-lg"></span>
-                    <span>🚨 PHISHING ERKANNT</span>
+                    <span>🚨 PHISHING DETECTED</span>
                   </>
                 ) : (
                   <>
                     <span className="w-4 h-4 bg-white rounded-full mr-4 shadow-lg"></span>
-                    <span>✓ LEGITIM</span>
+                    <span>✓ LEGITIMATE</span>
                   </>
                 )}
               </div>
@@ -266,10 +266,10 @@ function App() {
                 ></div>
               </div>
               <p className="text-sm font-semibold text-gray-600 text-center">
-                {result.score >= 0.9 ? '⭐ Sehr hohe Sicherheit' : 
-                 result.score >= 0.7 ? '✅ Hohe Sicherheit' : 
-                 result.score >= 0.5 ? '⚡ Moderate Sicherheit' : 
-                 '⚠️ Niedrige Sicherheit'}
+                {result.score >= 0.9 ? '⭐ Very high confidence' : 
+                 result.score >= 0.7 ? '✅ High confidence' : 
+                 result.score >= 0.5 ? '⚡ Moderate confidence' : 
+                 '⚠️ Low confidence'}
               </p>
             </div>
 
@@ -282,7 +282,7 @@ function App() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Detaillierte Erklärung</h3>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Detailed Explanation</h3>
                   <p className="text-gray-800 leading-relaxed text-lg">{result.explanation}</p>
                 </div>
               </div>
