@@ -2,7 +2,11 @@
   <img src="/images/Mailharpoon_image.png" alt="Mailharpoon Logo" width="250" />
 </p>
 
-#Mailharpoon
+# Mailharpoon
+
+<p align="center">
+  <img src="/images/screenshot.png" alt="Mailharpoon Screenshot" width="800" />
+</p>
 
 Ein vollständiger Phishing-Detector mit ML-Modellen, Web-Interface und API.
 
@@ -83,6 +87,9 @@ Analysiert E-Mail-Text und URL auf Phishing.
   "explanation": "Suspicious URL detected..."
 }
 ```
+
+## Comparison and Training of Machine Learning Models
+
 
 ## Tech Stack
 
