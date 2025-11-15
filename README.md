@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="/images/Mailharpoon_image.png" alt="Mailharpoon Logo" width="180" />
+  <img src="/images/Mailharpoon_image.png" alt="Mailharpoon Logo" width="250" />
 </p>
 
-<h1 align="center">Mailharpoon</h1>
+#Mailharpoon
 
 Ein vollständiger Phishing-Detector mit ML-Modellen, Web-Interface und API.
 
@@ -26,6 +26,14 @@ React Frontend → HTTP(s) → FastAPI Backend → ML Service → Database
                                             Feedback Loop
 ```
 
+
+## Installation
+
+To install the required and libraries, run this command in the project directory after Forkinf and cloning this repository: 
+
+```
+
+´´´
 
 
 ## Quick Start
@@ -84,7 +92,4 @@ Analysiert E-Mail-Text und URL auf Phishing.
 - **Database:** PostgreSQL, SQLAlchemy
 - **DevOps:** Docker, Docker Compose, GitHub Actions
 
-## License
-
-MIT
 

@@ -47,72 +47,138 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Phishing Detector
+    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-teal-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto">
+        {/* Header mit Logo - Prominent */}
+        <div className="text-center mb-12">
+          <div className="flex justify-center items-center mb-8">
+            <div className="relative">
+              {/* Logo mit Halo-Effekt */}
+              <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/20 to-teal-400/20 blur-3xl rounded-full"></div>
+              <img 
+                src="/Mailharpoon_image.png" 
+                alt="Mailharpoon Phishing Detector Logo" 
+                className="relative h-32 sm:h-40 md:h-48 w-auto object-contain drop-shadow-2xl"
+              />
+            </div>
+          </div>
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-black text-gray-900 mb-4 tracking-tight">
+            <span className="bg-gradient-to-r from-cyan-600 via-blue-600 to-teal-600 bg-clip-text text-transparent">
+              Mailharpoon
+            </span>
           </h1>
-          <p className="text-gray-600">
-            Analysiere E-Mails und URLs auf Phishing-Verdacht
+          <p className="text-xl sm:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-light">
+            Schütze dich vor Phishing-Angriffen
+          </p>
+          <p className="text-base text-gray-500 max-w-2xl mx-auto mt-3">
+            Analysiere E-Mails und URLs auf verdächtige Muster mit KI-gestützter Technologie
           </p>
         </div>
 
-        {/* Formular */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Formular - Modern & Clean */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/50 p-8 sm:p-10 mb-8">
+          <form onSubmit={handleSubmit} className="space-y-7">
             {/* E-Mail-Text */}
-            <div>
-              <label htmlFor="emailText" className="block text-sm font-medium text-gray-700 mb-2">
-                E-Mail-Text (optional)
+            <div className="space-y-3">
+              <label htmlFor="emailText" className="block text-base font-bold text-gray-800">
+                <span className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-cyan-100 to-teal-100 rounded-xl">
+                    <svg className="w-6 h-6 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <span>E-Mail-Text</span>
+                  <span className="text-sm font-normal text-gray-500">(optional)</span>
+                </span>
               </label>
               <textarea
                 id="emailText"
                 value={emailText}
                 onChange={(e) => setEmailText(e.target.value)}
-                rows={6}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="Füge hier den E-Mail-Text ein..."
+                rows={7}
+                className="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl shadow-sm focus:ring-4 focus:ring-cyan-200 focus:border-cyan-400 transition-all duration-300 resize-none text-gray-800 placeholder-gray-400 hover:border-gray-300"
+                placeholder="Füge hier den E-Mail-Text ein, den du analysieren möchtest..."
               />
             </div>
 
+            {/* Divider */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-white text-gray-500 font-medium">ODER</span>
+              </div>
+            </div>
+
             {/* URL */}
-            <div>
-              <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-2">
-                URL (optional)
+            <div className="space-y-3">
+              <label htmlFor="url" className="block text-base font-bold text-gray-800">
+                <span className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-xl">
+                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                  </div>
+                  <span>URL</span>
+                  <span className="text-sm font-normal text-gray-500">(optional)</span>
+                </span>
               </label>
               <input
                 type="url"
                 id="url"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl shadow-sm focus:ring-4 focus:ring-cyan-200 focus:border-cyan-400 transition-all duration-300 text-gray-800 placeholder-gray-400 hover:border-gray-300"
                 placeholder="https://example.com"
               />
             </div>
             
-            {/* Hinweis */}
-            <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
-              <p className="text-sm text-blue-800">
-                <strong>Hinweis:</strong> Gib mindestens E-Mail-Text oder URL ein, um die Analyse durchzuführen.
-              </p>
+            {/* Hinweis - Modern */}
+            <div className="bg-gradient-to-r from-cyan-50 via-blue-50 to-teal-50 border-2 border-cyan-100 rounded-2xl p-5">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 mt-0.5">
+                  <div className="p-2 bg-white rounded-xl shadow-sm">
+                    <svg className="w-5 h-5 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  <strong className="font-bold text-gray-900">Tipp:</strong> Gib mindestens E-Mail-Text oder URL ein. Du kannst auch nur eine URL testen, um zu prüfen, ob sie sicher ist.
+                </p>
+              </div>
             </div>
 
-            {/* Buttons */}
-            <div className="flex gap-4">
+            {/* Buttons - Prominent CTA */}
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 bg-indigo-600 text-white px-6 py-3 rounded-md font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="flex-1 group bg-gradient-to-r from-cyan-600 via-blue-600 to-teal-600 text-white px-10 py-5 rounded-2xl font-bold text-lg hover:from-cyan-700 hover:via-blue-700 hover:to-teal-700 focus:outline-none focus:ring-4 focus:ring-cyan-300 disabled:from-gray-400 disabled:via-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 disabled:transform-none active:translate-y-0"
               >
-                {loading ? 'Analysiere...' : 'Analysieren'}
+                {loading ? (
+                  <span className="flex items-center justify-center gap-3">
+                    <svg className="animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Analysiere...</span>
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-3">
+                    <svg className="w-6 h-6 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Jetzt analysieren</span>
+                  </span>
+                )}
               </button>
               {(result || error) && (
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="px-6 py-3 border border-gray-300 rounded-md font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="px-8 py-5 border-2 border-gray-300 rounded-2xl font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-4 focus:ring-gray-200 transition-all duration-300 hover:shadow-lg"
                 >
                   Zurücksetzen
                 </button>
@@ -121,67 +187,105 @@ function App() {
           </form>
         </div>
 
-        {/* Error */}
+        {/* Error - Modern Alert */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+          <div className="bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200 rounded-3xl p-6 mb-6 shadow-xl animate-in slide-in-from-top duration-300">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 p-2 bg-red-100 rounded-xl">
+                <svg className="h-7 w-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">Fehler</h3>
-                <div className="mt-2 text-sm text-red-700">
-                  <p>{error}</p>
-                </div>
+              <div className="flex-1 pt-1">
+                <h3 className="text-xl font-bold text-red-900 mb-2">Fehler aufgetreten</h3>
+                <p className="text-red-800 leading-relaxed">{error}</p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Ergebnis */}
+        {/* Ergebnis - Prominent & Clear */}
         {result && (
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Ergebnis</h2>
+          <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/50 p-8 sm:p-10 animate-in slide-in-from-bottom duration-500">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+              <h2 className="text-3xl sm:text-4xl font-black text-gray-900">
+                Analyseergebnis
+              </h2>
+              {result.label === 'phish' ? (
+                <div className="flex items-center gap-3 bg-gradient-to-r from-red-100 to-orange-100 px-6 py-3 rounded-2xl border-2 border-red-200 shadow-lg">
+                  <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span className="text-red-900 font-bold text-lg">⚠️ Warnung</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3 bg-gradient-to-r from-green-100 to-emerald-100 px-6 py-3 rounded-2xl border-2 border-green-200 shadow-lg">
+                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-green-900 font-bold text-lg">✓ Sicher</span>
+                </div>
+              )}
+            </div>
             
-            {/* Label */}
-            <div className="mb-4">
-              <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium">
+            {/* Label - Large Badge */}
+            <div className="mb-8">
+              <div className={`inline-flex items-center px-8 py-4 rounded-2xl text-xl font-black shadow-lg ${
+                result.label === 'phish' 
+                  ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white border-4 border-red-600' 
+                  : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white border-4 border-green-600'
+              }`}>
                 {result.label === 'phish' ? (
                   <>
-                    <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
-                    <span className="text-red-800">Phishing</span>
+                    <span className="w-4 h-4 bg-white rounded-full mr-4 animate-pulse shadow-lg"></span>
+                    <span>🚨 PHISHING ERKANNT</span>
                   </>
                 ) : (
                   <>
-                    <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                    <span className="text-green-800">Legitim</span>
+                    <span className="w-4 h-4 bg-white rounded-full mr-4 shadow-lg"></span>
+                    <span>✓ LEGITIM</span>
                   </>
                 )}
-              </span>
+              </div>
             </div>
 
-            {/* Score */}
-            <div className="mb-4">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-gray-700">Confidence Score</span>
-                <span className="text-sm font-bold text-gray-900">{(result.score * 100).toFixed(1)}%</span>
+            {/* Score - Visual & Prominent */}
+            <div className="mb-8 p-8 bg-gradient-to-br from-gray-50 via-white to-gray-50 rounded-3xl border-2 border-gray-200 shadow-xl">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-lg font-bold text-gray-800">Confidence Score</span>
+                <span className="text-4xl font-black text-gray-900">{((result.score * 100).toFixed(1))}%</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-4">
+              <div className="w-full bg-gray-200 rounded-full h-8 overflow-hidden shadow-inner mb-3">
                 <div
-                  className={`h-4 rounded-full ${
-                    result.label === 'phish' ? 'bg-red-500' : 'bg-green-500'
+                  className={`h-8 rounded-full transition-all duration-700 ease-out ${
+                    result.label === 'phish' 
+                      ? 'bg-gradient-to-r from-red-500 via-orange-500 to-red-600' 
+                      : 'bg-gradient-to-r from-green-500 via-emerald-500 to-green-600'
                   }`}
                   style={{ width: `${result.score * 100}%` }}
                 ></div>
               </div>
+              <p className="text-sm font-semibold text-gray-600 text-center">
+                {result.score >= 0.9 ? '⭐ Sehr hohe Sicherheit' : 
+                 result.score >= 0.7 ? '✅ Hohe Sicherheit' : 
+                 result.score >= 0.5 ? '⚡ Moderate Sicherheit' : 
+                 '⚠️ Niedrige Sicherheit'}
+              </p>
             </div>
 
-            {/* Explanation */}
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Erklärung</h3>
-              <p className="text-gray-600">{result.explanation}</p>
+            {/* Explanation - Modern Card */}
+            <div className="bg-gradient-to-br from-cyan-50 via-blue-50 to-teal-50 border-2 border-cyan-200 rounded-3xl p-8 shadow-lg">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="flex-shrink-0 p-3 bg-white rounded-2xl shadow-md">
+                  <svg className="w-7 h-7 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Detaillierte Erklärung</h3>
+                  <p className="text-gray-800 leading-relaxed text-lg">{result.explanation}</p>
+                </div>
+              </div>
             </div>
           </div>
         )}
