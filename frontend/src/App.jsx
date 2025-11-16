@@ -9,6 +9,16 @@ function App() {
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [activeSection, setActiveSection] = useState('home')
+
+  // Smooth scroll to section
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      setActiveSection(sectionId)
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -47,10 +57,57 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-teal-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Header mit Logo - Prominent */}
-        <div className="text-center mb-12">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-teal-50 flex flex-col">
+      {/* Header - Fixed at top */}
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b-2 border-cyan-100/50 shadow-lg">
+        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-20">
+            {/* Logo */}
+            <div className="flex items-center gap-4">
+              <img 
+                src="/Mailharpoon_image.png" 
+                alt="Mailharpoon Logo" 
+                className="h-12 w-auto object-contain"
+              />
+              <span className="text-2xl font-black bg-gradient-to-r from-cyan-600 via-blue-600 to-teal-600 bg-clip-text text-transparent">
+                Mailharpoon
+              </span>
+            </div>
+            
+            {/* Navigation Links */}
+            <div className="flex items-center gap-6">
+              <button
+                onClick={() => scrollToSection('home')}
+                className={`px-6 py-3 rounded-xl font-semibold text-base transition-all duration-300 ${
+                  activeSection === 'home'
+                    ? 'bg-gradient-to-r from-cyan-600 via-blue-600 to-teal-600 text-white shadow-lg'
+                    : 'text-gray-700 hover:text-cyan-600 hover:bg-cyan-50'
+                }`}
+              >
+                Home
+              </button>
+              <button
+                onClick={() => scrollToSection('about')}
+                className={`px-6 py-3 rounded-xl font-semibold text-base transition-all duration-300 ${
+                  activeSection === 'about'
+                    ? 'bg-gradient-to-r from-cyan-600 via-blue-600 to-teal-600 text-white shadow-lg'
+                    : 'text-gray-700 hover:text-cyan-600 hover:bg-cyan-50'
+                }`}
+              >
+                About
+              </button>
+            </div>
+          </div>
+        </nav>
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          {/* Home Section */}
+          <section id="home" className="mb-16">
+            {/* Header mit Logo - Prominent */}
+            <div className="text-center mb-12">
           <div className="flex justify-center items-center mb-8">
             <div className="relative">
               {/* Logo mit Halo-Effekt */}
@@ -289,7 +346,159 @@ function App() {
             </div>
           </div>
         )}
-      </div>
+          </section>
+
+          {/* About Section */}
+          <section id="about" className="mb-16 scroll-mt-20">
+            <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/50 p-8 sm:p-10 md:p-12">
+              <div className="max-w-4xl mx-auto">
+                <div className="text-center mb-10">
+                  <h2 className="text-4xl sm:text-5xl font-black text-gray-900 mb-4">
+                    <span className="bg-gradient-to-r from-cyan-600 via-blue-600 to-teal-600 bg-clip-text text-transparent">
+                      About Phishing
+                    </span>
+                  </h2>
+                  <div className="w-24 h-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-teal-500 mx-auto rounded-full"></div>
+                </div>
+
+                <div className="space-y-8">
+                  {/* What is Phishing */}
+                  <div className="bg-gradient-to-br from-cyan-50 via-blue-50 to-teal-50 rounded-2xl p-6 border-2 border-cyan-100">
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="flex-shrink-0 p-3 bg-white rounded-xl shadow-md">
+                        <svg className="w-7 h-7 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-3">What is Phishing?</h3>
+                        <p className="text-gray-700 leading-relaxed text-lg">
+                          Phishing is a cybercrime technique where attackers impersonate legitimate organizations or individuals 
+                          to trick people into revealing sensitive information such as passwords, credit card numbers, or personal data. 
+                          These attacks typically come through emails, text messages, or malicious websites that appear to be from 
+                          trusted sources like banks, social media platforms, or well-known companies.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* How Mailharpoon Helps */}
+                  <div className="bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 rounded-2xl p-6 border-2 border-blue-100">
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="flex-shrink-0 p-3 bg-white rounded-xl shadow-md">
+                        <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-3">How Mailharpoon Helps</h3>
+                        <p className="text-gray-700 leading-relaxed text-lg mb-4">
+                          Mailharpoon uses advanced machine learning algorithms to analyze emails and URLs for suspicious patterns 
+                          that indicate phishing attempts. Our AI-powered system examines:
+                        </p>
+                        <ul className="space-y-3 text-gray-700">
+                          <li className="flex items-start gap-3">
+                            <svg className="w-6 h-6 text-cyan-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span><strong className="text-gray-900">Email Content:</strong> Detects suspicious keywords, urgency tactics, and grammatical patterns commonly used in phishing emails.</span>
+                          </li>
+                          <li className="flex items-start gap-3">
+                            <svg className="w-6 h-6 text-cyan-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span><strong className="text-gray-900">URL Analysis:</strong> Checks for suspicious domains, URL shortening services, and patterns that indicate malicious links.</span>
+                          </li>
+                          <li className="flex items-start gap-3">
+                            <svg className="w-6 h-6 text-cyan-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span><strong className="text-gray-900">Real-time Detection:</strong> Provides instant analysis with confidence scores and detailed explanations to help you make informed decisions.</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Call to Action */}
+                  <div className="text-center pt-6">
+                    <button
+                      onClick={() => scrollToSection('home')}
+                      className="inline-flex items-center gap-3 bg-gradient-to-r from-cyan-600 via-blue-600 to-teal-600 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:from-cyan-700 hover:via-blue-700 hover:to-teal-700 focus:outline-none focus:ring-4 focus:ring-cyan-300 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1"
+                    >
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>Try Mailharpoon Now</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-white/90 backdrop-blur-md border-t-2 border-cyan-100/50 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col gap-6">
+            {/* Footer Links */}
+            <div className="flex flex-wrap items-center justify-center gap-6 text-sm sm:text-base">
+              <a
+                href="https://github.com/Andrej-Art/phishing_detector"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-gray-700 hover:text-cyan-600 transition-colors duration-300 font-medium"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
+                </svg>
+                <span>GitHub</span>
+              </a>
+              <a
+                href="#"
+                className="text-gray-700 hover:text-cyan-600 transition-colors duration-300 font-medium"
+                onClick={(e) => {
+                  e.preventDefault()
+                  // TODO: Add mailto link later
+                  alert('Support contact will be added soon')
+                }}
+              >
+                Support
+              </a>
+              <a
+                href="#"
+                className="text-gray-700 hover:text-cyan-600 transition-colors duration-300 font-medium"
+                onClick={(e) => {
+                  e.preventDefault()
+                  // TODO: Add privacy policy link later
+                  alert('Privacy Policy page will be added soon')
+                }}
+              >
+                Privacy Policy
+              </a>
+            </div>
+            
+            {/* Copyright */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-gray-200">
+              <div className="flex items-center gap-3">
+                <img 
+                  src="/Mailharpoon_image.png" 
+                  alt="Mailharpoon Logo" 
+                  className="h-8 w-auto object-contain"
+                />
+                <span className="text-lg font-bold bg-gradient-to-r from-cyan-600 via-blue-600 to-teal-600 bg-clip-text text-transparent">
+                  Mailharpoon
+                </span>
+              </div>
+              <div className="text-gray-600 text-sm sm:text-base">
+                © 2025. All Rights Reserved.
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
