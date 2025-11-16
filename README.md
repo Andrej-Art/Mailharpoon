@@ -5,7 +5,9 @@
 # Mailharpoon
 
 <p align="center">
-  <img src="/images/screenshot.png" alt="Mailharpoon Screenshot" width="800" />
+  <img src="/images/screenshot1.png" alt="Mailharpoon Screenshot 1" width="800" />
+  <br /><br />
+  <img src="/images/screenshot2.png" alt="Mailharpoon Screenshot 2" width="800" />
 </p>
 
 Ein vollständiger Phishing-Detector mit ML-Modellen, Web-Interface und API.
