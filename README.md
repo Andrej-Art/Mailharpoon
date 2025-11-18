@@ -92,6 +92,47 @@ Analysiert E-Mail-Text und URL auf Phishing.
 
 ## Comparison and Training of Machine Learning Models
 
+### Dataset
+
+The project uses URL data from the [Kaggle Phishing URL Dataset](https://www.kaggle.com/datasets/suryaprabha19/phishing-url?resource=download).
+
+- **Number of URLs:** ~99,000
+- **Class Distribution:** ~50% Phishing, ~50% Legitimate
+- **Data Quality:** No duplicates, no missing values
+
+### Workflow
+
+1. **Preprocessing** (`scripts/preprocess_urls.py`)
+   - Load and clean data
+   - Remove duplicates
+   - Standardize labels (phish/legit)
+
+2. **Feature Engineering**
+   - Extract URL features (Domain, Path, Query parameters, etc.)
+   - Text features (for emails)
+
+3. **Training**
+   - Train/Test split (80/20)
+   - Train models (Logistic Regression, Random Forest)
+   - Cross-validation
+
+4. **Evaluation**
+   - Metrics: Accuracy, Precision, Recall, F1-Score, ROC-AUC
+   - Confusion Matrix
+   - Model comparison
+
+### Models
+
+- **Logistic Regression:** Fast, interpretable, good baseline
+- **Random Forest:** Robust, less overfitting, feature importance available
+- **Optional:** XGBoost, Transformers (DistilBERT)
+
+### Scripts
+
+- `scripts/preprocess_urls.py` - Prepare URL data
+- `backend/train.py` - Train models (to be created)
+- `backend/app/services/feature_extraction.py` - Feature extraction (to be created)
+
 
 ## Tech Stack
 
