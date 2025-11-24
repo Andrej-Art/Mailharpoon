@@ -12,6 +12,16 @@
 
 Ein vollständiger Phishing-Detector mit ML-Modellen, Web-Interface und API.
 
+## Scientific Foundation
+
+This project is based on current research in phishing detection:
+
+- **Classical ML Models:** Following the review by [Qasim et al.](paper/Phishing_Website_Detection_Using_Machine.pdf), we implement Decision Trees, Random Forest, and SVM models that have shown high accuracy in phishing website detection.
+
+- **Hybrid Approach:** Inspired by [Thapa et al. (2025)](https://arxiv.org/html/2507.07406v1), we combine classical ML/DL models (for high accuracy and efficiency) with quantized LLMs (for context-aware detection and explainability). This hybrid approach addresses the challenge of adversarial rephrasing while maintaining computational efficiency.
+
+- **Feature Engineering:** Our feature extraction is based on established research showing that URL structure, domain characteristics, and suspicious patterns are key indicators for phishing detection.
+
 ## Übersicht
 
 Dieses Projekt implementiert einen Phishing-Detector, der E-Mails und URLs auf Phishing-Verdacht analysiert. Die Anwendung besteht aus:
@@ -108,8 +118,12 @@ The project uses URL data from the [Kaggle Phishing URL Dataset](https://www.kag
    - Standardize labels (phish/legit)
 
 2. **Feature Engineering**
-   - Extract URL features (Domain, Path, Query parameters, etc.)
-   - Text features (for emails)
+   - **URL Structure Features:** URL length, domain length, subdomain count, path depth, query parameters
+   - **Domain Features:** IP address detection, URL shortener detection, domain patterns
+   - **Security Features:** HTTPS presence, port specification
+   - **Suspicious Patterns:** Keyword detection (login, verify, secure, etc.), special character analysis
+   - **Statistical Features:** Digit count, character ratios
+   - **Text Features:** For email content (to be implemented)
 
 3. **Training**
    - Train/Test split (80/20)
@@ -123,15 +137,27 @@ The project uses URL data from the [Kaggle Phishing URL Dataset](https://www.kag
 
 ### Models
 
-- **Logistic Regression:** Fast, interpretable, good baseline
-- **Random Forest:** Robust, less overfitting, feature importance available
-- **Optional:** XGBoost, Transformers (DistilBERT)
+**Phase 1: Classical ML Models (Current Focus)**
+- **Random Forest:** Primary model - robust, less overfitting, feature importance available (as recommended in Qasim et al.)
+- **Logistic Regression:** Fast baseline, interpretable
+- **Decision Trees:** Interpretable, good for understanding feature importance
+- **SVM:** High accuracy potential (as shown in research)
+
+**Phase 2: Hybrid Approach (Future)**
+- **Quantized LLMs:** Lightweight LLMs (e.g., DeepSeek R1 Distill Qwen 14B Q8) for context-aware detection and explainability
+- **Ensemble:** Combine ML model predictions with LLM insights for improved robustness against adversarial attacks
 
 ### Scripts
 
-- `scripts/preprocess_urls.py` - Prepare URL data
+- `scripts/preprocess_urls.py` - Prepare URL data ✅
+- `backend/app/services/feature_extraction.py` - Feature extraction (in progress)
 - `backend/train.py` - Train models (to be created)
-- `backend/app/services/feature_extraction.py` - Feature extraction (to be created)
+- `backend/app/services/model_loader.py` - Load trained models for inference (to be created)
+
+### Research Papers
+
+- [Phishing Website Detection Using Machine Learning: A Review](paper/Phishing_Website_Detection_Using_Machine.pdf) - Qasim et al.
+- [Phishing Detection in the Gen-AI Era: Quantized LLMs vs Classical Models](https://arxiv.org/html/2507.07406v1) - Thapa et al. (2025)
 
 
 ## Tech Stack
