@@ -2,18 +2,18 @@
 
 **Mailharpoon** is a machine learning-based tool designed to analyze URLs and identify potential phishing attempts. The project combines data science techniques with an interactive web interface to provide users with a risk score and detailed insights into suspicious URL characteristics.
 
-## 🚀 Overview
+## Overview
 
 Phishing attacks often use deceptive URLs to trick users into revealing sensitive information. Mailharpoon leverages the **UCI Phishing Websites Dataset** to train classification models that can distinguish between legitimate and malicious websites based on 30+ features (e.g., URL length, SSL state, domain registration length).
 
-## ✨ Key Features
+## Key Features
 
 - **Interactive URL Analyzer**: Paste a URL to get an instant risk assessment.
 - **Machine Learning Insights**: Explore the principles behind the classification models.
 - **Educational Content**: Learn what phishing is and how to protect yourself.
 - **Modern UI**: A sleek, dark-mode dashboard built with Streamlit.
 
-## 📂 Project Structure
+## Project Structure
 
 - `backend/`: Data processing and model development.
   - `data/`: Raw and processed datasets.
@@ -22,14 +22,14 @@ Phishing attacks often use deceptive URLs to trick users into revealing sensitiv
 - `images/`: Brand assets and supplementary visuals.
 - `requirements.txt`: Project dependencies.
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Language**: Python
 - **Web Framework**: Streamlit
 - **Data Science**: Pandas, NumPy, Scikit-learn
 - **Visualization**: Matplotlib, Seaborn
 
-## 🚦 How to Run
+## How to Run
 
 1. **Clone the repository**:
    ```bash
