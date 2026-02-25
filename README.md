@@ -1,4 +1,5 @@
 # <img src="images/Mailharpoon_image.png" width="80" align="center" /> Mailharpoon: Phishing Detection & Insights
+![Status](https://img.shields.io/badge/status-active%20development-orange)
 
 **Mailharpoon** is a machine learning-based tool designed to analyze URLs and identify potential phishing attempts. The project combines data science techniques with an interactive web interface to provide users with a risk score and detailed insights into suspicious URL characteristics.
 
