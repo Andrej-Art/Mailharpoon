@@ -1,0 +1,29 @@
+# .streamlit/config.toml — Mailharpoon Modern
+
+[theme]
+base = "dark"
+
+# Brand / Accent (Mailharpoon orange)
+primaryColor = "#FF8A00"
+
+# Deep navy background (less harsh than pure black)
+backgroundColor = "#070B14"
+
+# Cards / sidebar / containers
+secondaryBackgroundColor = "#0E1628"
+
+# Slightly cool off-white (cleaner than pure white)
+textColor = "#E7EEFF"
+
+# Keep it modern and neutral
+font = "sans serif"
+
+[browser]
+gatherUsageStats = false
+
+[client]
+showErrorDetails = true
+
+[server]
+headless = true
+runOnSave = true
