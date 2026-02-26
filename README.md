@@ -1,4 +1,4 @@
-# <img src="images/Mailharpoon_image.png" width="80" align="center" /> Mailharpoon: Phishing Detection & Insights
+# ![Mailharpoon Logo](images/Mailharpoon_image.png) Mailharpoon: Phishing Detection & Insights
 ![Status](https://img.shields.io/badge/status-active%20development-orange)
 
 **Mailharpoon** is a machine learning-based tool designed to analyze URLs and identify potential phishing attempts. The project combines data science techniques with an interactive web interface to provide users with a risk score and detailed insights into suspicious URL characteristics.
@@ -27,13 +27,11 @@ Various machine learning models were trained and evaluated to identify the best 
 - Logistic Regression
 - Naive Bayes
 
-The best performing model was **Random Forest**.
-
-<img src="images/train_test_performance.png" align="center" /> 
+![Model Performance](images/train_test_performance.png)
 
 To assess the stability and generalization capability of the Random Forest classifier, a 5-fold Stratified Cross-Validation was performed on the full dataset. Stratification ensures that the class distribution (phishing vs. legitimate) is preserved across all folds.
 
-<img src="images/rf_cross_validation.png" align="center" /> 
+![RF Cross Validation](images/rf_cross_validation.png)
 
 The Random Forest model demonstrates:
 
