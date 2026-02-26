@@ -14,6 +14,39 @@ Phishing attacks often use deceptive URLs to trick users into revealing sensitiv
 - **Educational Content**: Learn what phishing is and how to protect yourself.
 - **Modern UI**: A sleek, dark-mode dashboard built with Streamlit.
 
+## Machine Learning Models
+
+Various machine learning models were trained and evaluated to identify the best performing model for phishing detection. The following models were trained:
+
+- Random Forest
+- MLP
+- Decision Tree
+- SVM
+- Gradient Boosting
+- KNN 
+- Logistic Regression
+- Naive Bayes
+
+The best performing model was **Random Forest**.
+
+<img src="images/train_test_performance.png" align="center" /> 
+
+To assess the stability and generalization capability of the Random Forest classifier, a 5-fold Stratified Cross-Validation was performed on the full dataset. Stratification ensures that the class distribution (phishing vs. legitimate) is preserved across all folds.
+
+<img src="images/rf_cross_validation.png" align="center" /> 
+
+The Random Forest model demonstrates:
+
+- High predictive performance across all evaluation metrics.
+
+- Very low standard deviation, indicating strong stability across different data splits.
+
+- Consistent recall for phishing detection, which is critical in a security context.
+
+- Excellent discriminative power, as reflected by the near-perfect ROC-AUC.
+
+The small variance between folds suggests that the Random Forest model generalizes well and is not overly dependent on a specific train-test split. This confirms that the previously observed strong test performance is not due to randomness or data leakage.
+
 ## Project Structure
 
 - `backend/`: Data processing and model development.
