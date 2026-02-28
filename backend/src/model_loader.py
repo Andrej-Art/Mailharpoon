@@ -7,10 +7,10 @@ from pathlib import Path
 base_directory = Path(__file__).resolve().parents[1]
 
 
-# defining paths 
-model_path = base_directory /"models"/ "rf_full_final.joblib"
-feature_path = base_directory/"models"/ "rf_full_features.json"
-threshold_path = base_directory/"models"/ "rf_threshold.json"
+# defining paths to the model
+model_path = base_directory /"models"/"rf_url_only"/ "rf_url_only_final.joblib"
+feature_path = base_directory/"models"/"rf_url_only"/ "rf_url_features.json"
+threshold_path = base_directory/"models"/"rf_url_only"/ "rf_url_only_threshold.json"
 
 
 model = joblib.load(model_path)
