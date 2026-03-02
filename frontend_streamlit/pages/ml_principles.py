@@ -1,6 +1,6 @@
 import streamlit as st
 
-st.title("Machine Learning Principles")
+st.title("About the Dataset and Machine Learning Models")
 
 #choose ML Model and analyse our URL with insights
 option =st.selectbox(
