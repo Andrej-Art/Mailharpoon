@@ -79,5 +79,14 @@ The small variance between folds suggests that the Random Forest model generaliz
    streamlit run frontend_streamlit/app.py
    ```
 
+
+## Some Screenshots
+
+![Main Page](images/mh_1.png)
+
+![About Project](images/mh_2.png)
+
+![About Dataset](images/mh_3.png)
+
 ---
 *Developed by Andrej Artuschenko*
