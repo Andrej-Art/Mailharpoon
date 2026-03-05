@@ -4,32 +4,33 @@ import joblib
 import pandas as pd
 import uvicorn
 import re
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Tuple, Optional
 from urllib.parse import urlparse
 from fastapi import FastAPI, HTTPException, Body
 from pydantic import BaseModel, Field
+from http_features import safe_fetch_html, extract_features_from_html
 
-# --- configuration / absolute paths ---
+# configuration 
 MODELS_BASE = "/Users/andrejartuschenko/Desktop/mailharpoon/backend/models"
 
-# URL Only Model (Existing)
+# URL Only Model
 URL_ONLY_CONFIG = {
     "model_path": f"{MODELS_BASE}/rf_url_only/rf_url_final.joblib",
     "features_path": f"{MODELS_BASE}/rf_url_only/rf_url_features.json",
     "threshold_path": f"{MODELS_BASE}/rf_url_only/rf_url_only_threshold.json"
 }
 
-# Full Model (New)
+# Full Model
 RF_FULL_CONFIG = {
     "model_path": f"{MODELS_BASE}/rf_full_final.joblib",
     "features_path": f"{MODELS_BASE}/rf_full_features.json",
     "threshold_path": f"{MODELS_BASE}/rf_threshold.json"
 }
 
-# --- internal constants ---
+#internal constants for url shortner
 SHORTENER_LIST = ["bit.ly", "tinyurl.com", "t.co", "is.gd", "cutt.ly"]
 
-# --- helper functions ---
+# helper functions 
 def extract_features_url_only(url: str) -> dict:
     """
     extracts 8 features from a URL using string heuristics.
@@ -61,10 +62,10 @@ def extract_features_url_only(url: str) -> dict:
     }
     return features
 
-def extract_features_rf_full(url: str, extended: bool = False) -> dict:
+def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[dict, dict]:
     """
     Extracts 30 features for rf_full.
-    Current version uses safe imputation for external lookups.
+    Current version uses Phase 1 real features if extended=True.
     """
     # Base features from URL-only
     base = extract_features_url_only(url)
@@ -73,10 +74,8 @@ def extract_features_rf_full(url: str, extended: bool = False) -> dict:
     url = url.strip()
     parsed = urlparse(url)
     host = parsed.netloc.split(":")[0]
-    path = parsed.path
     
-    # Initialize all 30 features with neutral/safe values (mostly -1 or 0)
-    # Mapping based on rf_full_features.json
+    # Initialize all 30 features
     full_features = {
         "having_ip_address": base["having_ip_address"],
         "url_length": base["url_length"],
@@ -85,42 +84,63 @@ def extract_features_rf_full(url: str, extended: bool = False) -> dict:
         "double_slash_redirecting": base["double_slash_redirecting"],
         "prefix_suffix": base["prefix_suffix"],
         "having_sub_domain": base["having_sub_domain"],
-        "sslfinal_state": 1 if url.startswith("https") else -1, # Heuristic
-        "domain_registeration_length": -1, # Imputed (Requires WHOIS)
-        "favicon": -1, # Imputed (Requires HTTP)
-        "port": 1 if ":" in parsed.netloc else -1, # Derived
+        "sslfinal_state": 1 if url.startswith("https") else -1,
+        "domain_registeration_length": -1, # WHOIS
+        "favicon": -1, 
+        "port": 1 if ":" in parsed.netloc else -1,
         "https_token": base["https_token"],
-        "request_url": -1, # Imputed (Requires Page Content)
-        "url_of_anchor": -1, # Imputed (Requires Page Content)
-        "links_in_tags": -1, # Imputed (Requires Page Content)
-        "sfh": -1, # Imputed (Requires Page Content)
-        "submitting_to_email": 1 if "mailto:" in url.lower() else -1, # Derived
-        "abnormal_url": -1, # Imputed
-        "redirect": 0, # Imputed
-        "on_mouseover": -1, # Imputed
-        "rightclick": -1, # Imputed
-        "popupwidnow": -1, # Imputed
-        "iframe": -1, # Imputed
-        "age_of_domain": -1, # Imputed (Requires WHOIS)
-        "dnsrecord": -1, # Imputed (Requires DNS)
-        "web_traffic": 0, # Imputed
-        "page_rank": -1, # Imputed
-        "google_index": -1, # Imputed
-        "links_pointing_to_page": 0, # Imputed
-        "statistical_report": -1 # Imputed
+        "request_url": -1, 
+        "url_of_anchor": -1,
+        "links_in_tags": -1,
+        "sfh": -1,
+        "submitting_to_email": 1 if "mailto:" in url.lower() else -1,
+        "abnormal_url": -1,
+        "redirect": 0, 
+        "on_mouseover": -1,
+        "rightclick": -1,
+        "popupwidnow": -1,
+        "iframe": -1,
+        "age_of_domain": -1, # WHOIS
+        "dnsrecord": -1, # DNS
+        "web_traffic": 0,
+        "page_rank": -1,
+        "google_index": -1,
+        "links_pointing_to_page": 0,
+        "statistical_report": -1
     }
     
-    # Small heuristic refinements
-    if len(url) < 54:
-        full_features["url_length"] = -1 # Legitimate range usually
-    elif 54 <= len(url) <= 75:
-        full_features["url_length"] = 0 # Suspect
-    else:
-        full_features["url_length"] = 1 # Phishing
-        
-    return full_features
+    # URL Length heuristic
+    if len(url) < 54: full_features["url_length"] = -1
+    elif len(url) <= 75: full_features["url_length"] = 0
+    else: full_features["url_length"] = 1
 
-# --- api models ---
+    fetch_info = {}
+    if extended:
+        fetch_result = safe_fetch_html(url)
+        fetch_info = {
+            "allowed": fetch_result["allowed"],
+            "status_code": fetch_result["status_code"],
+            "redirect_count": fetch_result["redirect_count"],
+            "final_url": fetch_result["final_url"],
+            "error": fetch_result["error"]
+        }
+        
+        if fetch_result["allowed"]:
+            # Extract real Phase 1 features
+            html_feats = extract_features_from_html(fetch_result["html"], url, fetch_result["final_url"])
+            full_features.update(html_feats)
+            
+            # Map redirect_count to feature
+            if fetch_result["redirect_count"] == 0: full_features["redirect"] = 1
+            elif fetch_result["redirect_count"] == 1: full_features["redirect"] = 0
+            else: full_features["redirect"] = -1
+        else:
+            # If fetch failed, use suspicious defaults for some features
+            full_features["redirect"] = -1
+
+    return full_features, fetch_info
+
+# api models 
 class PredictUrlRequest(BaseModel):
     url: str = Field(..., example="https://phishing-site-example.com/login")
     model: str = Field("url_only", description="Model to use: 'url_only' or 'rf_full'")
@@ -134,15 +154,16 @@ class PredictResponse(BaseModel):
     features: Dict[str, Any]
     model_classes: List[int]
     model_used: str
+    fetch_info: Optional[Dict[str, Any]] = None
 
-# --- FastAPI App ---
+# FastAPI App 
 app = FastAPI(
     title="Mailharpoon URL Phishing API",
     description="Extended API supporting multiple models.",
     version="1.2.0"
 )
 
-# --- global state ---
+# global state 
 models = {}
 feature_sets = {}
 thresholds = {}
@@ -197,8 +218,9 @@ def predict_url(request_data: PredictUrlRequest):
         raise HTTPException(status_code=400, detail=f"Model '{model_name}' not available.")
     
     # Step 1: Feature Extraction
+    fetch_info = None
     if model_name == "rf_full":
-        features = extract_features_rf_full(request_data.url, request_data.extended)
+        features, fetch_info = extract_features_rf_full(request_data.url, request_data.extended)
     else:
         features = extract_features_url_only(request_data.url)
     
@@ -238,9 +260,10 @@ def predict_url(request_data: PredictUrlRequest):
         threshold=threshold,
         features=features,
         model_classes=classes_list,
-        model_used=model_name
+        model_used=model_name,
+        fetch_info=fetch_info
     )
 
 if __name__ == "__main__":
-    uvicorn.run("src.main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("main:app", host="127.0.0.1", port=8001, reload=True)
 
