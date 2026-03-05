@@ -10,15 +10,27 @@ from fastapi import FastAPI, HTTPException, Body
 from pydantic import BaseModel, Field
 
 # --- configuration / absolute paths ---
-MODEL_PATH = "/Users/andrejartuschenko/Desktop/mailharpoon/backend/models/rf_url_only/rf_url_final.joblib"
-FEATURES_PATH = "/Users/andrejartuschenko/Desktop/mailharpoon/backend/models/rf_url_only/rf_url_features.json"
-THRESHOLD_PATH = "/Users/andrejartuschenko/Desktop/mailharpoon/backend/models/rf_url_only/rf_url_only_threshold.json"
+MODELS_BASE = "/Users/andrejartuschenko/Desktop/mailharpoon/backend/models"
+
+# URL Only Model (Existing)
+URL_ONLY_CONFIG = {
+    "model_path": f"{MODELS_BASE}/rf_url_only/rf_url_final.joblib",
+    "features_path": f"{MODELS_BASE}/rf_url_only/rf_url_features.json",
+    "threshold_path": f"{MODELS_BASE}/rf_url_only/rf_url_only_threshold.json"
+}
+
+# Full Model (New)
+RF_FULL_CONFIG = {
+    "model_path": f"{MODELS_BASE}/rf_full_final.joblib",
+    "features_path": f"{MODELS_BASE}/rf_full_features.json",
+    "threshold_path": f"{MODELS_BASE}/rf_threshold.json"
+}
 
 # --- internal constants ---
 SHORTENER_LIST = ["bit.ly", "tinyurl.com", "t.co", "is.gd", "cutt.ly"]
 
 # --- helper functions ---
-def extract_features_from_url(url: str) -> dict:
+def extract_features_url_only(url: str) -> dict:
     """
     extracts 8 features from a URL using string heuristics.
     no external lookups (dns/http) are performed.
@@ -49,34 +61,70 @@ def extract_features_from_url(url: str) -> dict:
     }
     return features
 
-# --- api models ---
-class PredictRequest(BaseModel):
-    having_ip_address: int = Field(..., description="URL contains IP address (-1 = No, 1 = Yes)")
-    url_length: int = Field(..., description="Total string length of URL")
-    shortining_service: int = Field(..., description="Uses shortening service (-1 = No, 1 = Yes)")
-    having_at_symbol: int = Field(..., description="Contains @ symbol (-1 = No, 1 = Yes)")
-    double_slash_redirecting: int = Field(..., description="Contains // after scheme (-1 = No, 1 = Yes)")
-    prefix_suffix: int = Field(..., description="Contains '-' in host (-1 = No, 1 = Yes)")
-    having_sub_domain: int = Field(..., description="Contains multiple dots in host (-1 = No, 1 = Yes)")
-    https_token: int = Field(..., description="Contains 'https' in host string (-1 = No, 1 = Yes)")
-
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "having_ip_address": -1,
-                "url_length": 54,
-                "shortining_service": -1,
-                "having_at_symbol": -1,
-                "double_slash_redirecting": -1,
-                "prefix_suffix": 1,
-                "having_sub_domain": -1,
-                "https_token": -1
-            }
-        }
+def extract_features_rf_full(url: str, extended: bool = False) -> dict:
+    """
+    Extracts 30 features for rf_full.
+    Current version uses safe imputation for external lookups.
+    """
+    # Base features from URL-only
+    base = extract_features_url_only(url)
+    
+    # Normalization for further parsing
+    url = url.strip()
+    parsed = urlparse(url)
+    host = parsed.netloc.split(":")[0]
+    path = parsed.path
+    
+    # Initialize all 30 features with neutral/safe values (mostly -1 or 0)
+    # Mapping based on rf_full_features.json
+    full_features = {
+        "having_ip_address": base["having_ip_address"],
+        "url_length": base["url_length"],
+        "shortining_service": base["shortining_service"],
+        "having_at_symbol": base["having_at_symbol"],
+        "double_slash_redirecting": base["double_slash_redirecting"],
+        "prefix_suffix": base["prefix_suffix"],
+        "having_sub_domain": base["having_sub_domain"],
+        "sslfinal_state": 1 if url.startswith("https") else -1, # Heuristic
+        "domain_registeration_length": -1, # Imputed (Requires WHOIS)
+        "favicon": -1, # Imputed (Requires HTTP)
+        "port": 1 if ":" in parsed.netloc else -1, # Derived
+        "https_token": base["https_token"],
+        "request_url": -1, # Imputed (Requires Page Content)
+        "url_of_anchor": -1, # Imputed (Requires Page Content)
+        "links_in_tags": -1, # Imputed (Requires Page Content)
+        "sfh": -1, # Imputed (Requires Page Content)
+        "submitting_to_email": 1 if "mailto:" in url.lower() else -1, # Derived
+        "abnormal_url": -1, # Imputed
+        "redirect": 0, # Imputed
+        "on_mouseover": -1, # Imputed
+        "rightclick": -1, # Imputed
+        "popupwidnow": -1, # Imputed
+        "iframe": -1, # Imputed
+        "age_of_domain": -1, # Imputed (Requires WHOIS)
+        "dnsrecord": -1, # Imputed (Requires DNS)
+        "web_traffic": 0, # Imputed
+        "page_rank": -1, # Imputed
+        "google_index": -1, # Imputed
+        "links_pointing_to_page": 0, # Imputed
+        "statistical_report": -1 # Imputed
     }
+    
+    # Small heuristic refinements
+    if len(url) < 54:
+        full_features["url_length"] = -1 # Legitimate range usually
+    elif 54 <= len(url) <= 75:
+        full_features["url_length"] = 0 # Suspect
+    else:
+        full_features["url_length"] = 1 # Phishing
+        
+    return full_features
 
+# --- api models ---
 class PredictUrlRequest(BaseModel):
     url: str = Field(..., example="https://phishing-site-example.com/login")
+    model: str = Field("url_only", description="Model to use: 'url_only' or 'rf_full'")
+    extended: bool = Field(False, description="Whether to perform extended checks (DNS/HTTP)")
 
 class PredictResponse(BaseModel):
     prediction: str
@@ -85,78 +133,90 @@ class PredictResponse(BaseModel):
     threshold: float
     features: Dict[str, Any]
     model_classes: List[int]
+    model_used: str
 
 # --- FastAPI App ---
 app = FastAPI(
     title="Mailharpoon URL Phishing API",
-    description="Extended API with URL-based and feature-based detection.",
-    version="1.1.0"
+    description="Extended API supporting multiple models.",
+    version="1.2.0"
 )
 
 # --- global state ---
-model = None
-feature_columns = None
-phishing_threshold = 0.5
+models = {}
+feature_sets = {}
+thresholds = {}
+
+def load_model_assets(name: str, config: dict):
+    model_path = config["model_path"]
+    features_path = config["features_path"]
+    threshold_path = config["threshold_path"]
+    
+    # 1. load features
+    if not os.path.exists(features_path):
+        print(f"ERROR: Feature list meta-file not found: {features_path}")
+        return False
+    with open(features_path, "r") as f:
+        feature_sets[name] = json.load(f)
+    
+    # 2. load model
+    if not os.path.exists(model_path):
+        print(f"ERROR: Model artifact not found: {model_path}")
+        return False
+    models[name] = joblib.load(model_path)
+    
+    # 3. load threshold
+    thresholds[name] = 0.5
+    if os.path.exists(threshold_path):
+        with open(threshold_path, "r") as f:
+            data = json.load(f)
+            thresholds[name] = data.get("threshold", 0.5)
+    
+    print(f"Successfully loaded model assets for '{name}'")
+    return True
 
 @app.on_event("startup")
 async def startup_event():
-    global model, feature_columns, phishing_threshold
-
-    # 1. load features
-    if not os.path.exists(FEATURES_PATH):
-        raise RuntimeError(f"Feature list meta-file not found: {FEATURES_PATH}")
-    with open(FEATURES_PATH, "r") as f:
-        feature_columns = json.load(f)
-    if not isinstance(feature_columns, list) or not all(isinstance(c, str) for c in feature_columns):
-        raise RuntimeError("Meta-file features.json must contain a list of strings.")
-
-    # 2. load model
-    if not os.path.exists(MODEL_PATH):
-        raise RuntimeError(f"Model artifact not found: {MODEL_PATH}")
-    model = joblib.load(MODEL_PATH)
-    
-    # class check according to request (-1 = phishing, 1 = legit)
-    classes = set(model.classes_)
-    if not (1 in classes and -1 in classes):
-        # logging/note: checking for [0, 1] as backup if the user is using the 0-remapped model
-        if not (1 in classes and 0 in classes):
-             raise RuntimeError(f"Model classes {model.classes_} inconsistent with requirements (-1 and 1).")
-        else:
-             print(f"DEBUG: Model uses [0, 1] instead of [-1, 1]. Phishing will be mapped from 0.")
-
-    # 3. load threshold
-    if os.path.exists(THRESHOLD_PATH):
-        with open(THRESHOLD_PATH, "r") as f:
-            data = json.load(f)
-            phishing_threshold = data.get("threshold", 0.5)
+    load_model_assets("url_only", URL_ONLY_CONFIG)
+    load_model_assets("rf_full", RF_FULL_CONFIG)
 
 @app.get("/")
 def welcome():
-    return {"message": "Welcome to Mailharpoon Phishing API. Use /predict or /predict-url."}
+    return {"message": "Welcome to Mailharpoon Phishing API. Use /predict-url."}
 
 @app.get("/health")
 def health():
-    if model is None:
-        raise HTTPException(status_code=503, detail="Model initialization failed")
-    return {"status": "ok"}
+    if not models:
+        raise HTTPException(status_code=503, detail="No models loaded")
+    return {"status": "ok", "loaded_models": list(models.keys())}
 
-def run_inference(input_dict: dict) -> PredictResponse:
-    # ensure exact feature order
-    df = pd.DataFrame([input_dict])
+@app.post("/predict-url", response_model=PredictResponse)
+def predict_url(request_data: PredictUrlRequest):
+    model_name = request_data.model
+    if model_name not in models:
+        raise HTTPException(status_code=400, detail=f"Model '{model_name}' not available.")
+    
+    # Step 1: Feature Extraction
+    if model_name == "rf_full":
+        features = extract_features_rf_full(request_data.url, request_data.extended)
+    else:
+        features = extract_features_url_only(request_data.url)
+    
+    # Step 2: Inference
+    model = models[model_name]
+    feature_columns = feature_sets[model_name]
+    threshold = thresholds[model_name]
+    
+    df = pd.DataFrame([features])
     try:
         df = df[feature_columns]
     except KeyError as e:
-        raise HTTPException(status_code=400, detail=f"Input missing required features or extra fields present: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Extracted features missing columns for '{model_name}': {str(e)}")
     
-    if df.shape[1] != len(input_dict):
-        raise HTTPException(status_code=400, detail="Mismatch between input fields and required model features.")
-
-    # calculate probabilities
     probs = model.predict_proba(df)[0]
     classes_list = list(model.classes_)
     
-    # dynamic index lookup for requested classes
-    # handling both -1/1 and 0/1 (phishing is -1 or 0)
+    # Handling both -1/1 and 0/1 classifications
     phish_label = -1 if -1 in classes_list else 0
     legit_label = 1
     
@@ -164,31 +224,23 @@ def run_inference(input_dict: dict) -> PredictResponse:
         phish_idx = classes_list.index(phish_label)
         legit_idx = classes_list.index(legit_label)
     except ValueError:
-        raise HTTPException(status_code=500, detail="Model class mapping failed during inference.")
+        raise HTTPException(status_code=500, detail=f"Class mapping failed for model '{model_name}'.")
         
     phish_prob = float(probs[phish_idx])
     legit_prob = float(probs[legit_idx])
     
-    # classification based on threshold
-    prediction = "Malicious" if phish_prob >= phishing_threshold else "Legitimate"
+    prediction = "Malicious" if phish_prob >= threshold else "Legitimate"
     
     return PredictResponse(
         prediction=prediction,
         phishing_probability=phish_prob,
         legit_probability=legit_prob,
-        threshold=phishing_threshold,
-        features=input_dict,
-        model_classes=classes_list
+        threshold=threshold,
+        features=features,
+        model_classes=classes_list,
+        model_used=model_name
     )
-
-@app.post("/predict", response_model=PredictResponse)
-def predict(request_data: PredictRequest):
-    return run_inference(request_data.model_dump())
-
-@app.post("/predict-url", response_model=PredictResponse)
-def predict_url(request_data: PredictUrlRequest):
-    features = extract_features_from_url(request_data.url)
-    return run_inference(features)
 
 if __name__ == "__main__":
     uvicorn.run("src.main:app", host="127.0.0.1", port=8000, reload=True)
+

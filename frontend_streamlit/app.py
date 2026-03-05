@@ -3,7 +3,7 @@ from pathlib import Path
 import streamlit as st
 
 
-# Global CSS (modern polish)
+# Global CSS 
 
 st.markdown(
     """
@@ -62,7 +62,7 @@ section[data-testid="stSidebar"] h2 {
 )
 
 
-# Paths (avoid absolute paths)
+# Paths
 
 APP_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = APP_DIR.parent  
