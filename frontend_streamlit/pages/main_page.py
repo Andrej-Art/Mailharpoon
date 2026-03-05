@@ -5,14 +5,14 @@ import streamlit as st
 
 # Configuration 
 # Lokaler API-Endpoint für die URL-basierte Inferenz
-API_URL = "http://127.0.0.1:8000/predict-url"
-HEALTH_URL = "http://127.0.0.1:8000/health"
+API_URL = "http://127.0.0.1:8001/predict-url"
+HEALTH_URL = "http://127.0.0.1:8001/health"
 
 # Page Layout 
 st.title("ML Phishing URL Detector")
 st.write("Enter a URL to check if it is legitimate or phishing.")
 
-#  Sidebar / Health Check 
+#  Sidebar 
 with st.sidebar:
     st.header("Settings & Tools")
     if st.button("Check Backend Health"):
@@ -74,21 +74,35 @@ if st.button("Check and analyze your URL", type="primary"):
                 threshold = data.get("threshold", 0.5)
                 model_used = data.get("model_used", "unknown")
                 
-                # Ergebnisanzeige
+                # display results
                 if prediction == "Malicious":
                     st.error(f"### 🚨 Prediction: {prediction}")
                 else:
                     st.success(f"### ✅ Prediction: {prediction}")
                 
+                # Fetch Info (Extended Checks)
+                fetch_info = data.get("fetch_info")
+                if fetch_info:
+                    with st.container(border=True):
+                        st.caption("🌐 **Extended Fetch Info**")
+                        cols = st.columns(3)
+                        cols[0].write(f"**Status:** {fetch_info.get('status_code', 'N/A')}")
+                        cols[1].write(f"**Redirects:** {fetch_info.get('redirect_count', 0)}")
+                        cols[2].write(f"**Allowed:** {'✅' if fetch_info.get('allowed') else '❌'}")
+                        if fetch_info.get("final_url"):
+                            st.write(f"**Final URL:** `{fetch_info['final_url']}`")
+                        if fetch_info.get("error"):
+                            st.warning(f"Fetch Error: {fetch_info['error']}")
+
                 st.caption(f"Model used: `{model_used}` | Threshold: `{threshold:.2f}`")
 
-                # Metriken anzeigen
+                # display metrics
                 col1, col2 = st.columns(2)
                 col1.metric("Phishing Prob.", f"{phish_prob:.3f}")
                 col2.metric("Legit Prob.", f"{legit_prob:.3f}")
                
-                # --- Feature Breakdown ---
-                with st.expander("🔍 URL Feature Breakdown", expanded=True):
+                # Feature Breakdown
+                with st.expander("URL Feature Breakdown", expanded=True):
                     features = data.get("features", {})
                     
                     if features:
@@ -149,6 +163,7 @@ if st.button("Check and analyze your URL", type="primary"):
                         
                         st.table(display_data)
                         
+                        # in work
                         if model_used == "rf_full" and not extended_checks:
                             st.info("💡 Some features were imputed with safe defaults because 'Extended checks' were disabled.")
 
@@ -167,6 +182,6 @@ if st.button("Check and analyze your URL", type="primary"):
         except Exception as e:
             st.error(f"An unexpected error occurred: {str(e)}")
 
-# --- Debug Info ---
+
 st.divider()
 

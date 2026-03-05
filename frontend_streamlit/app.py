@@ -3,7 +3,7 @@ from pathlib import Path
 import streamlit as st
 
 
-# Global CSS 
+# Global CSS
 
 st.markdown(
     """
