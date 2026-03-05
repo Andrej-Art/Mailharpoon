@@ -5,8 +5,8 @@ import streamlit as st
 
 # Configuration 
 # Lokaler API-Endpoint für die URL-basierte Inferenz
-API_URL = "http://127.0.0.1:8001/predict-url"
-HEALTH_URL = "http://127.0.0.1:8001/health"
+API_URL = "http://127.0.0.1:8000/predict-url"
+HEALTH_URL = "http://127.0.0.1:8000/health"
 
 # Page Layout 
 st.title("ML Phishing URL Detector")
@@ -178,7 +178,7 @@ if st.button("Check and analyze your URL", type="primary"):
             st.error("Request timed out. The backend might be busy or unreachable.")
         except requests.exceptions.ConnectionError:
             st.error("Connection Error: Could not connect to the backend.")
-            st.info("Ensure that the FastAPI server is running at http://127.0.0.1:8000")
+            st.info(f"Ensure that the FastAPI server is running at {API_URL.replace('/predict-url', '')}")
         except Exception as e:
             st.error(f"An unexpected error occurred: {str(e)}")
 
