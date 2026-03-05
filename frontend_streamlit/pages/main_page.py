@@ -3,16 +3,16 @@
 import requests
 import streamlit as st
 
-# --- Configuration ---
+# Configuration 
 # Lokaler API-Endpoint für die URL-basierte Inferenz
 API_URL = "http://127.0.0.1:8000/predict-url"
 HEALTH_URL = "http://127.0.0.1:8000/health"
 
-# --- Page Layout ---
+# Page Layout 
 st.title("ML Phishing URL Detector")
 st.write("Enter a URL to check if it is legitimate or phishing.")
 
-# --- Sidebar / Health Check ---
+#  Sidebar / Health Check 
 with st.sidebar:
     st.header("Settings & Tools")
     if st.button("Check Backend Health"):
@@ -28,8 +28,22 @@ with st.sidebar:
     st.divider()
     st.caption(f"Target: {API_URL}")
 
-# --- URL Input Section ---
-url_input = st.text_input("Enter URL:", placeholder="https://example.com").strip()
+# URL Input Section 
+col_url, col_model = st.columns([3, 1])
+
+with col_url:
+    url_input = st.text_input("Enter URL:", placeholder="https://example.com").strip()
+
+with col_model:
+    model_choice = st.selectbox(
+        "Model",
+        options=["url_only", "rf_full"],
+        format_func=lambda x: "Fast (URL Only)" if x == "url_only" else "Full (30 Features)"
+    )
+
+extended_checks = False
+if model_choice == "rf_full":
+    extended_checks = st.toggle("Extended checks (Experimental)", value=False, help="Perform DNS and HTTP lookups (currently mostly imputed).")
 
 if st.button("Check and analyze your URL", type="primary"):
     if not url_input:
@@ -37,9 +51,12 @@ if st.button("Check and analyze your URL", type="primary"):
     else:
         try:
             with st.spinner("Analyzing URL..."):
-                # Header setzen für JSON Request
                 headers = {"Content-Type": "application/json"}
-                payload = {"url": url_input}
+                payload = {
+                    "url": url_input,
+                    "model": model_choice,
+                    "extended": extended_checks
+                }
                 
                 response = requests.post(
                     API_URL, 
@@ -51,11 +68,11 @@ if st.button("Check and analyze your URL", type="primary"):
             if response.status_code == 200:
                 data = response.json()
                 
-                # Extraktion der Daten aus der Response
                 prediction = data.get("prediction", "Unknown")
                 phish_prob = data.get("phishing_probability", 0.0)
                 legit_prob = data.get("legit_probability", 0.0)
                 threshold = data.get("threshold", 0.5)
+                model_used = data.get("model_used", "unknown")
                 
                 # Ergebnisanzeige
                 if prediction == "Malicious":
@@ -63,50 +80,78 @@ if st.button("Check and analyze your URL", type="primary"):
                 else:
                     st.success(f"### ✅ Prediction: {prediction}")
                 
+                st.caption(f"Model used: `{model_used}` | Threshold: `{threshold:.2f}`")
+
                 # Metriken anzeigen
                 col1, col2 = st.columns(2)
                 col1.metric("Phishing Prob.", f"{phish_prob:.3f}")
                 col2.metric("Legit Prob.", f"{legit_prob:.3f}")
                
-                # to display threshold value for the user
-                #st.caption(f"Classification threshold currently at {threshold:.2f}")
-
                 # --- Feature Breakdown ---
-                st.write("### URL Feature Breakdown")
-                features = data.get("features", {})
-                
-                if features:
-                    # Map feature keys to readable names and format values
-                    feature_mapping = {
-                        "having_ip_address": "Contains IP Address",
-                        "url_length": "URL Length",
-                        "shortining_service": "Uses Shortener Service",
-                        "having_at_symbol": "Contains '@' Symbol",
-                        "double_slash_redirecting": "Redirection via '//'",
-                        "prefix_suffix": "Prefix/Suffix in Host",
-                        "having_sub_domain": "Multiple Subdomains",
-                        "https_token": "'https' Token in Host"
-                    }
+                with st.expander("🔍 URL Feature Breakdown", expanded=True):
+                    features = data.get("features", {})
                     
-                    # Convert to a list of dicts for display
-                    display_data = []
-                    for key, readable_name in feature_mapping.items():
-                        val = features.get(key)
+                    if features:
+                        # Full mapping for all potential features
+                        feature_names = {
+                            "having_ip_address": "Contains IP Address",
+                            "url_length": "URL Length",
+                            "shortining_service": "Uses Shortener Service",
+                            "having_at_symbol": "Contains '@' Symbol",
+                            "double_slash_redirecting": "Redirection via '//'",
+                            "prefix_suffix": "Prefix/Suffix in Host",
+                            "having_sub_domain": "Multiple Subdomains",
+                            "https_token": "'https' Token in Host",
+                            "sslfinal_state": "SSL State",
+                            "domain_registeration_length": "Domain Reg. Length",
+                            "favicon": "Favicon Presence",
+                            "port": "Non-standard Port",
+                            "request_url": "External Request URL",
+                            "url_of_anchor": "Anchor URL Ratio",
+                            "links_in_tags": "Links in Tags Ratio",
+                            "sfh": "Server Form Handler",
+                            "submitting_to_email": "Submits to Email",
+                            "abnormal_url": "Abnormal structures",
+                            "redirect": "Redirect Count",
+                            "on_mouseover": "Mouseover effects",
+                            "rightclick": "Right-click disabled",
+                            "popupwidnow": "Popup windows",
+                            "iframe": "Iframe usage",
+                            "age_of_domain": "Domain Age",
+                            "dnsrecord": "DNS Record Found",
+                            "web_traffic": "Web Traffic Rank",
+                            "page_rank": "Page Rank",
+                            "google_index": "Google Index Status",
+                            "links_pointing_to_page": "Inbound Links",
+                            "statistical_report": "Known Malicious List"
+                        }
                         
-                        # Formatting numeric values to human-readable text if they are -1/1
-                        if key == "url_length":
-                            status = f"{val} characters"
-                        else:
-                            status = "✅ Yes" if val == 1 else "❌ No"
+                        display_data = []
+                        # Only show features that are in the response
+                        for key, val in features.items():
+                            name = feature_names.get(key, key)
+                            
+                            if key == "url_length":
+                                status = f"{val} (numeric)"
+                            elif val == 1:
+                                status = "🚩 Yes / High"
+                            elif val == -1:
+                                status = "✅ No / Low"
+                            elif val == 0:
+                                status = "⚠️ Neutral / Unknown"
+                            else:
+                                status = str(val)
+                            
+                            display_data.append({
+                                "Feature": name,
+                                "Value/Status": status
+                            })
                         
-                        display_data.append({
-                            "Feature": readable_name,
-                            "Detail": status
-                        })
-                    
-                    st.table(display_data)
-                
-                # Removed "Show raw API Response" as requested
+                        st.table(display_data)
+                        
+                        if model_used == "rf_full" and not extended_checks:
+                            st.info("💡 Some features were imputed with safe defaults because 'Extended checks' were disabled.")
+
             else:
                 st.error(f"API Error: Received status code {response.status_code}")
                 try:
