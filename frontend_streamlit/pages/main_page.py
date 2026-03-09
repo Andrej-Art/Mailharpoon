@@ -89,6 +89,23 @@ if st.button("Check and analyze your URL", type="primary"):
                         cols[0].write(f"**Status:** {fetch_info.get('status_code', 'N/A')}")
                         cols[1].write(f"**Redirects:** {fetch_info.get('redirect_count', 0)}")
                         cols[2].write(f"**Allowed:** {'✅' if fetch_info.get('allowed') else '❌'}")
+                        
+                        if fetch_info.get("resolved_ip"):
+                            ip = fetch_info["resolved_ip"]
+                            geo = fetch_info.get("ip_info", {})
+                            
+                            if geo and geo.get("status") == "success":
+                                st.write(f"📍 **Location:** {geo.get('city')}, {geo.get('country')} ({geo.get('isp')})")
+                                
+                                # Show Map
+                                map_data = {
+                                    "lat": [geo.get("lat")],
+                                    "lon": [geo.get("lon")]
+                                }
+                                st.map(map_data, zoom=4, size=20)
+                            else:
+                                st.write(f"IP: `{ip}` (Geolocation unavailable)")
+
                         if fetch_info.get("final_url"):
                             st.write(f"**Final URL:** `{fetch_info['final_url']}`")
                         if fetch_info.get("error"):
