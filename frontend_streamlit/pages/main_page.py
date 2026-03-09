@@ -95,7 +95,9 @@ if st.button("Check and analyze your URL", type="primary"):
                             geo = fetch_info.get("ip_info", {})
                             
                             if geo and geo.get("status") == "success":
-                                st.write(f"📍 **Location:** {geo.get('city')}, {geo.get('country')} ({geo.get('isp')})")
+                                st.write(f"**Location:** {geo.get('city')}, {geo.get('country')}")
+                                st.write(f"**ISP:** {geo.get('isp')}")
+                                st.write(f"**Coordinates:** {geo.get('lat')}, {geo.get('lon')}")
                                 
                                 # Show Map
                                 map_data = {
