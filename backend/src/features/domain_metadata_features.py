@@ -4,6 +4,7 @@ from cachetools import TTLCache
 import tldextract
 from typing import Optional, Dict, Any, List
 import logging
+import concurrent.futures
 
 logger = logging.getLogger(__name__)
 
@@ -45,19 +46,30 @@ def normalize_whois_date(date_val: Any) -> Optional[datetime]:
             
     return None
 
+def _raw_whois_lookup(domain: str):
+    """Internal function to be called in a thread."""
+    return whois.whois(domain)
+
 def get_domain_dates(domain: str) -> Optional[Dict[str, Optional[datetime]]]:
-    """Fetches creation and expiration dates from WHOIS."""
+    """Fetches creation and expiration dates from WHOIS with a timeout."""
     if domain in whois_cache:
         return whois_cache[domain]
         
     try:
-        w = whois.whois(domain)
-        dates = {
-            "creation_date": normalize_whois_date(w.get("creation_date")),
-            "expiration_date": normalize_whois_date(w.get("expiration_date"))
-        }
-        whois_cache[domain] = dates
-        return dates
+        # wrap whois.whois in a timeout (5 seconds)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(_raw_whois_lookup, domain)
+            try:
+                w = future.result(timeout=5.0)
+                dates = {
+                    "creation_date": normalize_whois_date(w.get("creation_date")),
+                    "expiration_date": normalize_whois_date(w.get("expiration_date"))
+                }
+                whois_cache[domain] = dates
+                return dates
+            except concurrent.futures.TimeoutError:
+                logger.warning(f"WHOIS lookup timed out for {domain}")
+                return None
     except Exception as e:
         logger.debug(f"WHOIS lookup failed for {domain}: {str(e)}")
         return None
