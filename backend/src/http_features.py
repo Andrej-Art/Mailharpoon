@@ -11,7 +11,7 @@ MAX_RESPONSE_SIZE = 500 * 1024  # 500 KB
 CONNECT_TIMEOUT = 2.0
 READ_TIMEOUT = 5.0
 MAX_REDIRECTS = 3
-USER_AGENT = "MailharpoonPhishingDetector/1.0"
+USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
 
 def is_public_ip(ip_str: str) -> bool:
     """Checks if an IP address is public (not private, loopback, or reserved)."""
@@ -148,9 +148,9 @@ def extract_features_from_html(html: str, base_url: str, final_url: str) -> Dict
     if favicon and favicon.get("href"):
         fav_href = urljoin(final_url, favicon["href"])
         fav_domain = get_registrable_domain(fav_href)
-        features["favicon"] = 1 if fav_domain == final_domain else -1
+        features["favicon"] = -1 if fav_domain == final_domain else 1
     else:
-        features["favicon"] = -1 # Common in phishing to not have one or use external
+        features["favicon"] = 1 # Common in phishing to not have one or use external
         
     # Helper for URL ratios (Request URL, Links in Tags)
     def get_url_ratio(tags, attr):
@@ -160,13 +160,13 @@ def extract_features_from_html(html: str, base_url: str, final_url: str) -> Dict
         return len(externals) / len(urls)
 
     # 2. Request URL: Ratio of external objects (img, script, etc.)
-    # <0.22 => 1, 0.22-0.61 => 0, >0.61 => -1
+    # <0.22 => -1, 0.22-0.61 => 0, >0.61 => 1
     req_tags = soup.find_all(["img", "script", "link", "iframe"], src=True) + soup.find_all("link", href=True)
     req_ratio = get_url_ratio(req_tags, "src") # Simplification: checking mostly src
     if len(req_tags) == 0: features["request_url"] = 0
-    elif req_ratio < 0.22: features["request_url"] = 1
+    elif req_ratio < 0.22: features["request_url"] = -1
     elif req_ratio <= 0.61: features["request_url"] = 0
-    else: features["request_url"] = -1
+    else: features["request_url"] = 1
 
     # 3. URL of Anchor: Ratio of anchors with suspicious/external links
     anchors = soup.find_all("a", href=True)
@@ -186,27 +186,27 @@ def extract_features_from_html(html: str, base_url: str, final_url: str) -> Dict
         features["url_of_anchor"] = 0
     else:
         anchor_ratio = (suspicious_anchors + external_anchors) / total_a
-        if anchor_ratio < 0.31: features["url_of_anchor"] = 1
+        if anchor_ratio < 0.31: features["url_of_anchor"] = -1
         elif anchor_ratio <= 0.67: features["url_of_anchor"] = 0
-        else: features["url_of_anchor"] = -1
+        else: features["url_of_anchor"] = 1
 
     # 4. Links in Tags: Ratio of external links in metadata/scripts
     # Using meta, script, link
     tags_ratio = get_url_ratio(soup.find_all(["meta", "script", "link"]), "href")
-    if tags_ratio < 0.22: features["links_in_tags"] = 1
+    if tags_ratio < 0.22: features["links_in_tags"] = -1
     elif tags_ratio <= 0.61: features["links_in_tags"] = 0
-    else: features["links_in_tags"] = -1
+    else: features["links_in_tags"] = 1
 
     # 5. SFH (Server Form Handler): Empty action or external action in forms
     forms = soup.find_all("form", action=True)
     if not forms:
-        features["sfh"] = 1
+        features["sfh"] = -1
     else:
-        sfh_val = 1
+        sfh_val = -1
         for f in forms:
             action = f["action"].strip().lower()
             if action in ["", "about:blank"]:
-                sfh_val = -1
+                sfh_val = 1
                 break
             abs_action = urljoin(final_url, action)
             if get_registrable_domain(abs_action) != final_domain:
@@ -215,18 +215,18 @@ def extract_features_from_html(html: str, base_url: str, final_url: str) -> Dict
 
     # 6. on_mouseover: Phishers hide real URLs in status bar
     has_mouseover = soup.find(lambda t: t.has_attr("onmouseover")) or "onmouseover" in html.lower()
-    features["on_mouseover"] = -1 if has_mouseover else 1
+    features["on_mouseover"] = 1 if has_mouseover else -1
 
     # 7. rightclick: Disabling right-click to prevent source inspection
     has_rightclick_disable = any(x in html.lower() for x in ["event.button==2", "contextmenu", "preventdefault()"])
-    features["rightclick"] = -1 if has_rightclick_disable else 1
+    features["rightclick"] = 1 if has_rightclick_disable else -1
 
     # 8. popupwidnow: Phishing sites often use fake popups
     has_popup = "window.open(" in html.lower() or "window.location.replace(" in html.lower()
-    features["popupwidnow"] = -1 if has_popup else 1
+    features["popupwidnow"] = 1 if has_popup else -1
 
     # 9. iframe: Iframe used to overlay malicious content
     has_iframe = soup.find("iframe") is not None
-    features["iframe"] = -1 if has_iframe else 1
+    features["iframe"] = 1 if has_iframe else -1
 
     return features

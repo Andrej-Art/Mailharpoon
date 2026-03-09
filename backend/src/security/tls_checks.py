@@ -21,18 +21,18 @@ def is_public_ip(ip_str: str) -> bool:
 def check_ssl_certificate(url: str) -> int:
     """
     Checks the TLS certificate of a domain and returns:
-    1  -> HTTPS present and TLS certificate valid
-    0  -> HTTPS present but certificate error / connection issue
-    -1 -> URL does not use HTTPS
+    -1 -> HTTPS present and TLS certificate valid (Legitimate)
+    1  -> HTTPS present but certificate error / connection issue (Phishing)
+    1  -> URL does not use HTTPS (Phishing)
     """
     try:
         parsed = urlparse(url)
         if parsed.scheme.lower() != "https":
-            return -1
+            return 1
         
         host = parsed.hostname
         if not host:
-            return 0
+            return 1
             
         port = parsed.port or 443
 
@@ -44,10 +44,10 @@ def check_ssl_certificate(url: str) -> int:
                 ip_addr = info[4][0]
                 if not is_public_ip(ip_addr):
                     logger.debug(f"SSRF Protection: Blocked private IP {ip_addr} for {host}")
-                    return 0
+                    return 1
         except socket.gaierror:
             logger.debug(f"DNS resolution failed for {host}")
-            return 0
+            return 1
 
         # 2. TLS Handshake with Certificate Validation
         context = ssl.create_default_context()
@@ -57,16 +57,16 @@ def check_ssl_certificate(url: str) -> int:
             with context.wrap_socket(sock, server_hostname=host) as ssock:
                 cert = ssock.getpeercert()
                 if cert:
-                    return 1
+                    return -1
                 else:
-                    return 0
+                    return 1
 
     except ssl.SSLError as e:
         logger.debug(f"SSL validation failed for {url}: {str(e)}")
-        return 0
+        return 1
     except (socket.timeout, ConnectionRefusedError, OSError) as e:
         logger.debug(f"Connection failed for {url}: {str(e)}")
-        return 0
+        return 1
     except Exception as e:
         logger.debug(f"Unexpected error during SSL check for {url}: {str(e)}")
-        return 0
+        return 1
