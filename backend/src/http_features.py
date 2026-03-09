@@ -12,6 +12,7 @@ CONNECT_TIMEOUT = 2.0
 READ_TIMEOUT = 5.0
 MAX_REDIRECTS = 3
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+IP_GEO_API = "http://ip-api.com/json/{ip}"
 
 def is_public_ip(ip_str: str) -> bool:
     """Checks if an IP address is public (not private, loopback, or reserved)."""
@@ -45,6 +46,19 @@ def is_safe_url(url: str) -> Tuple[bool, Optional[str]]:
     except Exception as e:
         return False, f"DNS resolution failed: {str(e)}"
 
+def get_ip_geolocation(ip: str) -> Dict[str, Any]:
+    """Fetches geolocation data for a public IP address."""
+    if not is_public_ip(ip):
+        return {"status": "fail", "message": "Private IP"}
+    try:
+        url = IP_GEO_API.format(ip=ip)
+        response = requests.get(url, timeout=3)
+        if response.status_code == 200:
+            return response.json()
+    except:
+        pass
+    return {"status": "fail", "message": "Lookup failed"}
+
 def safe_fetch_html(url: str) -> Dict[str, Any]:
     """
     Fetches HTML from a URL with SSRF protection, timeouts, and size limits.
@@ -56,6 +70,7 @@ def safe_fetch_html(url: str) -> Dict[str, Any]:
         "redirect_count": 0,
         "content_type": None,
         "html": None,
+        "resolved_ip": None,
         "error": None
     }
     
@@ -71,7 +86,7 @@ def safe_fetch_html(url: str) -> Dict[str, Any]:
                 result["error"] = error
                 return result
             
-            # Perform request (don't follow redirects automatically to check each step)
+            # Perform request
             response = session.get(
                 current_url,
                 timeout=(CONNECT_TIMEOUT, READ_TIMEOUT),
@@ -79,6 +94,16 @@ def safe_fetch_html(url: str) -> Dict[str, Any]:
                 stream=True,
                 allow_redirects=False
             )
+            
+            # Extract resolved IP from the connection
+            try:
+                # requests doesn't easily expose the IP for a stream=True request without reading
+                # But we can get it from the raw socket if needed, or re-resolve
+                # For simplicity and reliability in Phase 3, we re-resolve the final host
+                parsed_final = urlparse(current_url)
+                result["resolved_ip"] = socket.gethostbyname(parsed_final.hostname)
+            except:
+                pass
             
             result["status_code"] = response.status_code
             result["content_type"] = response.headers.get("Content-Type", "").lower()

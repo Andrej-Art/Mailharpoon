@@ -8,7 +8,7 @@ from typing import List, Dict, Any, Tuple, Optional
 from urllib.parse import urlparse
 from fastapi import FastAPI, HTTPException, Body
 from pydantic import BaseModel, Field
-from http_features import safe_fetch_html, extract_features_from_html
+from http_features import safe_fetch_html, extract_features_from_html, get_ip_geolocation
 from security.tls_checks import check_ssl_certificate
 
 # configuration 
@@ -123,6 +123,8 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[dict, di
             "status_code": fetch_result["status_code"],
             "redirect_count": fetch_result["redirect_count"],
             "final_url": fetch_result["final_url"],
+            "resolved_ip": fetch_result["resolved_ip"],
+            "ip_info": get_ip_geolocation(fetch_result["resolved_ip"]) if fetch_result["resolved_ip"] else None,
             "error": fetch_result["error"]
         }
         
