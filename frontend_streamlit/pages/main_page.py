@@ -148,9 +148,9 @@ if st.button("Check and analyze your URL", type="primary"):
                             if key == "url_length":
                                 status = f"{val} (numeric)"
                             elif val == 1:
-                                status = "✅ Legitimate / Low"
-                            elif val == -1:
                                 status = "🚩 Phishing / High"
+                            elif val == -1:
+                                status = "✅ Legitimate / Low"
                             elif val == 0:
                                 status = "⚠️ Suspicious / Neutral"
                             else:
