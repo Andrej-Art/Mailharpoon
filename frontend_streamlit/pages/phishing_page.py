@@ -19,7 +19,7 @@ with st.expander("**About the Data**", expanded=False):
 
     st.markdown("""
     This project primarily uses the Website Phishing Dataset from the UC Irvine Machine Learning Repository, 
-    containing 1,353 labeled URLs with 9 feature attributes and 1 class label (legitimate, suspicious, phishing). 
+    containing 1,353 labeled URLs with 30 feature attributes and 1 class label (legitimate, suspicious, phishing). 
     
     In addition, other phishing-related datasets and feature sets were evaluated. However, many traditional 
     URL-based features showed high false-positive rates in real-world scenarios.
