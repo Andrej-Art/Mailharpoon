@@ -10,6 +10,8 @@ from fastapi import FastAPI, HTTPException, Body
 from pydantic import BaseModel, Field
 from http_features import safe_fetch_html, extract_features_from_html, get_ip_geolocation
 from security.tls_checks import check_ssl_certificate
+from features.dns_features import check_dns_record
+from features.domain_metadata_features import get_domain_age, get_domain_registration_length, get_registrable_domain
 
 # configuration 
 MODELS_BASE = "/Users/andrejartuschenko/Desktop/mailharpoon/backend/models"
@@ -76,6 +78,9 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[dict, di
     parsed = urlparse(url)
     host = parsed.netloc.split(":")[0]
     
+    # Extract registrable domain for DNS/WHOIS lookups
+    reg_domain = get_registrable_domain(url)
+
     # Initialize all 30 features
     full_features = {
         "having_ip_address": base["having_ip_address"],
@@ -86,7 +91,7 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[dict, di
         "prefix_suffix": base["prefix_suffix"],
         "having_sub_domain": base["having_sub_domain"],
         "sslfinal_state": check_ssl_certificate(url) if extended else (-1 if url.startswith("https") else 1),
-        "domain_registeration_length": 1, # WHOIS
+        "domain_registeration_length": get_domain_registration_length(reg_domain) if extended else 1,
         "favicon": 1, 
         "port": 1 if ":" in parsed.netloc else -1,
         "https_token": base["https_token"],
@@ -101,8 +106,8 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[dict, di
         "rightclick": 1,
         "popupwidnow": 1,
         "iframe": 1,
-        "age_of_domain": 1, # WHOIS
-        "dnsrecord": 1, # DNS
+        "age_of_domain": get_domain_age(reg_domain) if extended else 1,
+        "dnsrecord": check_dns_record(reg_domain) if extended else 1,
         "web_traffic": 0,
         "page_rank": 1,
         "google_index": 1,
