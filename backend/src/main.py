@@ -85,29 +85,29 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[dict, di
         "double_slash_redirecting": base["double_slash_redirecting"],
         "prefix_suffix": base["prefix_suffix"],
         "having_sub_domain": base["having_sub_domain"],
-        "sslfinal_state": check_ssl_certificate(url) if extended else (1 if url.startswith("https") else -1),
-        "domain_registeration_length": -1, # WHOIS
-        "favicon": -1, 
+        "sslfinal_state": check_ssl_certificate(url) if extended else (-1 if url.startswith("https") else 1),
+        "domain_registeration_length": 1, # WHOIS
+        "favicon": 1, 
         "port": 1 if ":" in parsed.netloc else -1,
         "https_token": base["https_token"],
-        "request_url": -1, 
-        "url_of_anchor": -1,
-        "links_in_tags": -1,
-        "sfh": -1,
+        "request_url": 1, 
+        "url_of_anchor": 1,
+        "links_in_tags": 1,
+        "sfh": 1,
         "submitting_to_email": 1 if "mailto:" in url.lower() else -1,
-        "abnormal_url": -1,
+        "abnormal_url": 1,
         "redirect": 0, 
-        "on_mouseover": -1,
-        "rightclick": -1,
-        "popupwidnow": -1,
-        "iframe": -1,
-        "age_of_domain": -1, # WHOIS
-        "dnsrecord": -1, # DNS
+        "on_mouseover": 1,
+        "rightclick": 1,
+        "popupwidnow": 1,
+        "iframe": 1,
+        "age_of_domain": 1, # WHOIS
+        "dnsrecord": 1, # DNS
         "web_traffic": 0,
-        "page_rank": -1,
-        "google_index": -1,
+        "page_rank": 1,
+        "google_index": 1,
         "links_pointing_to_page": 0,
-        "statistical_report": -1
+        "statistical_report": 1
     }
     
     # URL Length heuristic
