@@ -6,7 +6,7 @@ from urllib.parse import urlparse, urljoin
 from bs4 import BeautifulSoup
 from typing import Dict, Any, Optional, Tuple
 
-# --- SSRF & Request Constants ---
+# SSRF & Request Constants
 MAX_RESPONSE_SIZE = 500 * 1024  # 500 KB
 CONNECT_TIMEOUT = 2.0
 READ_TIMEOUT = 5.0
@@ -125,7 +125,7 @@ def get_registrable_domain(url: str) -> str:
     try:
         parsed = urlparse(url)
         host = parsed.netloc.lower().split(":")[0]
-        # Basic split: taking last two parts for simple domains
+        # taking last two parts for simple domains
         parts = host.split('.')
         if len(parts) >= 2:
             return ".".join(parts[-2:])

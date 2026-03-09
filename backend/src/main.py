@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 from fastapi import FastAPI, HTTPException, Body
 from pydantic import BaseModel, Field
 from http_features import safe_fetch_html, extract_features_from_html
+from security.tls_checks import check_ssl_certificate
 
 # configuration 
 MODELS_BASE = "/Users/andrejartuschenko/Desktop/mailharpoon/backend/models"
@@ -84,7 +85,7 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[dict, di
         "double_slash_redirecting": base["double_slash_redirecting"],
         "prefix_suffix": base["prefix_suffix"],
         "having_sub_domain": base["having_sub_domain"],
-        "sslfinal_state": 1 if url.startswith("https") else -1,
+        "sslfinal_state": check_ssl_certificate(url) if extended else (1 if url.startswith("https") else -1),
         "domain_registeration_length": -1, # WHOIS
         "favicon": -1, 
         "port": 1 if ":" in parsed.netloc else -1,
