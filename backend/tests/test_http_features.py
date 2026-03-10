@@ -42,29 +42,29 @@ class TestHttpFeatures(unittest.TestCase):
         </html>
         """
         final_url = "http://my-legit-site.com/home"
-        features = extract_features_from_html(html, final_url, final_url)
+        features, metadata = extract_features_from_html(html, final_url, final_url)
         
-        # favicon: internal => 1
-        self.assertEqual(features["favicon"], 1)
+        # favicon: internal => -1 (Legit)
+        self.assertEqual(features["favicon"], -1)
         
-        # on_mouseover: found => -1
-        self.assertEqual(features["on_mouseover"], -1)
+        # on_mouseover: found => 1 (Phish)
+        self.assertEqual(features["on_mouseover"], 1)
         
-        # iframe: not found => 1
-        self.assertEqual(features["iframe"], 1)
+        # iframe: not found => -1 (Legit)
+        self.assertEqual(features["iframe"], -1)
         
-        # sfh: external action => 0
+        # sfh: external action => 0 (Suspicious)
         self.assertEqual(features["sfh"], 0)
 
     def test_extract_features_sfh_empty(self):
         html = '<html><body><form action=""></form></body></html>'
-        features = extract_features_from_html(html, "http://test.com", "http://test.com")
-        self.assertEqual(features["sfh"], -1)
+        features, metadata = extract_features_from_html(html, "http://test.com", "http://test.com")
+        self.assertEqual(features["sfh"], 1)
 
     def test_extract_features_popup_click(self):
         html = '<html><body><script>window.open("...");</script></body></html>'
-        features = extract_features_from_html(html, "http://test.com", "http://test.com")
-        self.assertEqual(features["popupwidnow"], -1)
+        features, metadata = extract_features_from_html(html, "http://test.com", "http://test.com")
+        self.assertEqual(features["popupwidnow"], 1)
 
 if __name__ == "__main__":
     unittest.main()

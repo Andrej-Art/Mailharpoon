@@ -4,6 +4,7 @@ import joblib
 import pandas as pd
 import uvicorn
 import re
+from datetime import datetime, timezone
 from typing import List, Dict, Any, Tuple, Optional
 from urllib.parse import urlparse
 from fastapi import FastAPI, HTTPException, Body
@@ -11,7 +12,12 @@ from pydantic import BaseModel, Field
 from http_features import safe_fetch_html, extract_features_from_html, get_ip_geolocation
 from security.tls_checks import check_ssl_certificate
 from features.dns_features import check_dns_record
-from features.domain_metadata_features import get_domain_age, get_domain_registration_length, get_registrable_domain
+from features.domain_metadata_features import (
+    get_domain_age, 
+    get_domain_registration_length, 
+    get_registrable_domain,
+    get_domain_dates
+)
 
 # configuration 
 MODELS_BASE = "/Users/andrejartuschenko/Desktop/mailharpoon/backend/models"
@@ -53,6 +59,12 @@ def extract_features_url_only(url: str) -> dict:
     is_ip = 1 if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", host) else -1
     
     # 8 feature extraction
+    # Subdomain check (UCI: 1 dot -> -1, 2 dots -> 0, 3+ dots -> 1)
+    dots = host.count(".")
+    if dots <= 1: sub_domain = -1
+    elif dots == 2: sub_domain = 0
+    else: sub_domain = 1
+
     features = {
         "having_ip_address": is_ip,
         "url_length": len(url),
@@ -60,12 +72,12 @@ def extract_features_url_only(url: str) -> dict:
         "having_at_symbol": 1 if "@" in url else -1,
         "double_slash_redirecting": 1 if "//" in url.split("://", 1)[-1] else -1,
         "prefix_suffix": 1 if "-" in host else -1,
-        "having_sub_domain": 1 if host.count(".") > 1 else -1,
+        "having_sub_domain": sub_domain,
         "https_token": 1 if "https" in host.lower() else -1
     }
     return features
 
-def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[dict, dict]:
+def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str, int], Dict[str, Any], Dict[str, Any]]:
     """
     Extracts 30 features for rf_full.
     Current version uses Phase 1 real features if extended=True.
@@ -90,22 +102,22 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[dict, di
         "double_slash_redirecting": base["double_slash_redirecting"],
         "prefix_suffix": base["prefix_suffix"],
         "having_sub_domain": base["having_sub_domain"],
-        "sslfinal_state": check_ssl_certificate(url) if extended else (-1 if url.startswith("https") else 1),
+        "sslfinal_state": 1, # Default phishing if not checked
         "domain_registeration_length": get_domain_registration_length(reg_domain) if extended else 1,
-        "favicon": 1, 
-        "port": 1 if ":" in parsed.netloc else -1,
+        "favicon": 0, 
+        "port": -1,
         "https_token": base["https_token"],
-        "request_url": 1, 
-        "url_of_anchor": 1,
-        "links_in_tags": 1,
-        "sfh": 1,
-        "submitting_to_email": 1 if "mailto:" in url.lower() else -1,
-        "abnormal_url": 1,
+        "request_url": 0, 
+        "url_of_anchor": 0,
+        "links_in_tags": 0,
+        "sfh": -1,
+        "submitting_to_email": -1,
+        "abnormal_url": 1 if host != reg_domain and not base["having_ip_address"] == 1 else -1,
         "redirect": 0, 
-        "on_mouseover": 1,
-        "rightclick": 1,
-        "popupwidnow": 1,
-        "iframe": 1,
+        "on_mouseover": -1,
+        "rightclick": -1,
+        "popupwidnow": -1,
+        "iframe": -1,
         "age_of_domain": get_domain_age(reg_domain) if extended else 1,
         "dnsrecord": check_dns_record(reg_domain) if extended else 1,
         "web_traffic": 0,
@@ -115,13 +127,36 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[dict, di
         "statistical_report": 1
     }
     
-    # URL Length heuristic
-    if len(url) < 54: full_features["url_length"] = -1
-    elif len(url) <= 75: full_features["url_length"] = 0
-    else: full_features["url_length"] = 1
+    # Metadata for technical insights
+    metadata = {
+        "url_length": len(url),
+        "hostname": host,
+        "is_ip": base["having_ip_address"] == 1,
+        "shortener": base["shortining_service"] == 1,
+        "at_symbol": base["having_at_symbol"] == 1,
+        "subdomain_count": parsed.netloc.count('.') - 1,
+        "subdomains": parsed.netloc.split('.')[:-2],
+        "prefix_suffix": base["prefix_suffix"] == 1,
+        "dns_record": full_features["dnsrecord"],
+        "domain_age_days": None,
+        "registration_length_days": None
+    }
 
     fetch_info = {}
     if extended:
+        # Check SSL and capture metadata
+        ssl_status, ssl_meta = check_ssl_certificate(url)
+        full_features["sslfinal_state"] = ssl_status
+        metadata["ssl_metadata"] = ssl_meta
+
+        # Fetch age/registration details for metadata
+        dates = get_domain_dates(reg_domain)
+        if dates:
+            if dates["creation_date"]:
+                metadata["domain_age_days"] = (datetime.now(timezone.utc) - dates["creation_date"]).days
+            if dates["expiration_date"]:
+                metadata["registration_length_days"] = (dates["expiration_date"] - datetime.now(timezone.utc)).days
+
         fetch_result = safe_fetch_html(url)
         fetch_info = {
             "allowed": fetch_result["allowed"],
@@ -134,9 +169,10 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[dict, di
         }
         
         if fetch_result["allowed"]:
-            # Extract real Phase 1 features
-            html_feats = extract_features_from_html(fetch_result["html"], url, fetch_result["final_url"])
+            # Extract real Phase 1 features + metadata
+            html_feats, html_meta = extract_features_from_html(fetch_result["html"], url, fetch_result["final_url"])
             full_features.update(html_feats)
+            metadata.update(html_meta)
             
             # Map redirect_count to feature
             if fetch_result["redirect_count"] == 0: full_features["redirect"] = 1
@@ -146,7 +182,7 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[dict, di
             # If fetch failed, use suspicious defaults for some features
             full_features["redirect"] = -1
 
-    return full_features, fetch_info
+    return full_features, metadata, fetch_info
 
 # api models 
 class PredictUrlRequest(BaseModel):
@@ -160,6 +196,7 @@ class PredictResponse(BaseModel):
     legit_probability: float
     threshold: float
     features: Dict[str, Any]
+    feature_metadata: Optional[Dict[str, Any]] = None
     model_classes: List[int]
     model_used: str
     fetch_info: Optional[Dict[str, Any]] = None
@@ -226,9 +263,12 @@ def predict_url(request_data: PredictUrlRequest):
         raise HTTPException(status_code=400, detail=f"Model '{model_name}' not available.")
     
     # Step 1: Feature Extraction
+    features = None
+    feature_metadata = None
     fetch_info = None
+    
     if model_name == "rf_full":
-        features, fetch_info = extract_features_rf_full(request_data.url, request_data.extended)
+        features, feature_metadata, fetch_info = extract_features_rf_full(request_data.url, request_data.extended)
     else:
         features = extract_features_url_only(request_data.url)
     
@@ -267,6 +307,7 @@ def predict_url(request_data: PredictUrlRequest):
         legit_probability=legit_prob,
         threshold=threshold,
         features=features,
+        feature_metadata=feature_metadata,
         model_classes=classes_list,
         model_used=model_name,
         fetch_info=fetch_info

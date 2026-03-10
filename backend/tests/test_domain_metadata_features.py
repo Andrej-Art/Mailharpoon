@@ -24,7 +24,7 @@ class TestDomainMetadataFeatures(unittest.TestCase):
         mock_whois.return_value = {"creation_date": creation_date}
         
         result = get_domain_age("old-domain.com")
-        self.assertEqual(result, 1)
+        self.assertEqual(result, -1)
 
     @patch('whois.whois')
     def test_age_of_domain_new(self, mock_whois):
@@ -33,7 +33,7 @@ class TestDomainMetadataFeatures(unittest.TestCase):
         mock_whois.return_value = {"creation_date": creation_date}
         
         result = get_domain_age("new-domain.com")
-        self.assertEqual(result, -1)
+        self.assertEqual(result, 1)
 
     @patch('whois.whois')
     def test_registration_length_long(self, mock_whois):
@@ -42,7 +42,7 @@ class TestDomainMetadataFeatures(unittest.TestCase):
         mock_whois.return_value = {"expiration_date": expiration_date}
         
         result = get_domain_registration_length("long-reg.com")
-        self.assertEqual(result, 1)
+        self.assertEqual(result, -1)
 
     @patch('whois.whois')
     def test_registration_length_short(self, mock_whois):
@@ -51,7 +51,7 @@ class TestDomainMetadataFeatures(unittest.TestCase):
         mock_whois.return_value = {"expiration_date": expiration_date}
         
         result = get_domain_registration_length("short-reg.com")
-        self.assertEqual(result, -1)
+        self.assertEqual(result, 1)
 
     @patch('whois.whois')
     def test_whois_error(self, mock_whois):

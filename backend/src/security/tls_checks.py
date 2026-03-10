@@ -3,7 +3,7 @@ import socket
 import ipaddress
 import logging
 from urllib.parse import urlparse
-from typing import Optional
+from typing import Optional, Tuple, Dict, Any
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -18,21 +18,32 @@ def is_public_ip(ip_str: str) -> bool:
     except ValueError:
         return False
 
-def check_ssl_certificate(url: str) -> int:
+def check_ssl_certificate(url: str) -> Tuple[int, Dict[str, Any]]:
     """
     Checks the TLS certificate of a domain and returns:
     -1 -> HTTPS present and TLS certificate valid (Legitimate)
     1  -> HTTPS present but certificate error / connection issue (Phishing)
     1  -> URL does not use HTTPS (Phishing)
+    
+    Returns: (status, cert_metadata)
     """
+    metadata = {
+        "issuer": None,
+        "expiry": None,
+        "protocol": None,
+        "error": None
+    }
+    
     try:
         parsed = urlparse(url)
         if parsed.scheme.lower() != "https":
-            return 1
+            metadata["error"] = "No HTTPS scheme"
+            return 1, metadata
         
         host = parsed.hostname
         if not host:
-            return 1
+            metadata["error"] = "Invalid hostname"
+            return 1, metadata
             
         port = parsed.port or 443
 
@@ -44,29 +55,42 @@ def check_ssl_certificate(url: str) -> int:
                 ip_addr = info[4][0]
                 if not is_public_ip(ip_addr):
                     logger.debug(f"SSRF Protection: Blocked private IP {ip_addr} for {host}")
-                    return 1
+                    metadata["error"] = "Private IP blocked (SSRF)"
+                    return 1, metadata
         except socket.gaierror:
             logger.debug(f"DNS resolution failed for {host}")
-            return 1
+            metadata["error"] = "DNS resolution failed"
+            return 1, metadata
 
         # 2. TLS Handshake with Certificate Validation
         context = ssl.create_default_context()
         
         # Connection with short timeout
-        with socket.create_connection((host, port), timeout=3) as sock:
+        with socket.create_connection((host, port), timeout=3.0) as sock:
             with context.wrap_socket(sock, server_hostname=host) as ssock:
                 cert = ssock.getpeercert()
+                cipher = ssock.cipher()
+                metadata["protocol"] = ssock.version()
+                
                 if cert:
-                    return -1
+                    # Extract Issuer (usually a list of tuples)
+                    issuer = dict(x[0] for x in cert.get('issuer', []))
+                    metadata["issuer"] = issuer.get('commonName') or issuer.get('organizationName')
+                    metadata["expiry"] = cert.get('notAfter')
+                    return -1, metadata
                 else:
-                    return 1
+                    metadata["error"] = "No certificate received"
+                    return 1, metadata
 
     except ssl.SSLError as e:
         logger.debug(f"SSL validation failed for {url}: {str(e)}")
-        return 1
+        metadata["error"] = f"SSL Error: {str(e)}"
+        return 1, metadata
     except (socket.timeout, ConnectionRefusedError, OSError) as e:
         logger.debug(f"Connection failed for {url}: {str(e)}")
-        return 1
+        metadata["error"] = f"Connection Error: {str(e)}"
+        return 1, metadata
     except Exception as e:
         logger.debug(f"Unexpected error during SSL check for {url}: {str(e)}")
-        return 1
+        metadata["error"] = str(e)
+        return 1, metadata

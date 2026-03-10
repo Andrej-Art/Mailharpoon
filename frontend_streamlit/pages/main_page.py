@@ -121,66 +121,106 @@ if st.button("Check and analyze your URL", type="primary"):
                 col2.metric("Legit Prob.", f"{legit_prob:.3f}")
                
                 # Feature Breakdown
-                with st.expander("URL Feature Breakdown", expanded=True):
-                    features = data.get("features", {})
-                    
-                    if features:
-                        # Full mapping for all potential features
-                        feature_names = {
-                            "having_ip_address": "Contains IP Address",
-                            "url_length": "URL Length",
-                            "shortining_service": "Uses Shortener Service",
-                            "having_at_symbol": "Contains '@' Symbol",
-                            "double_slash_redirecting": "Redirection via '//'",
-                            "prefix_suffix": "Prefix/Suffix in Host",
-                            "having_sub_domain": "Multiple Subdomains",
-                            "https_token": "'https' Token in Host",
-                            "sslfinal_state": "SSL State",
-                            "domain_registeration_length": "Domain Reg. Length",
-                            "favicon": "Favicon Presence",
-                            "port": "Non-standard Port",
-                            "request_url": "External Request URL",
-                            "url_of_anchor": "Anchor URL Ratio",
-                            "links_in_tags": "Links in Tags Ratio",
-                            "sfh": "Server Form Handler",
-                            "submitting_to_email": "Submits to Email",
-                            "abnormal_url": "Abnormal structures",
-                            "redirect": "Redirect Count",
-                            "on_mouseover": "Mouseover effects",
-                            "rightclick": "Right-click disabled",
-                            "popupwidnow": "Popup windows",
-                            "iframe": "Iframe usage",
-                            "age_of_domain": "Domain Age",
-                            "dnsrecord": "DNS Record Found",
-                            "web_traffic": "Web Traffic Rank",
-                            "page_rank": "Page Rank",
-                            "google_index": "Google Index Status",
-                            "links_pointing_to_page": "Inbound Links",
-                            "statistical_report": "Known Malicious List"
+                st.subheader("Technical URL Analysis Report")
+                features = data.get("features", {})
+                metadata = data.get("feature_metadata", {})
+                
+                if features:
+                    def get_status_info(val):
+                        if val == 1: return "🚩", "Phishing / High Risk", "error"
+                        if val == 0: return "⚠️", "Suspicious / Neutral", "warning"
+                        return "✅", "Legitimate / Low Risk", "success"
+
+                    # Mapping for technical insights
+                    feature_configs = {
+                        "having_ip_address": {
+                            "name": "IP Address in Hostname",
+                            "insight": "Legitimate services almost always use registered domains. Direct IP access is a major red flag.",
+                            "get_val": lambda m: f"IP Address detected: {m.get('hostname')}" if m.get('is_ip') else "No direct IP detected (uses domain name)"
+                        },
+                        "url_length": {
+                            "name": "URL Length",
+                            "insight": "Phishers use long URLs to hide malicious paths or obfuscate the real destination.",
+                            "get_val": lambda m: f"{m.get('url_length')} characters"
+                        },
+                        "shortining_service": {
+                            "name": "URL Shortener",
+                            "insight": "Shortening services are used to bypass filters and hide the final destination.",
+                            "get_val": lambda m: "Shortener detected" if m.get('shortener') else "No shortener used"
+                        },
+                        "having_sub_domain": {
+                            "name": "Subdomain Nesting",
+                            "insight": "Deeply nested subdomains are often used to mimic legitimate brands (e.g., brand.com.security-update.xyz).",
+                            "get_val": lambda m: f"{m.get('subdomain_count')} levels: {'.'.join(m.get('subdomains', [])) or 'None'}"
+                        },
+                        "sslfinal_state": {
+                            "name": "SSL/TLS State",
+                            "insight": "HTTPS is standard for legitimate sites. Invalid, missing, or self-signed SSL is a critical warning.",
+                            "get_val": lambda m: (
+                                f"Valid TLS ({m.get('ssl_metadata', {}).get('issuer') or 'Verified'})\n"
+                                f"Expires: {m.get('ssl_metadata', {}).get('expiry') or 'N/A'}\n"
+                                f"Protocol: {m.get('ssl_metadata', {}).get('protocol') or 'N/A'}"
+                            ) if features.get("sslfinal_state") == -1 else (
+                                f"Invalid or missing SSL: {m.get('ssl_metadata', {}).get('error') or 'Unknown error'}"
+                            )
+                        },
+                        "age_of_domain": {
+                            "name": "Domain Age",
+                            "insight": "Phishing campaigns typically rely on newly registered domains. Older domains are generally more trustworthy.",
+                            "get_val": lambda m: (
+                                f"{m.get('domain_age_days')} days (~{m.get('domain_age_days', 0)/365:.1f} years)\n"
+                                f"Interpretation: {'Long-established domain' if m.get('domain_age_days', 0) > 730 else 'Recent domain'}"
+                            ) if m.get('domain_age_days') else "Unknown"
+                        },
+                        "domain_registeration_length": {
+                            "name": "Remaining Registration",
+                            "insight": "Phishing domains are usually registered for the shortest possible period (1 year).",
+                            "get_val": lambda m: f"{m.get('registration_length_days')} days remaining" if m.get('registration_length_days') else "Unknown"
+                        },
+                        "dnsrecord": {
+                            "name": "DNS Record Status",
+                            "insight": "A legitimate website must have valid DNS A/AAAA records to be reachable.",
+                            "get_val": lambda m: "Record found via DNS" if features.get('dnsrecord') == -1 else "No DNS record found"
+                        },
+                        "redirect": {
+                            "name": "Redirect Count",
+                            "insight": "Multiple redirects can be used to bypass security scans and obfuscate the final URL.",
+                            "get_val": lambda m: f"{fetch_info.get('redirect_count', 0)} redirects detected" if fetch_info else "N/A"
+                        },
+                        "request_url": {
+                            "name": "External Assets Ratio",
+                            "insight": "A high ratio of external images/scripts can indicate a cloned site fetching assets from the original.",
+                            "get_val": lambda m: f"{m.get('request_url_ratio', 0)*100:.1f}% external assets ({m.get('total_request_tags', 0)} total)" if m.get('total_request_tags') else "N/A"
+                        },
+                        "url_of_anchor": {
+                            "name": "Suspicious Anchors",
+                            "insight": "Phishers use empty anchors (#) or external links in labels like 'Login' to trick users.",
+                            "get_val": lambda m: f"{m.get('anchor_ratio', 0)*100:.1f}% suspicious/external ({m.get('total_anchors', 0)} total)" if m.get('total_anchors') else "N/A"
                         }
-                        
-                        display_data = []
-                        # Only show features that are in the response
-                        for key, val in features.items():
-                            name = feature_names.get(key, key)
+                    }
+
+                    # Iterate through features that we have a config for
+                    for fid, config in feature_configs.items():
+                        if fid in features:
+                            val = features[fid]
+                            icon, label, color = get_status_info(val)
                             
-                            if key == "url_length":
-                                status = f"{val} (numeric)"
-                            elif val == 1:
-                                status = "🚩 Phishing / High"
-                            elif val == -1:
-                                status = "✅ Legitimate / Low"
-                            elif val == 0:
-                                status = "⚠️ Suspicious / Neutral"
-                            else:
-                                status = str(val)
-                            
-                            display_data.append({
-                                "Feature": name,
-                                "Value/Status": status
-                            })
-                        
-                        st.table(display_data)
+                            with st.expander(f"{icon} **{config['name']}**: {label}"):
+                                c1, c2 = st.columns([1, 2])
+                                with c1:
+                                    st.write("**Observed Value:**")
+                                    st.code(config["get_val"](metadata))
+                                with c2:
+                                    st.write("**Security Insight:**")
+                                    st.info(config["insight"])
+
+                    # Show remaining features in a simpler way if they are relevant
+                    other_features = [f for f in features if f not in feature_configs and features[f] != 0]
+                    if other_features:
+                        with st.expander("Other Detected Indicators (Simplified)"):
+                            for f in other_features:
+                                icon, label, _ = get_status_info(features[f])
+                                st.write(f"{icon} **{f}**: {label}")
                         
                         # in work
                         if model_used == "rf_full" and not extended_checks:
