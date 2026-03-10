@@ -158,15 +158,16 @@ def get_registrable_domain(url: str) -> str:
     except:
         return ""
 
-def extract_features_from_html(html: str, base_url: str, final_url: str) -> Dict[str, int]:
+def extract_features_from_html(html: str, base_url: str, final_url: str) -> Tuple[Dict[str, int], Dict[str, Any]]:
     """
-    Extracts Phase 1 features from HTML content.
-    Returns values: 1 (legitimate), 0 (neutral/uncertain), -1 (malicious).
+    Extracts Phase 1 features from HTML content and returns raw metadata.
+    Returns: (features_dict, metadata_dict)
     """
     soup = BeautifulSoup(html, "html.parser")
     final_domain = get_registrable_domain(final_url)
     
     features = {}
+    metadata = {}
     
     # 1. Favicon: External domain for favicon is suspicious
     favicon = soup.find("link", rel=re.compile(r"icon", re.I))
@@ -174,8 +175,10 @@ def extract_features_from_html(html: str, base_url: str, final_url: str) -> Dict
         fav_href = urljoin(final_url, favicon["href"])
         fav_domain = get_registrable_domain(fav_href)
         features["favicon"] = -1 if fav_domain == final_domain else 1
+        metadata["favicon_url"] = fav_href
     else:
-        features["favicon"] = 1 # Common in phishing to not have one or use external
+        features["favicon"] = 1 
+        metadata["favicon_url"] = None
         
     # Helper for URL ratios (Request URL, Links in Tags)
     def get_url_ratio(tags, attr):
@@ -187,7 +190,10 @@ def extract_features_from_html(html: str, base_url: str, final_url: str) -> Dict
     # 2. Request URL: Ratio of external objects (img, script, etc.)
     # <0.22 => -1, 0.22-0.61 => 0, >0.61 => 1
     req_tags = soup.find_all(["img", "script", "link", "iframe"], src=True) + soup.find_all("link", href=True)
-    req_ratio = get_url_ratio(req_tags, "src") # Simplification: checking mostly src
+    req_ratio = get_url_ratio(req_tags, "src")
+    metadata["request_url_ratio"] = req_ratio
+    metadata["total_request_tags"] = len(req_tags)
+    
     if len(req_tags) == 0: features["request_url"] = 0
     elif req_ratio < 0.22: features["request_url"] = -1
     elif req_ratio <= 0.61: features["request_url"] = 0
@@ -207,10 +213,15 @@ def extract_features_from_html(html: str, base_url: str, final_url: str) -> Dict
                 external_anchors += 1
     
     total_a = len(anchors)
+    metadata["total_anchors"] = total_a
+    metadata["suspicious_anchors"] = suspicious_anchors
+    metadata["external_anchors"] = external_anchors
+    
     if total_a == 0:
         features["url_of_anchor"] = 0
     else:
         anchor_ratio = (suspicious_anchors + external_anchors) / total_a
+        metadata["anchor_ratio"] = anchor_ratio
         if anchor_ratio < 0.31: features["url_of_anchor"] = -1
         elif anchor_ratio <= 0.67: features["url_of_anchor"] = 0
         else: features["url_of_anchor"] = 1
@@ -249,9 +260,11 @@ def extract_features_from_html(html: str, base_url: str, final_url: str) -> Dict
     # 8. popupwidnow: Phishing sites often use fake popups
     has_popup = "window.open(" in html.lower() or "window.location.replace(" in html.lower()
     features["popupwidnow"] = 1 if has_popup else -1
+    metadata["has_popup"] = has_popup
 
-    # 9. iframe: Iframe used to overlay malicious content
+    # 9. iframe: Using invisible iframes to load malicious content
     has_iframe = soup.find("iframe") is not None
     features["iframe"] = 1 if has_iframe else -1
+    metadata["has_iframe"] = has_iframe
 
-    return features
+    return features, metadata

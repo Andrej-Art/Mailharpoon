@@ -76,25 +76,30 @@ def get_domain_dates(domain: str) -> Optional[Dict[str, Optional[datetime]]]:
 
 def get_domain_age(domain: str) -> int:
     """
-    Checks if domain age is >= 6 months.
-    1  -> Age >= 6 months (Legitimate)
-    -1 -> Age < 6 months (Phishing)
-    0  -> Unknown / Lookup failed (Suspicious)
+    Checks if domain age meets risk thresholds.
+    -1 -> Age >= 1 year (Legitimate)
+    0  -> Age < 1 year (Suspicious)
+    1  -> Age < 90 days (Phishing)
     """
     dates = get_domain_dates(domain)
     if not dates or not dates["creation_date"]:
         return 0
         
     age_delta = datetime.now(timezone.utc) - dates["creation_date"]
-    months_old = age_delta.days / 30
+    days_old = age_delta.days
     
-    return 1 if months_old >= 6 else -1
+    if days_old < 90:
+        return 1
+    elif days_old < 365:
+        return 0
+    else:
+        return -1
 
 def get_domain_registration_length(domain: str) -> int:
     """
     Checks if registration expires in >= 12 months.
-    1  -> Expiration >= 12 months (Legitimate)
-    -1 -> Expiration < 12 months (Phishing)
+    -1 -> Expiration >= 12 months (Legitimate)
+    1  -> Expiration < 12 months (Phishing)
     0  -> Unknown / Lookup failed (Suspicious)
     """
     dates = get_domain_dates(domain)
@@ -104,4 +109,4 @@ def get_domain_registration_length(domain: str) -> int:
     expire_delta = dates["expiration_date"] - datetime.now(timezone.utc)
     months_left = expire_delta.days / 30
     
-    return 1 if months_left >= 12 else -1
+    return -1 if months_left >= 12 else 1
