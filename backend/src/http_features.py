@@ -95,15 +95,6 @@ def safe_fetch_html(url: str) -> Dict[str, Any]:
                 allow_redirects=False
             )
             
-            # Extract resolved IP from the connection
-            try:
-                # requests doesn't easily expose the IP for a stream=True request without reading
-                # But we can get it from the raw socket if needed, or re-resolve
-                # For simplicity and reliability in Phase 3, we re-resolve the final host
-                parsed_final = urlparse(current_url)
-                result["resolved_ip"] = socket.gethostbyname(parsed_final.hostname)
-            except:
-                pass
             
             result["status_code"] = response.status_code
             result["content_type"] = response.headers.get("Content-Type", "").lower()
@@ -117,6 +108,13 @@ def safe_fetch_html(url: str) -> Dict[str, Any]:
                 current_url = urljoin(current_url, response.headers.get("Location", ""))
                 continue
             
+            # Final host reached - ensure IP is captured
+            try:
+                parsed_final = urlparse(current_url)
+                result["resolved_ip"] = socket.gethostbyname(parsed_final.hostname)
+            except:
+                pass
+
             # Check Content-Type
             if "text/html" not in result["content_type"] and "application/xhtml+xml" not in result["content_type"]:
                 result["error"] = f"Invalid Content-Type: {result['content_type']}"
