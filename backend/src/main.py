@@ -77,6 +77,39 @@ def extract_features_url_only(url: str) -> dict:
     }
     return features
 
+    return features
+
+def detect_infrastructure(geo_data: Dict[str, Any]) -> str:
+    """
+    Identifies if the IP belongs to a known CDN or Cloud provider.
+    """
+    if geo_data.get("status") != "success":
+        return "Unknown"
+        
+    org = geo_data.get("org", "").lower()
+    isp = geo_data.get("isp", "").lower()
+    as_info = geo_data.get("as", "").lower()
+    
+    infra_map = {
+        "cloudflare": "Cloudflare CDN Edge Node",
+        "fastly": "Fastly CDN Edge Node",
+        "akamai": "Akamai CDN Edge Node",
+        "cloudfront": "Amazon CloudFront CDN",
+        "amazon.com": "AWS Infrastructure",
+        "google": "Google Cloud / CDN",
+        "microsoft": "Azure CDN / Microsoft",
+        "edgecast": "EdgeCast CDN",
+        "limelight": "Limelight CDN",
+        "incapsula": "Imperva/Incapsula CDN"
+    }
+    
+    combined = f"{org} {isp} {as_info}"
+    for key, label in infra_map.items():
+        if key in combined:
+            return label
+            
+    return "Origin Server"
+
 def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str, int], Dict[str, Any], Dict[str, Any]]:
     """
     Extracts 30 features for rf_full.
@@ -158,13 +191,17 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str
                 metadata["registration_length_days"] = (dates["expiration_date"] - datetime.now(timezone.utc)).days
 
         fetch_result = safe_fetch_html(url)
+        resolved_ip = fetch_result["resolved_ip"]
+        geo = get_ip_geolocation(resolved_ip) if resolved_ip else None
+        
         fetch_info = {
             "allowed": fetch_result["allowed"],
             "status_code": fetch_result["status_code"],
             "redirect_count": fetch_result["redirect_count"],
             "final_url": fetch_result["final_url"],
-            "resolved_ip": fetch_result["resolved_ip"],
-            "ip_info": get_ip_geolocation(fetch_result["resolved_ip"]) if fetch_result["resolved_ip"] else None,
+            "resolved_ip": resolved_ip,
+            "infrastructure": detect_infrastructure(geo) if geo else "Unknown",
+            "ip_info": geo,
             "error": fetch_result["error"]
         }
         

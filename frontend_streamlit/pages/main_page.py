@@ -84,34 +84,35 @@ if st.button("Check and analyze your URL", type="primary"):
                 fetch_info = data.get("fetch_info")
                 if fetch_info:
                     with st.container(border=True):
-                        st.caption("🌐 **Extended Fetch Info**")
-                        cols = st.columns(3)
-                        cols[0].write(f"**Status:** {fetch_info.get('status_code', 'N/A')}")
-                        cols[1].write(f"**Redirects:** {fetch_info.get('redirect_count', 0)}")
-                        cols[2].write(f"**Allowed:** {'✅' if fetch_info.get('allowed') else '❌'}")
+                        st.caption("🌐 **Network Intelligence Report**")
+                        cols = st.columns(2)
                         
-                        if fetch_info.get("resolved_ip"):
-                            ip = fetch_info["resolved_ip"]
-                            geo = fetch_info.get("ip_info", {})
+                        cols[0].write(f"**Status:** `{fetch_info.get('status_code', 'N/A')}`")
+                        cols[1].write(f"**Redirects:** `{fetch_info.get('redirect_count', 0)}` followed")
+                        
+                        st.write(f"**Resolved IP Address:** `{fetch_info.get('resolved_ip', 'Unknown')}`")
+                        
+                        geo = fetch_info.get("ip_info", {})
+                        if geo and geo.get("status") == "success":
+                            st.write(f"**Hosting Provider / ISP:** {geo.get('isp')}")
+                            st.write(f"**Infrastructure:** {fetch_info.get('infrastructure', 'Origin Server')}")
+                            st.write(f"**Estimated Edge Location:** {geo.get('city')}, {geo.get('country')}")
+                            st.write(f"**Coordinates:** {geo.get('lat')}, {geo.get('lon')}")
                             
-                            if geo and geo.get("status") == "success":
-                                st.write(f"**Location:** {geo.get('city')}, {geo.get('country')}")
-                                st.write(f"**ISP:** {geo.get('isp')}")
-                                st.write(f"**Coordinates:** {geo.get('lat')}, {geo.get('lon')}")
-                                
-                                # Show Map
-                                map_data = {
-                                    "lat": [geo.get("lat")],
-                                    "lon": [geo.get("lon")]
-                                }
-                                st.map(map_data, zoom=4, size=20)
-                            else:
-                                st.write(f"IP: `{ip}` (Geolocation unavailable)")
+                            # Show Map
+                            map_data = {"lat": [geo.get("lat")], "lon": [geo.get("lon")]}
+                            st.map(map_data, zoom=4)
+                            
+                            if "CDN" in fetch_info.get('infrastructure', ''):
+                                st.caption("📝 **Note:** CDN infrastructure may serve content from multiple global locations. The displayed location represents the approximate location of the edge node responding to the request.")
+                        elif fetch_info.get("resolved_ip"):
+                            st.write(f"**Infrastructure:** Unknown / Error")
+                            st.warning("Geolocation data unavailable for this IP.")
 
                         if fetch_info.get("final_url"):
-                            st.write(f"**Final URL:** `{fetch_info['final_url']}`")
+                            st.write(f"**Final Destination:** `{fetch_info['final_url']}`")
                         if fetch_info.get("error"):
-                            st.warning(f"Fetch Error: {fetch_info['error']}")
+                            st.error(f"**Fetch Error:** {fetch_info['error']}")
 
                 st.caption(f"Model used: `{model_used}` | Threshold: `{threshold:.2f}`")
 
