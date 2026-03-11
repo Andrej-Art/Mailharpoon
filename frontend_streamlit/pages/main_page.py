@@ -136,8 +136,12 @@ if st.button("Check and analyze your URL", type="primary"):
                     feature_configs = {
                         "having_ip_address": {
                             "name": "IP Address in Hostname",
-                            "insight": "Legitimate services almost always use registered domains. Direct IP access is a major red flag.",
-                            "get_val": lambda m: f"IP Address detected: {m.get('hostname')}" if m.get('is_ip') else "No direct IP detected (uses domain name)"
+                            "insight": "Legitimate websites typically use registered domain names. Direct IP access is uncommon and often associated with phishing or temporary malicious infrastructure.",
+                            "get_val": lambda m: (
+                                f"Hostname analyzed: {m.get('ip_metadata', {}).get('hostname') or m.get('hostname', 'N/A')}\n"
+                                f"Detected pattern: {m.get('ip_metadata', {}).get('pattern') or ('Direct IP detected' if m.get('is_ip') else 'Registered domain')}\n"
+                                f"Direct IP detected: {m.get('ip_metadata', {}).get('result') or ('Yes' if m.get('is_ip') else 'No')}"
+                            )
                         },
                         "url_length": {
                             "name": "URL Length",

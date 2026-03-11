@@ -4,6 +4,7 @@ import joblib
 import pandas as pd
 import uvicorn
 import re
+import ipaddress
 from datetime import datetime, timezone
 from typing import List, Dict, Any, Tuple, Optional
 from urllib.parse import urlparse
@@ -40,6 +41,46 @@ RF_FULL_CONFIG = {
 SHORTENER_LIST = ["bit.ly", "tinyurl.com", "t.co", "is.gd", "cutt.ly"]
 
 # helper functions 
+def detect_ip_type(host: str) -> Tuple[int, str]:
+    """
+    Detects if a host is an IP address (IPv4, IPv6, Hex, or Integer).
+    Returns (result, type_label) where result is 1 (IP) or -1 (Domain).
+    """
+    if not host:
+        return -1, "Empty"
+        
+    # Remove IPv6 brackets for parsing
+    clean_host = host.strip("[]")
+    
+    # 1. Standard IP parsing
+    try:
+        ip = ipaddress.ip_address(clean_host)
+        label = "Direct IPv6 address" if isinstance(ip, ipaddress.IPv6Address) else "Direct IPv4 address"
+        return 1, label
+    except ValueError:
+        pass
+        
+    # 2. Check for numeric/hexadecimal formats (often used in phishing)
+    # Hex: 0x...
+    if host.lower().startswith("0x"):
+        try:
+            val = int(host, 16)
+            if 0 <= val <= 0xFFFFFFFF: # 32-bit range for IPv4
+                return 1, "Obfuscated IP (Hexadecimal)"
+        except ValueError:
+            pass
+            
+    # Integer: All digits
+    if host.isdigit():
+        try:
+            val = int(host)
+            if 0 <= val <= 0xFFFFFFFF:
+                return 1, "Obfuscated IP (Integer)"
+        except ValueError:
+            pass
+            
+    return -1, "Registered domain"
+
 def extract_features_url_only(url: str) -> dict:
     """
     extracts 8 features from a URL using string heuristics.
@@ -55,8 +96,8 @@ def extract_features_url_only(url: str) -> dict:
     parsed = urlparse(url)
     host = parsed.netloc.split(":")[0]  # host without port
     
-    # helper for IPv4 check
-    is_ip = 1 if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", host) else -1
+    # helper for IP check
+    is_ip, ip_label = detect_ip_type(host)
     
     # 8 feature extraction
     # Subdomain check (UCI: 1 dot -> -1, 2 dots -> 0, 3+ dots -> 1)
@@ -171,6 +212,11 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str
         "subdomains": parsed.netloc.split('.')[:-2],
         "prefix_suffix": base["prefix_suffix"] == 1,
         "dns_record": full_features["dnsrecord"],
+        "ip_metadata": {
+            "hostname": host,
+            "pattern": detect_ip_type(host)[1] if base["having_ip_address"] == 1 else "Registered domain",
+            "result": "Yes" if base["having_ip_address"] == 1 else "No"
+        },
         "domain_age_days": None,
         "registration_length_days": None
     }
