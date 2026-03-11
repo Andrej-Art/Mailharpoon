@@ -294,6 +294,7 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str
             "allowed": fetch_result["allowed"],
             "status_code": fetch_result["status_code"],
             "redirect_count": fetch_result["redirect_count"],
+            "redirect_chain": fetch_result.get("redirect_chain", []),
             "final_url": fetch_result["final_url"],
             "resolved_ip": resolved_ip,
             "infrastructure": detect_infrastructure(geo) if geo else "Unknown",
@@ -308,9 +309,12 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str
             metadata.update(html_meta)
             
             # Map redirect_count to feature
-            if fetch_result["redirect_count"] == 0: full_features["redirect"] = 1
-            elif fetch_result["redirect_count"] == 1: full_features["redirect"] = 0
-            else: full_features["redirect"] = -1
+            # Correct logic: fewer redirects = more normal for well-configured sites
+            # 0-1 → Legitimate (-1), 2 → Neutral (0), 3+ → Suspicious/Phishing (1)
+            rc = fetch_result["redirect_count"]
+            if rc <= 1: full_features["redirect"] = -1
+            elif rc == 2: full_features["redirect"] = 0
+            else: full_features["redirect"] = 1
         else:
             # If fetch failed, use suspicious defaults for some features
             full_features["redirect"] = -1

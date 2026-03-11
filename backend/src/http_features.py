@@ -68,6 +68,7 @@ def safe_fetch_html(url: str) -> Dict[str, Any]:
         "final_url": None,
         "status_code": None,
         "redirect_count": 0,
+        "redirect_chain": [],
         "content_type": None,
         "html": None,
         "resolved_ip": None,
@@ -101,6 +102,7 @@ def safe_fetch_html(url: str) -> Dict[str, Any]:
             
             # Handle Redirects manually to ensure safety at each hop
             if response.is_redirect or response.is_permanent_redirect:
+                result["redirect_chain"].append(current_url)
                 result["redirect_count"] += 1
                 if result["redirect_count"] > MAX_REDIRECTS:
                     result["error"] = "Too many redirects"
