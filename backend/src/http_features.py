@@ -144,16 +144,14 @@ def safe_fetch_html(url: str) -> Dict[str, Any]:
     return result
 
 def get_registrable_domain(url: str) -> str:
-    """Minimal helper to extract domain. tldextract would be better but keeping it simple."""
+    """Uses tldextract to accurately determine the registered domain."""
+    import tldextract
     try:
-        parsed = urlparse(url)
-        host = parsed.netloc.lower().split(":")[0]
-        # taking last two parts for simple domains
-        parts = host.split('.')
-        if len(parts) >= 2:
-            return ".".join(parts[-2:])
-        return host
-    except:
+        extracted = tldextract.extract(url)
+        if extracted.domain and extracted.suffix:
+            return f"{extracted.domain}.{extracted.suffix}"
+        return extracted.domain or ""
+    except Exception:
         return ""
 
 def extract_features_from_html(html: str, base_url: str, final_url: str) -> Tuple[Dict[str, int], Dict[str, Any]]:

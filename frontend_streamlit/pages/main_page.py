@@ -155,8 +155,17 @@ if st.button("Check and analyze your URL", type="primary"):
                         },
                         "having_sub_domain": {
                             "name": "Subdomain Nesting",
-                            "insight": "Deeply nested subdomains are often used to mimic legitimate brands (e.g., brand.com.security-update.xyz).",
-                            "get_val": lambda m: f"{m.get('subdomain_count')} levels: {'.'.join(m.get('subdomains', [])) or 'None'}"
+                            "insight": ("Deeply nested subdomains are often used to mimic legitimate brands (e.g., brand.com.security-update.xyz).\n"
+                                        "Risk: 0-1 (Normal), 2-3 (Moderate), >3 (Suspicious)."),
+                            "get_val": lambda m: (
+                                f"Hostname analyzed: {m.get('sub_meta', {}).get('hostname') or m.get('hostname', 'N/A')}\n"
+                                f"Registered domain: {m.get('sub_meta', {}).get('domain')}.{m.get('sub_meta', {}).get('suffix')}\n"
+                                f"Detected subdomains: {'.'.join(m.get('sub_meta', {}).get('subdomains', [])) or 'none'}\n"
+                                f"Subdomain depth: {m.get('sub_meta', {}).get('subdomain_count', 0)}"
+                            ) if m.get('sub_meta') else (
+                                f"{m.get('subdomain_count')} levels: {'.'.join(m.get('subdomains', [])) or 'None'}\n"
+                                f"(Basic extraction fallback)"
+                            )
                         },
                         "sslfinal_state": {
                             "name": "SSL/TLS State",
