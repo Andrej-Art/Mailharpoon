@@ -227,8 +227,21 @@ if st.button("Check and analyze your URL", type="primary"):
                         },
                         "redirect": {
                             "name": "Redirect Count",
-                            "insight": "Multiple redirects can be used to bypass security scans and obfuscate the final URL.",
-                            "get_val": lambda m: f"{fetch_info.get('redirect_count', 0)} redirects detected" if fetch_info else "N/A"
+                            "insight": (
+                                "Redirect chains are common for URL shorteners, tracking, and HTTP→HTTPS upgrades.\n"
+                                "Unusually long redirect chains can indicate attempts to obscure the final destination.\n"
+                                "Risk: 0-1 (Low), 2 (Neutral), 3+ (Suspicious)."
+                            ),
+                            "get_val": lambda m: (
+                                f"Redirect chain length: {fetch_info.get('redirect_count', 0)}\n"
+                                + (
+                                    "Redirect path:\n" +
+                                    " → ".join(fetch_info.get("redirect_chain", [])) +
+                                    f" → {fetch_info.get('final_url', 'N/A')}"
+                                    if fetch_info.get("redirect_chain") else
+                                    f"Final URL: {fetch_info.get('final_url', 'N/A')}"
+                                )
+                            ) if fetch_info else "N/A"
                         },
                         "request_url": {
                             "name": "External Assets Ratio",
