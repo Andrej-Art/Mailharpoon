@@ -5,6 +5,7 @@ import pandas as pd
 import uvicorn
 import re
 import ipaddress
+import tldextract
 from datetime import datetime, timezone
 from typing import List, Dict, Any, Tuple, Optional
 from urllib.parse import urlparse
@@ -81,6 +82,33 @@ def detect_ip_type(host: str) -> Tuple[int, str]:
             
     return -1, "Registered domain"
 
+def analyze_subdomains(url: str) -> dict:
+    """
+    Accurately extracts subdomain depth and metadata using Public Suffix List.
+    """
+    try:
+        extracted = tldextract.extract(url)
+        subdomains_str = extracted.subdomain
+        
+        # Split but ignore empty strings (if no subdomains exist)
+        subdomain_list = [sub for sub in subdomains_str.split('.') if sub]
+        
+        return {
+            "hostname": extracted.fqdn,
+            "domain": extracted.domain,
+            "suffix": extracted.suffix,
+            "subdomains": subdomain_list,
+            "subdomain_count": len(subdomain_list)
+        }
+    except Exception:
+        return {
+            "hostname": url,
+            "domain": "",
+            "suffix": "",
+            "subdomains": [],
+            "subdomain_count": 0
+        }
+
 def extract_features_url_only(url: str) -> dict:
     """
     extracts 8 features from a URL using string heuristics.
@@ -99,11 +127,13 @@ def extract_features_url_only(url: str) -> dict:
     # helper for IP check
     is_ip, ip_label = detect_ip_type(host)
     
-    # 8 feature extraction
-    # Subdomain check (UCI: 1 dot -> -1, 2 dots -> 0, 3+ dots -> 1)
-    dots = host.count(".")
+    # Accurate Subdomain check via tldextract
+    sub_meta = analyze_subdomains(url)
+    dots = sub_meta["subdomain_count"]
+    
+    # Risk Heuristic: 0-1 safe (-1), 2-3 moderate (0), >3 suspicious (1)
     if dots <= 1: sub_domain = -1
-    elif dots == 2: sub_domain = 0
+    elif dots <= 3: sub_domain = 0
     else: sub_domain = 1
 
     features = {
@@ -217,6 +247,7 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str
             "pattern": detect_ip_type(host)[1] if base["having_ip_address"] == 1 else "Registered domain",
             "result": "Yes" if base["having_ip_address"] == 1 else "No"
         },
+        "sub_meta": analyze_subdomains(url),
         "domain_age_days": None,
         "registration_length_days": None
     }
