@@ -154,6 +154,24 @@ if st.button("Check and analyze your URL", type="primary"):
                             "insight": "Shortening services are used to bypass filters and hide the final destination.",
                             "get_val": lambda m: "Shortener detected" if m.get('shortener') else "No shortener used"
                         },
+                        "having_at_symbol": {
+                            "name": "@ Symbol Usage",
+                            "insight": (
+                                "Only '@' in the authority/userinfo section (e.g. paypal.com@evil.com) is phishing-relevant.\n"
+                                "Attackers use it to mask the true destination domain.\n"
+                                "@' in the URL path or query (e.g. medium.com/@user) is normal and not suspicious."
+                            ),
+                            "get_val": lambda m: (
+                                f"'@' in authority/netloc: {m.get('at_symbol_metadata', {}).get('in_netloc', False)}\n"
+                                f"Username prefix detected: {m.get('at_symbol_metadata', {}).get('username_present', False)}\n"
+                                f"'@' in path: {m.get('at_symbol_metadata', {}).get('in_path', False)}\n"
+                                f"'@' in query: {m.get('at_symbol_metadata', {}).get('in_query', False)}\n"
+                                f"'@' in fragment: {m.get('at_symbol_metadata', {}).get('in_fragment', False)}\n"
+                                f"Risk-relevant '@': {'Yes' if m.get('at_symbol') else 'No'}"
+                            ) if m.get('at_symbol_metadata') else (
+                                "'@' in authority: Yes" if m.get('at_symbol') else "No '@' usage detected in authority"
+                            )
+                        },
                         "having_sub_domain": {
                             "name": "Subdomain Nesting",
                             "insight": ("Deeply nested subdomains are often used to mimic legitimate brands (e.g., brand.com.security-update.xyz).\n"
