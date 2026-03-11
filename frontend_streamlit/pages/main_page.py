@@ -193,8 +193,18 @@ if st.button("Check and analyze your URL", type="primary"):
                         },
                         "dnsrecord": {
                             "name": "DNS Record Status",
-                            "insight": "A legitimate website must have valid DNS A/AAAA records to be reachable.",
-                            "get_val": lambda m: "Record found via DNS" if features.get('dnsrecord') == -1 else "No DNS record found"
+                            "insight": "Legitimate websites must have valid DNS configurations (e.g., A, AAAA, CNAME) to route traffic appropriately.",
+                            "get_val": lambda m: (
+                                f"Hostname analyzed: {m.get('dns_metadata', {}).get('hostname', 'Unknown')}\n\n"
+                                f"A records: {'Present' if m.get('dns_metadata', {}).get('a_record') else 'None'}\n"
+                                f"AAAA records: {'Present' if m.get('dns_metadata', {}).get('aaaa_record') else 'None'}\n"
+                                f"CNAME records: {m.get('dns_metadata', {}).get('cname_target') if m.get('dns_metadata', {}).get('cname_record') else 'None'}\n"
+                                f"NS records: {'Present' if m.get('dns_metadata', {}).get('ns_record') else 'None'}\n\n"
+                                f"DNS Resolution: {m.get('dns_metadata', {}).get('resolution', 'Unknown')}"
+                                + (f"\nNote: {m['dns_metadata']['note']}" if m.get('dns_metadata', {}).get('note') else "")
+                            ) if m.get('dns_metadata') else (
+                                "Record found via basic DNS check" if features.get('dnsrecord') == -1 else "No DNS record found"
+                            )
                         },
                         "redirect": {
                             "name": "Redirect Count",
