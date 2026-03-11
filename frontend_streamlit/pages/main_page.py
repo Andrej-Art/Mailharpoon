@@ -230,6 +230,20 @@ if st.button("Check and analyze your URL", type="primary"):
                             "name": "Suspicious Anchors",
                             "insight": "Phishers use empty anchors (#) or external links in labels like 'Login' to trick users.",
                             "get_val": lambda m: f"{m.get('anchor_ratio', 0)*100:.1f}% suspicious/external ({m.get('total_anchors', 0)} total)" if m.get('total_anchors') else "N/A"
+                        },
+                        "page_rank": {
+                            "name": "Domain Popularity",
+                            "insight": ("Highly visible, long-standing domains are less commonly used for disposable phishing campaigns.\n"
+                                        "This is a supportive legitimacy signal, not proof of safety.\n"
+                                        "Note: Low popularity alone is NOT a phishing indicator for legitimate small sites."),
+                            "get_val": lambda m: (
+                                f"Registered domain: {m.get('page_rank_metadata', {}).get('domain', 'N/A')}\n"
+                                "Not available\n"
+                                + m.get('page_rank_metadata', {}).get('note', 'No external popularity or authority source is configured.')
+                            ) if m.get('page_rank_metadata', {}).get('is_available') is False else (
+                                f"Registered domain: {m.get('page_rank_metadata', {}).get('domain', 'N/A')}\n"
+                                f"Popularity signal: {m.get('page_rank_metadata', {}).get('signal', 'Unknown')}"
+                            )
                         }
                     }
 
@@ -238,8 +252,10 @@ if st.button("Check and analyze your URL", type="primary"):
                         if fid in features:
                             val = features[fid]
                             
-                            # Intercept unavailable states
+                            # Intercept unavailable states to show neutral info card
                             if fid == "request_url" and metadata.get("request_url_available") is False:
+                                val = -999
+                            elif fid == "page_rank" and metadata.get("page_rank_metadata", {}).get("is_available") is False:
                                 val = -999
                                 
                             icon, label, color = get_status_info(val)
