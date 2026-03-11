@@ -140,7 +140,11 @@ def extract_features_url_only(url: str) -> dict:
         "having_ip_address": is_ip,
         "url_length": len(url),
         "shortining_service": 1 if any(s == host for s in SHORTENER_LIST) else -1,
-        "having_at_symbol": 1 if "@" in url else -1,
+        # @ is only phishing-relevant when it appears in the authority/userinfo section
+        # (e.g. http://paypal.com@evil.com), NOT in path/query/fragment (e.g. medium.com/@user)
+        "having_at_symbol": 1 if parsed.username is not None or (
+            "@" in parsed.netloc
+        ) else -1,
         "double_slash_redirecting": 1 if "//" in url.split("://", 1)[-1] else -1,
         "prefix_suffix": 1 if "-" in host else -1,
         "having_sub_domain": sub_domain,
@@ -241,6 +245,13 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str
         "is_ip": base["having_ip_address"] == 1,
         "shortener": base["shortining_service"] == 1,
         "at_symbol": base["having_at_symbol"] == 1,
+        "at_symbol_metadata": {
+            "in_netloc": "@" in parsed.netloc,
+            "username_present": parsed.username is not None,
+            "in_path": "@" in parsed.path,
+            "in_query": "@" in (parsed.query or ""),
+            "in_fragment": "@" in (parsed.fragment or ""),
+        },
         "subdomain_count": parsed.netloc.count('.') - 1,
         "subdomains": parsed.netloc.split('.')[:-2],
         "prefix_suffix": base["prefix_suffix"] == 1,
