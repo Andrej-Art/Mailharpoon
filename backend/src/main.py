@@ -228,7 +228,7 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str
         "age_of_domain": get_domain_age(reg_domain) if extended else 1,
         "dnsrecord": dns_status,
         "web_traffic": 0,
-        "page_rank": 1,
+        "page_rank": 0,
         "google_index": 1,
         "links_pointing_to_page": 0,
         "statistical_report": 1
@@ -245,6 +245,11 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str
         "subdomains": parsed.netloc.split('.')[:-2],
         "prefix_suffix": base["prefix_suffix"] == 1,
         "dns_metadata": dns_metadata,
+        "page_rank_metadata": {
+            "domain": reg_domain,
+            "is_available": False,
+            "note": "No external domain popularity or authority source is configured."
+        },
         "ip_metadata": {
             "hostname": host,
             "pattern": detect_ip_type(host)[1] if base["having_ip_address"] == 1 else "Registered domain",
