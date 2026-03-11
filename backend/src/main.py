@@ -196,6 +196,9 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str
     
     # Extract registrable domain for DNS/WHOIS lookups
     reg_domain = get_registrable_domain(url)
+    
+    # Get DNS status and metadata (use full host, not reg_domain)
+    dns_status, dns_metadata = check_dns_record(host) if extended else (1, {})
 
     # Initialize all 30 features
     full_features = {
@@ -223,7 +226,7 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str
         "popupwidnow": -1,
         "iframe": -1,
         "age_of_domain": get_domain_age(reg_domain) if extended else 1,
-        "dnsrecord": check_dns_record(reg_domain) if extended else 1,
+        "dnsrecord": dns_status,
         "web_traffic": 0,
         "page_rank": 1,
         "google_index": 1,
@@ -241,7 +244,7 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str
         "subdomain_count": parsed.netloc.count('.') - 1,
         "subdomains": parsed.netloc.split('.')[:-2],
         "prefix_suffix": base["prefix_suffix"] == 1,
-        "dns_record": full_features["dnsrecord"],
+        "dns_metadata": dns_metadata,
         "ip_metadata": {
             "hostname": host,
             "pattern": detect_ip_type(host)[1] if base["having_ip_address"] == 1 else "Registered domain",
@@ -295,6 +298,19 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str
         else:
             # If fetch failed, use suspicious defaults for some features
             full_features["redirect"] = -1
+            
+        # DNS Consistency Check
+        if fetch_info.get("resolved_ip") and full_features["dnsrecord"] == 1:
+            # If we successfully resolved an IP, DNS cannot be missing. Override it.
+            full_features["dnsrecord"] = -1
+            if "dns_metadata" in metadata:
+                metadata["dns_metadata"]["resolution"] = "Successful (Overridden by resolved IP)"
+                metadata["dns_metadata"]["error"] = ""
+                # We don't know the exact record type that succeeded (maybe host file / custom DNS),
+                # but we know it resolved. We assume A/AAAA for the sake of the report.
+                if not metadata["dns_metadata"].get("a_record") and not metadata["dns_metadata"].get("aaaa_record"):
+                     metadata["dns_metadata"]["a_record"] = True
+                     metadata["dns_metadata"]["note"] = "Detected via active HTTP connection"
 
     return full_features, metadata, fetch_info
 
