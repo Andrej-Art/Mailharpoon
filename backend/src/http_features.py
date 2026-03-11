@@ -183,17 +183,32 @@ def extract_features_from_html(html: str, base_url: str, final_url: str) -> Tupl
         externals = [u for u in urls if get_registrable_domain(u) != final_domain]
         return len(externals) / len(urls)
 
-    # 2. Request URL: Ratio of external objects (img, script, etc.)
-    # <0.22 => -1, 0.22-0.61 => 0, >0.61 => 1
-    req_tags = soup.find_all(["img", "script", "link", "iframe"], src=True) + soup.find_all("link", href=True)
-    req_ratio = get_url_ratio(req_tags, "src")
-    metadata["request_url_ratio"] = req_ratio
-    metadata["total_request_tags"] = len(req_tags)
+    # 2. Request URL: Ratio of external objects (img, script, media, etc.)
+    asset_urls = []
+    for tag in soup.find_all(["img", "script", "iframe", "source", "video", "audio"]):
+        if tag.get("src"):
+            asset_urls.append(urljoin(final_url, tag.get("src")))
+    for tag in soup.find_all("link"):
+        if tag.get("href"):
+            asset_urls.append(urljoin(final_url, tag.get("href")))
+
+    total_assets = len(asset_urls)
+    external_assets = sum(1 for u in asset_urls if get_registrable_domain(u) != final_domain)
+    req_ratio = external_assets / total_assets if total_assets > 0 else 0.0
     
-    if len(req_tags) == 0: features["request_url"] = 0
-    elif req_ratio < 0.22: features["request_url"] = -1
-    elif req_ratio <= 0.61: features["request_url"] = 0
-    else: features["request_url"] = 1
+    metadata["total_assets"] = total_assets
+    metadata["external_assets"] = external_assets
+    metadata["request_url_ratio"] = req_ratio
+    metadata["request_url_available"] = True
+    
+    if total_assets == 0: 
+        features["request_url"] = 0
+    elif req_ratio < 0.22: 
+        features["request_url"] = -1
+    elif req_ratio <= 0.61: 
+        features["request_url"] = 0
+    else: 
+        features["request_url"] = 1
 
     # 3. URL of Anchor: Ratio of anchors with suspicious/external links
     anchors = soup.find_all("a", href=True)

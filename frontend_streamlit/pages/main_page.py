@@ -128,6 +128,7 @@ if st.button("Check and analyze your URL", type="primary"):
                 
                 if features:
                     def get_status_info(val):
+                        if val == -999: return "ℹ️", "Not Available", "secondary"
                         if val == 1: return "🚩", "Phishing / High Risk", "error"
                         if val == 0: return "⚠️", "Suspicious / Neutral", "warning"
                         return "✅", "Legitimate / Low Risk", "success"
@@ -213,8 +214,17 @@ if st.button("Check and analyze your URL", type="primary"):
                         },
                         "request_url": {
                             "name": "External Assets Ratio",
-                            "insight": "A high ratio of external images/scripts can indicate a cloned site fetching assets from the original.",
-                            "get_val": lambda m: f"{m.get('request_url_ratio', 0)*100:.1f}% external assets ({m.get('total_request_tags', 0)} total)" if m.get('total_request_tags') else "N/A"
+                            "insight": ("A high ratio of external images/scripts can indicate a cloned site fetching assets from the original.\n"
+                                        "However, many legitimate sites use CDNs, Google Fonts, and external analytics.\n"
+                                        "Risk: <22% (Low), 22-61% (Normal/Moderate), >61% (Context dependent)."),
+                            "get_val": lambda m: (
+                                "Not available\nPage content could not be fully fetched or parsed."
+                                if m.get('request_url_available') is False else
+                                f"Total assets: {m.get('total_assets', 0)}\n"
+                                f"External assets: {m.get('external_assets', 0)}\n"
+                                f"External asset ratio: {m.get('request_url_ratio', 0)*100:.1f}%"
+                                if m.get('total_assets') is not None else "N/A"
+                            )
                         },
                         "url_of_anchor": {
                             "name": "Suspicious Anchors",
@@ -227,6 +237,11 @@ if st.button("Check and analyze your URL", type="primary"):
                     for fid, config in feature_configs.items():
                         if fid in features:
                             val = features[fid]
+                            
+                            # Intercept unavailable states
+                            if fid == "request_url" and metadata.get("request_url_available") is False:
+                                val = -999
+                                
                             icon, label, color = get_status_info(val)
                             
                             with st.expander(f"{icon} **{config['name']}**: {label}"):
