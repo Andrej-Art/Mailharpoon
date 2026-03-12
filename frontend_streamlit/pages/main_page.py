@@ -210,6 +210,29 @@ if st.button("Check and analyze your URL", type="primary"):
                             "insight": "Phishing domains are usually registered for the shortest possible period (1 year).",
                             "get_val": lambda m: f"{m.get('registration_length_days')} days remaining" if m.get('registration_length_days') else "Unknown"
                         },
+                        "prefix_suffix": {
+                            "name": "Prefix/Suffix Pattern",
+                            "insight": lambda m: (
+                                "Phishing domains often combine trusted brand names with terms like 'login', 'verify', or 'secure' to mimic legitimate services."
+                                if m.get("prefix_suffix_metadata", {}).get("tokens") and any(kw in [t.lower() for t in m.get("prefix_suffix_metadata", {}).get("tokens", [])] for kw in ["paypal", "microsoft", "apple", "amazon", "login", "verify", "secure", "update", "account", "billing"]) else
+                                "Hyphens in domains are common and not inherently suspicious. They become more relevant when combined with brand names and phishing-related keywords."
+                            ),
+                            "tech": lambda m: (
+                                "The domain structure contains multiple hyphen-separated tokens, including brand-like or account/security-related terms."
+                                if m.get("prefix_suffix_metadata", {}).get("tokens") and any(kw in [t.lower() for t in m.get("prefix_suffix_metadata", {}).get("tokens", [])] for kw in ["paypal", "microsoft", "apple", "amazon", "login", "verify", "secure", "update", "account", "billing"]) else
+                                "No hyphen-based brand-mimicking pattern detected in the hostname."
+                            ),
+                            "get_val": lambda m: (
+                                f"Hostname analyzed: {m.get('sub_meta', {}).get('hostname', 'Unknown')}\n"
+                                f"Registered domain: {m.get('sub_meta', {}).get('domain', 'Unknown')}.{m.get('sub_meta', {}).get('suffix', '')}\n"
+                                f"Hyphen in registered domain: {'Yes' if m.get('prefix_suffix_metadata', {}).get('has_hyphen_domain') else 'No'}\n"
+                                f"Hyphen in subdomain: {'Yes' if m.get('prefix_suffix_metadata', {}).get('has_hyphen_subdomain') else 'No'}\n"
+                                + (
+                                    f"Hyphen-separated tokens: {m.get('prefix_suffix_metadata', {}).get('tokens', [])}"
+                                    if m.get("prefix_suffix_metadata", {}).get("tokens") else ""
+                                )
+                            )
+                        },
                         "dnsrecord": {
                             "name": "DNS Record Status",
                             "insight": "Legitimate websites must have valid DNS configurations (e.g., A, AAAA, CNAME) to route traffic appropriately.",

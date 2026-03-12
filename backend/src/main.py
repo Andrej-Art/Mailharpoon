@@ -146,12 +146,36 @@ def extract_features_url_only(url: str) -> dict:
             "@" in parsed.netloc
         ) else -1,
         "double_slash_redirecting": 0 if "//" in url.split("://", 1)[-1] else -1,
-        "prefix_suffix": 1 if "-" in host else -1,
         "having_sub_domain": sub_domain,
         "https_token": 1 if "https" in host.lower() else -1
     }
-    return features
-
+    
+    # Prefix/Suffix check using accurate sub_meta
+    has_hyphen_domain = "-" in sub_meta["domain"]
+    has_hyphen_subdomain = any("-" in sub for sub in sub_meta["subdomains"])
+    
+    suspicious_kw = ["paypal", "microsoft", "apple", "amazon", "login", "verify", "secure", "update", "account", "billing"]
+    tokens = []
+    
+    if has_hyphen_domain:
+        tokens.extend(sub_meta["domain"].split("-"))
+    for sub in sub_meta["subdomains"]:
+        if "-" in sub:
+            tokens.extend(sub.split("-"))
+            
+    # Filter empty tokens
+    tokens = [t.lower() for t in tokens if t]
+    has_suspicious_token = any(kw in tokens for kw in suspicious_kw)
+    
+    if len(tokens) == 0:
+        pref_suf = -1
+    elif has_suspicious_token:
+        pref_suf = 1
+    else:
+        pref_suf = 0
+        
+    features["prefix_suffix"] = pref_suf
+    
     return features
 
 def detect_infrastructure(geo_data: Dict[str, Any]) -> str:
@@ -254,7 +278,7 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str
         },
         "subdomain_count": parsed.netloc.count('.') - 1,
         "subdomains": parsed.netloc.split('.')[:-2],
-        "prefix_suffix": base["prefix_suffix"] == 1,
+        "prefix_suffix": base["prefix_suffix"],
         "dns_metadata": dns_metadata,
         "page_rank_metadata": {
             "domain": reg_domain,
@@ -268,6 +292,11 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str
         },
         "double_slash_metadata": {
             "has_extra_double_slash": "//" in url.split("://", 1)[-1]
+        },
+        "prefix_suffix_metadata": {
+            "has_hyphen_domain": "-" in analyze_subdomains(url)["domain"],
+            "has_hyphen_subdomain": any("-" in sub for sub in analyze_subdomains(url)["subdomains"]),
+            "tokens": [t for part in analyze_subdomains(url)["subdomains"] + [analyze_subdomains(url)["domain"]] if "-" in part for t in part.split("-")]
         },
         "sub_meta": analyze_subdomains(url),
         "domain_age_days": None,
