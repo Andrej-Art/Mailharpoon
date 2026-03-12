@@ -145,7 +145,7 @@ def extract_features_url_only(url: str) -> dict:
         "having_at_symbol": 1 if parsed.username is not None or (
             "@" in parsed.netloc
         ) else -1,
-        "double_slash_redirecting": 1 if "//" in url.split("://", 1)[-1] else -1,
+        "double_slash_redirecting": 0 if "//" in url.split("://", 1)[-1] else -1,
         "prefix_suffix": 1 if "-" in host else -1,
         "having_sub_domain": sub_domain,
         "https_token": 1 if "https" in host.lower() else -1
@@ -265,6 +265,9 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str
             "hostname": host,
             "pattern": detect_ip_type(host)[1] if base["having_ip_address"] == 1 else "Registered domain",
             "result": "Yes" if base["having_ip_address"] == 1 else "No"
+        },
+        "double_slash_metadata": {
+            "has_extra_double_slash": "//" in url.split("://", 1)[-1]
         },
         "sub_meta": analyze_subdomains(url),
         "domain_age_days": None,
