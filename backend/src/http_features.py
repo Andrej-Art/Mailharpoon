@@ -168,16 +168,24 @@ def extract_features_from_html(html: str, base_url: str, final_url: str) -> Tupl
     metadata = {}
     
     # 1. Favicon: External domain for favicon is suspicious
-    favicon = soup.find("link", rel=re.compile(r"icon", re.I))
-    if favicon and favicon.get("href"):
-        fav_href = urljoin(final_url, favicon["href"])
-        fav_domain = get_registrable_domain(fav_href)
-        features["favicon"] = -1 if fav_domain == final_domain else 1
-        metadata["favicon_url"] = fav_href
+    favicon_tag = soup.find("link", rel=re.compile(r"^(shortcut )?icon$|apple-touch-icon", re.I))
+    
+    if favicon_tag and favicon_tag.get("href"):
+        fav_href = urljoin(final_url, favicon_tag["href"])
     else:
-        features["favicon"] = 1 
-        metadata["favicon_url"] = None
+        # Fallback to default
+        fav_href = urljoin(final_url, "/favicon.ico")
         
+    fav_domain = get_registrable_domain(fav_href)
+    is_same_domain = (fav_domain == final_domain)
+    
+    features["favicon"] = -1 if is_same_domain else 0
+    metadata["favicon_url"] = fav_href
+    metadata["favicon_metadata"] = {
+        "page_domain": final_domain,
+        "favicon_domain": fav_domain,
+        "is_same_domain": is_same_domain
+    }
     # Helper for URL ratios (Request URL, Links in Tags)
     def get_url_ratio(tags, attr):
         urls = [urljoin(final_url, t.get(attr)) for t in tags if t.get(attr)]

@@ -233,6 +233,25 @@ if st.button("Check and analyze your URL", type="primary"):
                                 )
                             )
                         },
+                        "favicon": {
+                            "name": "Favicon Origin",
+                            "insight": lambda m: (
+                                "Using a locally hosted favicon is common and does not indicate phishing behavior."
+                                if m.get("favicon_metadata", {}).get("is_same_domain") else
+                                "Some phishing pages embed favicons from trusted brands to visually mimic legitimate websites."
+                            ),
+                            "tech": lambda m: (
+                                "The favicon is hosted on the same registered domain as the page."
+                                if m.get("favicon_metadata", {}).get("is_same_domain") else
+                                "The favicon is loaded from a different registered domain."
+                            ),
+                            "get_val": lambda m: (
+                                f"Page domain: {m.get('favicon_metadata', {}).get('page_domain', 'Unknown')}\n"
+                                f"Favicon URL: {m.get('favicon_url', 'Unknown')}\n"
+                                f"Favicon domain: {m.get('favicon_metadata', {}).get('favicon_domain', 'Unknown')}\n"
+                                f"Same registered domain: {'Yes' if m.get('favicon_metadata', {}).get('is_same_domain') else 'No'}"
+                            ) if m.get("favicon_metadata") else "Not evaluated"
+                        },
                         "dnsrecord": {
                             "name": "DNS Record Status",
                             "insight": "Legitimate websites must have valid DNS configurations (e.g., A, AAAA, CNAME) to route traffic appropriately.",
