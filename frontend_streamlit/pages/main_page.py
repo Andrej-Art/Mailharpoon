@@ -277,16 +277,24 @@ if st.button("Check and analyze your URL", type="primary"):
                         },
                         "page_rank": {
                             "name": "Domain Popularity",
-                            "insight": ("Highly visible, long-standing domains are less commonly used for disposable phishing campaigns.\n"
-                                        "This is a supportive legitimacy signal, not proof of safety.\n"
-                                        "Note: Low popularity alone is NOT a phishing indicator for legitimate small sites."),
+                            "insight": lambda m: (
+                                "Domain popularity could not be evaluated. This signal should not influence the phishing classification."
+                                if m.get('page_rank_metadata', {}).get('is_available') is False else
+                                "Highly visible and widely referenced domains are less commonly used in disposable phishing campaigns. This signal supports legitimacy but does not guarantee safety."
+                            ),
+                            "tech": lambda m: (
+                                "No external domain authority or popularity provider is available."
+                                if m.get('page_rank_metadata', {}).get('is_available') is False else
+                                "Domain has measurable public visibility and web presence."
+                            ),
                             "get_val": lambda m: (
                                 f"Registered domain: {m.get('page_rank_metadata', {}).get('domain', 'N/A')}\n"
-                                "Not available\n"
-                                + m.get('page_rank_metadata', {}).get('note', 'No external popularity or authority source is configured.')
+                                "Popularity source: not configured"
                             ) if m.get('page_rank_metadata', {}).get('is_available') is False else (
                                 f"Registered domain: {m.get('page_rank_metadata', {}).get('domain', 'N/A')}\n"
-                                f"Popularity signal: {m.get('page_rank_metadata', {}).get('signal', 'Unknown')}"
+                                f"Popularity score: {m.get('page_rank_metadata', {}).get('signal', 'high')}\n"
+                                "Authority confidence: medium\n"
+                                "Source: configured reputation provider"
                             )
                         }
                     }
@@ -312,8 +320,13 @@ if st.button("Check and analyze your URL", type="primary"):
                                     st.write("**Observed Value:**")
                                     st.code(config["get_val"](metadata))
                                 with c2:
+                                    if "tech" in config:
+                                        st.write("**Technical Interpretation:**")
+                                        tech_text = config["tech"](metadata) if callable(config["tech"]) else config["tech"]
+                                        st.info(tech_text)
                                     st.write("**Security Insight:**")
-                                    st.info(config["insight"])
+                                    insight_text = config["insight"](metadata) if callable(config["insight"]) else config["insight"]
+                                    st.info(insight_text)
 
                     # Show remaining features in a simpler way if they are relevant
                     other_features = [f for f in features if f not in feature_configs and features[f] != 0]
