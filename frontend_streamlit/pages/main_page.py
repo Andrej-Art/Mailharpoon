@@ -259,8 +259,21 @@ if st.button("Check and analyze your URL", type="primary"):
                         },
                         "url_of_anchor": {
                             "name": "Suspicious Anchors",
-                            "insight": "Phishers use empty anchors (#) or external links in labels like 'Login' to trick users.",
-                            "get_val": lambda m: f"{m.get('anchor_ratio', 0)*100:.1f}% suspicious/external ({m.get('total_anchors', 0)} total)" if m.get('total_anchors') else "N/A"
+                            "insight": (
+                                "Suspicious anchor patterns include empty links (#), JavaScript pseudo-links, "
+                                "and login/CTA text pointing to unrelated external domains.\n"
+                                "Risk: <31% (Low), 31-67% (Neutral), >67% (Suspicious)."
+                            ),
+                            "get_val": lambda m: (
+                                "Not available\nPage content could not be fetched or parsed, so anchor analysis was not possible."
+                                if m.get('url_of_anchor_available') is False else
+                                f"Total anchors: {m.get('total_anchors', 0)}\n"
+                                f"Empty/hash anchors: {m.get('empty_hash_anchors', 0)}\n"
+                                f"JavaScript anchors: {m.get('javascript_anchors', 0)}\n"
+                                f"External anchors: {m.get('external_anchors', 0)}\n"
+                                f"Misleading CTA anchors: {m.get('cta_anchors', 0)}"
+                                if m.get('total_anchors') is not None else "N/A"
+                            )
                         },
                         "page_rank": {
                             "name": "Domain Popularity",
@@ -285,6 +298,8 @@ if st.button("Check and analyze your URL", type="primary"):
                             
                             # Intercept unavailable states to show neutral info card
                             if fid == "request_url" and metadata.get("request_url_available") is False:
+                                val = -999
+                            elif fid == "url_of_anchor" and metadata.get("url_of_anchor_available") is False:
                                 val = -999
                             elif fid == "page_rank" and metadata.get("page_rank_metadata", {}).get("is_available") is False:
                                 val = -999

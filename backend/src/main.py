@@ -319,6 +319,7 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str
             # If fetch failed, use suspicious defaults for some features
             full_features["redirect"] = -1
             metadata["request_url_available"] = False
+            metadata["url_of_anchor_available"] = False
             
         # DNS Consistency Check
         if fetch_info.get("resolved_ip") and full_features["dnsrecord"] == 1:
