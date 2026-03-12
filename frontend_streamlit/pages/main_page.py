@@ -225,6 +225,20 @@ if st.button("Check and analyze your URL", type="primary"):
                                 "Record found via basic DNS check" if features.get('dnsrecord') == -1 else "No DNS record found"
                             )
                         },
+                        "double_slash_redirecting": {
+                            "name": "Double Slash Redirecting",
+                            "insight": "Attackers sometimes insert extra slash segments to make URLs appear legitimate or hide malicious path components.",
+                            "tech": lambda m: (
+                                "URL contains multiple slash delimiters that may obscure the path structure."
+                                if m.get("double_slash_metadata", {}).get("has_extra_double_slash") else
+                                "No double-slash pattern detected beyond the protocol delimiter."
+                            ),
+                            "get_val": lambda m: (
+                                "Additional '//' detected after hostname"
+                                if m.get("double_slash_metadata", {}).get("has_extra_double_slash") else
+                                "Additional '//' after scheme: No"
+                            )
+                        },
                         "redirect": {
                             "name": "Redirect Count",
                             "insight": (
