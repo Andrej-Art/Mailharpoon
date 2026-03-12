@@ -214,26 +214,43 @@ def extract_features_from_html(html: str, base_url: str, final_url: str) -> Tupl
 
     # 3. URL of Anchor: Ratio of anchors with suspicious/external links
     anchors = soup.find_all("a", href=True)
-    suspicious_anchors = 0
+    empty_hash = 0
+    javascript_anchors = 0
     external_anchors = 0
+    cta_anchors = 0
+    
+    cta_keywords = ["login", "verify", "update", "confirm", "payment", "security", "account"]
+
     for a in anchors:
         href = a["href"].strip().lower()
-        if href in ["", "#", "javascript:void(0)", "javascript:"]:
-            suspicious_anchors += 1
+        if href in ["", "#"]:
+            empty_hash += 1
+        elif href.startswith("javascript:"):
+            javascript_anchors += 1
         else:
             abs_href = urljoin(final_url, href)
             if get_registrable_domain(abs_href) != final_domain:
                 external_anchors += 1
+                
+                # Check for CTA abuse on external links
+                text = a.get_text(strip=True).lower()
+                if any(kw in text for kw in cta_keywords):
+                    cta_anchors += 1
     
     total_a = len(anchors)
     metadata["total_anchors"] = total_a
-    metadata["suspicious_anchors"] = suspicious_anchors
+    metadata["empty_hash_anchors"] = empty_hash
+    metadata["javascript_anchors"] = javascript_anchors
     metadata["external_anchors"] = external_anchors
+    metadata["cta_anchors"] = cta_anchors
+    metadata["url_of_anchor_available"] = True
+    
+    suspicious_total = empty_hash + javascript_anchors + external_anchors
     
     if total_a == 0:
         features["url_of_anchor"] = 0
     else:
-        anchor_ratio = (suspicious_anchors + external_anchors) / total_a
+        anchor_ratio = suspicious_total / total_a
         metadata["anchor_ratio"] = anchor_ratio
         if anchor_ratio < 0.31: features["url_of_anchor"] = -1
         elif anchor_ratio <= 0.67: features["url_of_anchor"] = 0
