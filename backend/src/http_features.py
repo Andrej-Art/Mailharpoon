@@ -265,11 +265,52 @@ def extract_features_from_html(html: str, base_url: str, final_url: str) -> Tupl
         else: features["url_of_anchor"] = 1
 
     # 4. Links in Tags: Ratio of external links in metadata/scripts
-    # Using meta, script, link
-    tags_ratio = get_url_ratio(soup.find_all(["meta", "script", "link"]), "href")
-    if tags_ratio < 0.22: features["links_in_tags"] = -1
-    elif tags_ratio <= 0.61: features["links_in_tags"] = 0
-    else: features["links_in_tags"] = 1
+    # Gather URLs from <link href>, <script src>, and <meta content>
+    tag_urls = []
+    
+    for tag in soup.find_all("link"):
+        if tag.get("href"):
+            tag_urls.append(tag.get("href"))
+            
+    for tag in soup.find_all("script"):
+        if tag.get("src"):
+            tag_urls.append(tag.get("src"))
+            
+    for tag in soup.find_all("meta"):
+        content = tag.get("content", "")
+        if "url=" in content.lower():
+            # Extract URL from meta refresh
+            parts = content.lower().split("url=", 1)
+            if len(parts) > 1:
+                tag_urls.append(parts[1].strip(" '\""))
+                
+    valid_tag_urls = []
+    for u in tag_urls:
+        if not u or u.startswith("data:") or u.startswith("blob:"):
+            continue
+        valid_tag_urls.append(urljoin(final_url, u))
+        
+    total_tags = len(valid_tag_urls)
+    external_tags = sum(1 for u in valid_tag_urls if get_registrable_domain(u) != final_domain)
+    internal_tags = total_tags - external_tags
+    
+    tags_ratio = (external_tags / total_tags) if total_tags > 0 else 0.0
+    
+    metadata["links_in_tags_metadata"] = {
+        "total": total_tags,
+        "internal": internal_tags,
+        "external": external_tags,
+        "ratio": tags_ratio
+    }
+    
+    if total_tags == 0:
+        features["links_in_tags"] = -1
+    elif tags_ratio < 0.3: 
+        features["links_in_tags"] = -1
+    elif tags_ratio <= 0.7: 
+        features["links_in_tags"] = 0
+    else: 
+        features["links_in_tags"] = 1
 
     # 5. SFH (Server Form Handler): Empty action or external action in forms
     forms = soup.find_all("form", action=True)
