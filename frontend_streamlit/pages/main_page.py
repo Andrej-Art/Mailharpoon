@@ -456,6 +456,27 @@ if st.button("Check and analyze your URL", type="primary"):
                                 )
                             ) if m.get("submitting_to_email_metadata") else "Not evaluated"
                         },
+                        "on_mouseover": {
+                            "name": "Hover Interaction Safety",
+                            "insight": lambda m: (
+                                "Phishing pages sometimes manipulate link previews to hide the real destination of malicious URLs."
+                                if m.get("on_mouseover_metadata", {}).get("is_suspicious") else
+                                "Hover events are commonly used for UI interactions and are not inherently suspicious."
+                            ),
+                            "tech": lambda m: (
+                                "Mouseover event modifies link status information or performs unexpected redirects."
+                                if m.get("on_mouseover_metadata", {}).get("is_suspicious") else
+                                "Mouseover events are present but do not manipulate link destinations."
+                            ),
+                            "get_val": lambda m: (
+                                f"Hover event handlers detected: {m.get('on_mouseover_metadata', {}).get('total_hover_handlers', 0)}\n"
+                                f"Suspicious manipulation detected: {'Yes' if m.get('on_mouseover_metadata', {}).get('is_suspicious') else 'No'}"
+                                + (
+                                    "\nSuspicious code found:\n" + "\n".join([f"- {s}" for s in m.get('on_mouseover_metadata', {}).get('malicious_scripts_found', [])])
+                                    if m.get('on_mouseover_metadata', {}).get('malicious_scripts_found') else ""
+                                )
+                            ) if m.get("on_mouseover_metadata") else "Not evaluated"
+                        },
                         "page_rank": {
                             "name": "Domain Popularity",
                             "insight": lambda m: (

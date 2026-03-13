@@ -37,7 +37,7 @@ class TestHttpFeatures(unittest.TestCase):
                 <a href="http://external.com/test">External Link</a>
                 <a href="#">Suspicious Link</a>
                 <form action="http://phish-target.com/submit"></form>
-                <div onmouseover="alert(1)">Hover me</div>
+                <div onmouseover="window.status='http://fake.com'">Hover me</div>
             </body>
         </html>
         """
