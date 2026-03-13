@@ -146,6 +146,8 @@ def extract_features_url_only(url: str) -> dict:
             "@" in parsed.netloc
         ) else -1,
         "double_slash_redirecting": 0 if "//" in url.split("://", 1)[-1] else -1,
+        # Port check: non-standard ports (not 80/443/None)
+        "port": 0 if parsed.port and parsed.port not in [80, 443] else -1,
         "having_sub_domain": sub_domain,
         "https_token": 1 if "https" in host.lower() else -1
     }
@@ -240,7 +242,7 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str
         "sslfinal_state": 1, # Default phishing if not checked
         "domain_registeration_length": get_domain_registration_length(reg_domain) if extended else 1,
         "favicon": 0, 
-        "port": -1,
+        "port": base["port"],
         "https_token": base["https_token"],
         "request_url": 0, 
         "url_of_anchor": 0,
@@ -297,6 +299,11 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str
             "has_hyphen_domain": "-" in analyze_subdomains(url)["domain"],
             "has_hyphen_subdomain": any("-" in sub for sub in analyze_subdomains(url)["subdomains"]),
             "tokens": [t for part in analyze_subdomains(url)["subdomains"] + [analyze_subdomains(url)["domain"]] if "-" in part for t in part.split("-")]
+        },
+        "port_metadata": {
+            "scheme": parsed.scheme or "http",
+            "is_explicit": parsed.port is not None,
+            "detected_port": parsed.port if parsed.port is not None else (443 if (parsed.scheme or "").lower() == "https" else 80)
         },
         "sub_meta": analyze_subdomains(url),
         "domain_age_days": None,
