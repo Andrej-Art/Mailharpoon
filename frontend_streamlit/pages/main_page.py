@@ -514,6 +514,28 @@ if st.button("Check and analyze your URL", type="primary"):
                                 f"confirm dialogs detected: {m.get('popupwidnow_metadata', {}).get('counts', {}).get('confirm', 0)}"
                             ) if m.get("popupwidnow_metadata") else "Not evaluated"
                         },
+                        "iframe": {
+                            "name": "Iframe Analysis",
+                            "insight": lambda m: (
+                                "A hidden iframe was detected. Hidden iframes are sometimes used by phishing pages to load malicious content or perform invisible redirects."
+                                if m.get("iframe_metadata", {}).get("hidden_iframes", 0) > 0 else
+                                "Iframes detected but none are hidden or suspicious. Legitimate websites often embed external content such as videos or widgets using iframes."
+                            ),
+                            "tech": lambda m: (
+                                "One or more iframes are hidden from the user (zero dimensions or invisible style)."
+                                if m.get("iframe_metadata", {}).get("hidden_iframes", 0) > 0 else
+                                "All detected iframes are visible and use standard embedding patterns."
+                            ),
+                            "get_val": lambda m: (
+                                f"Total iframes detected: {m.get('iframe_metadata', {}).get('total_iframes', 0)}\n"
+                                f"Hidden iframes: {m.get('iframe_metadata', {}).get('hidden_iframes', 0)}\n"
+                                f"External iframe domains: {m.get('iframe_metadata', {}).get('external_iframes', 0)}"
+                                + (
+                                    "\nExternal source domains:\n" + "\n".join([f"- {d}" for d in m.get('iframe_metadata', {}).get('external_iframe_domains', [])])
+                                    if m.get('iframe_metadata', {}).get('external_iframe_domains') else ""
+                                )
+                            ) if m.get("iframe_metadata") else "Not evaluated"
+                        },
                         "page_rank": {
                             "name": "Domain Popularity",
                             "insight": lambda m: (

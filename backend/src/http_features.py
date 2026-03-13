@@ -472,8 +472,56 @@ def extract_features_from_html(html: str, base_url: str, final_url: str) -> Tupl
     }
 
     # 9. iframe: Using invisible iframes to load malicious content
-    has_iframe = soup.find("iframe") is not None
-    features["iframe"] = 1 if has_iframe else -1
-    metadata["has_iframe"] = has_iframe
+    iframes = soup.find_all("iframe")
+    total_iframes = len(iframes)
+    hidden_iframes = 0
+    external_iframes = 0
+    external_iframe_domains = set()
+
+    page_domain = get_registrable_domain(final_url)
+
+    for frame in iframes:
+        # 1. Check for hidden iframes
+        width = frame.get("width", "1").strip()
+        height = frame.get("height", "1").strip()
+        style = frame.get("style", "").lower()
+        
+        is_hidden = (
+            width == "0" or height == "0" or
+            "display:none" in style or
+            "visibility:hidden" in style or
+            "opacity:0" in style
+        )
+        if is_hidden:
+            hidden_iframes += 1
+
+        # 2. Check for external domains
+        src = frame.get("src")
+        if src:
+            absolute_src = urljoin(base_url, src)
+            iframe_domain = get_registrable_domain(absolute_src)
+            if iframe_domain and iframe_domain != page_domain:
+                external_iframes += 1
+                external_iframe_domains.add(iframe_domain)
+
+    # Risk Mapping:
+    # No iframes -> -1 (Low Risk)
+    # Hidden iframes -> 1 (Moderate Risk)
+    # Visible iframes (even if external) -> 0 (Informational)
+    if total_iframes == 0:
+        iframe_risk = -1
+    elif hidden_iframes > 0:
+        iframe_risk = 1
+    else:
+        iframe_risk = 0
+
+    features["iframe"] = iframe_risk
+    metadata["iframe_metadata"] = {
+        "total_iframes": total_iframes,
+        "hidden_iframes": hidden_iframes,
+        "external_iframes": external_iframes,
+        "external_iframe_domains": list(external_iframe_domains),
+        "has_iframe": total_iframes > 0
+    }
 
     return features, metadata
