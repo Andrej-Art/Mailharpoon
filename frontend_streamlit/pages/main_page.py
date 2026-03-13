@@ -495,6 +495,25 @@ if st.button("Check and analyze your URL", type="primary"):
                                 f"Contextmenu event handlers: {m.get('rightclick_metadata', {}).get('handler_count', 0)}"
                             ) if m.get("rightclick_metadata") else "Not evaluated"
                         },
+                        "popupwidnow": {
+                            "name": "Popup Window Analysis",
+                            "insight": lambda m: (
+                                "JavaScript popup functions detected in page scripts. Attackers may use popup dialogs to request sensitive information or redirect users."
+                                if m.get("popupwidnow_metadata", {}).get("is_detected") else
+                                "Phishing pages sometimes use popup dialogs to request credentials or mislead users."
+                            ),
+                            "tech": lambda m: (
+                                "JavaScript popup functions (alert/window.open) detected in page scripts."
+                                if m.get("popupwidnow_metadata", {}).get("is_detected") else
+                                "No browser popup dialog functions detected in page scripts."
+                            ),
+                            "get_val": lambda m: (
+                                f"window.open calls detected: {m.get('popupwidnow_metadata', {}).get('counts', {}).get('window.open', 0)}\n"
+                                f"alert dialogs detected: {m.get('popupwidnow_metadata', {}).get('counts', {}).get('alert', 0)}\n"
+                                f"prompt dialogs detected: {m.get('popupwidnow_metadata', {}).get('counts', {}).get('prompt', 0)}\n"
+                                f"confirm dialogs detected: {m.get('popupwidnow_metadata', {}).get('counts', {}).get('confirm', 0)}"
+                            ) if m.get("popupwidnow_metadata") else "Not evaluated"
+                        },
                         "page_rank": {
                             "name": "Domain Popularity",
                             "insight": lambda m: (
