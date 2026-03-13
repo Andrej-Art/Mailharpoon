@@ -53,13 +53,13 @@ class TestHttpFeatures(unittest.TestCase):
         # iframe: not found => -1 (Legit)
         self.assertEqual(features["iframe"], -1)
         
-        # sfh: external action => 0 (Suspicious)
-        self.assertEqual(features["sfh"], 0)
+        # sfh: external action => 1 (Phish)
+        self.assertEqual(features["sfh"], 1)
 
     def test_extract_features_sfh_empty(self):
         html = '<html><body><form action=""></form></body></html>'
         features, metadata = extract_features_from_html(html, "http://test.com", "http://test.com")
-        self.assertEqual(features["sfh"], 1)
+        self.assertEqual(features["sfh"], 0)
 
     def test_extract_features_popup_click(self):
         html = '<html><body><script>window.open("...");</script></body></html>'

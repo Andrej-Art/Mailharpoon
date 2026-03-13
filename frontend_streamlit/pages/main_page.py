@@ -389,6 +389,33 @@ if st.button("Check and analyze your URL", type="primary"):
                                 if m.get('total_anchors') is not None else "N/A"
                             )
                         },
+                        "sfh": {
+                            "name": "Server Form Handler (SFH)",
+                            "insight": lambda m: (
+                                "Phishing pages frequently send stolen credentials to attacker-controlled servers."
+                                if m.get("sfh_metadata", {}).get("external") > 0 else
+                                ("Empty form actions can be used dynamically with JavaScript, but are also common in SPA frameworks."
+                                 if m.get("sfh_metadata", {}).get("empty") > 0 else
+                                 "Legitimate websites typically process login and account forms on their own infrastructure.")
+                            ),
+                            "tech": lambda m: (
+                                "Data submits to an external or unknown domain."
+                                if m.get("sfh_metadata", {}).get("external") > 0 else
+                                ("Form(s) contain empty, blank, or JavaScript-based action handlers."
+                                 if m.get("sfh_metadata", {}).get("empty") > 0 else
+                                 "All forms submit data to endpoints within the same registered domain.")
+                            ),
+                            "get_val": lambda m: (
+                                f"Forms detected: {m.get('sfh_metadata', {}).get('total', 0)}\n"
+                                f"Internal form handlers: {m.get('sfh_metadata', {}).get('internal', 0)}\n"
+                                f"External form handlers: {m.get('sfh_metadata', {}).get('external', 0)}\n"
+                                f"Empty actions: {m.get('sfh_metadata', {}).get('empty', 0)}"
+                                + (
+                                    "\nExternal Action URLs:\n" + "\n".join([f"- {u}" for u in m.get('sfh_metadata', {}).get('external_urls', [])])
+                                    if m.get('sfh_metadata', {}).get('external_urls') else ""
+                                )
+                            ) if m.get("sfh_metadata") else "Not evaluated"
+                        },
                         "page_rank": {
                             "name": "Domain Popularity",
                             "insight": lambda m: (
