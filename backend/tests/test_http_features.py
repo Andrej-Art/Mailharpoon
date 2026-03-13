@@ -64,7 +64,7 @@ class TestHttpFeatures(unittest.TestCase):
     def test_extract_features_popup_click(self):
         html = '<html><body><script>window.open("...");</script></body></html>'
         features, metadata = extract_features_from_html(html, "http://test.com", "http://test.com")
-        self.assertEqual(features["popupwidnow"], 1)
+        self.assertEqual(features["popupwidnow"], 0)
 
 if __name__ == "__main__":
     unittest.main()

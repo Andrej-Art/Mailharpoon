@@ -437,10 +437,39 @@ def extract_features_from_html(html: str, base_url: str, final_url: str) -> Tupl
         "handler_count": len(context_handlers)
     }
 
-    # 8. popupwidnow: Phishing sites often use fake popups
-    has_popup = "window.open(" in html.lower() or "window.location.replace(" in html.lower()
-    features["popupwidnow"] = 1 if has_popup else -1
-    metadata["has_popup"] = has_popup
+    # 8. popupwidnow: Phishing sites often use fake popups (alert, prompt, window.open)
+    popup_apis = ["window.open(", "alert(", "prompt(", "confirm("]
+    counts = {api.strip("("): 0 for api in popup_apis}
+    
+    # Check all script tags
+    scripts = soup.find_all("script")
+    for s in scripts:
+        content = s.string
+        if content:
+            content_lower = content.lower()
+            for api in popup_apis:
+                if api in content_lower:
+                    counts[api.strip("(")] += content_lower.count(api)
+                    
+    # Check all attributes starting with 'on' (event handlers)
+    for el in soup.find_all(True):
+        for attr, val in el.attrs.items():
+            if attr.startswith("on"):
+                val_lower = str(val).lower()
+                for api in popup_apis:
+                    if api in val_lower:
+                        counts[api.strip("(")] += val_lower.count(api)
+
+    total_popups = sum(counts.values())
+    has_popup = total_popups > 0
+    # Risk mapping: -1 (Low Risk) if none, 0 (Neutral) if detected
+    features["popupwidnow"] = 0 if has_popup else -1
+    
+    metadata["popupwidnow_metadata"] = {
+        "is_detected": has_popup,
+        "counts": counts,
+        "total_calls": total_popups
+    }
 
     # 9. iframe: Using invisible iframes to load malicious content
     has_iframe = soup.find("iframe") is not None
