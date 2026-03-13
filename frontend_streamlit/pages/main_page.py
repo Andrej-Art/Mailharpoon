@@ -252,6 +252,24 @@ if st.button("Check and analyze your URL", type="primary"):
                                 f"Same registered domain: {'Yes' if m.get('favicon_metadata', {}).get('is_same_domain') else 'No'}"
                             ) if m.get("favicon_metadata") else "Not evaluated"
                         },
+                        "port": {
+                            "name": "Port Usage",
+                            "insight": lambda m: (
+                                "Legitimate websites typically operate on standard ports such as 80 or 443."
+                                if not m.get("port_metadata", {}).get("is_explicit") or m.get("port_metadata", {}).get("detected_port") in [80, 443] else
+                                "Phishing kits and development servers sometimes operate on uncommon ports such as 8080 or 3000."
+                            ),
+                            "tech": lambda m: (
+                                "The URL uses the default HTTPS/HTTP port."
+                                if not m.get("port_metadata", {}).get("is_explicit") or m.get("port_metadata", {}).get("detected_port") in [80, 443] else
+                                "The URL specifies a non-standard port."
+                            ),
+                            "get_val": lambda m: (
+                                f"Scheme: {m.get('port_metadata', {}).get('scheme', 'Unknown')}\n"
+                                f"Explicit port specified: {'Yes' if m.get('port_metadata', {}).get('is_explicit') else 'No'}\n"
+                                f"{'Detected port' if m.get('port_metadata', {}).get('is_explicit') else 'Effective port'}: {m.get('port_metadata', {}).get('detected_port', 'Unknown')}"
+                            ) if m.get("port_metadata") else "Not evaluated"
+                        },
                         "dnsrecord": {
                             "name": "DNS Record Status",
                             "insight": "Legitimate websites must have valid DNS configurations (e.g., A, AAAA, CNAME) to route traffic appropriately.",
