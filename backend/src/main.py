@@ -249,7 +249,7 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str
         "links_in_tags": 0,
         "sfh": -1,
         "submitting_to_email": -1,
-        "abnormal_url": 1 if host != reg_domain and not base["having_ip_address"] == 1 else -1,
+        "abnormal_url": -1, # Will be refined below if extended=True
         "redirect": 0, 
         "on_mouseover": -1,
         "rightclick": -1,
@@ -365,6 +365,45 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str
             metadata["request_url_available"] = False
             metadata["url_of_anchor_available"] = False
             
+        # Abnormal URL: Inconsistency between Hostname and Infrastructure
+        # (Legit: Host matches SSL cert OR is on a major CDN)
+        is_consistent = True
+        host_lower = host.lower()
+        
+        # Check SSL Consistency
+        ssl_meta = metadata.get("ssl_metadata", {})
+        if ssl_meta and ssl_meta.get("subject_cn"):
+            cn = ssl_meta["subject_cn"].lower()
+            sans = [s.lower() for s in ssl_meta.get("sans", [])]
+            
+            def match_host(pattern, hostname):
+                if pattern == hostname: return True
+                if pattern.startswith("*."):
+                    suffix = pattern[1:]
+                    if hostname.endswith(suffix) and "." in hostname[:-len(suffix)]:
+                        return True
+                return False
+
+            ssl_match = match_host(cn, host_lower) or any(match_host(s, host_lower) for s in sans)
+            if not ssl_match:
+                is_consistent = False
+
+        # If it's a known CDN or Major Cloud, we treat it as consistent even if SSL cert is generic/different
+        infra = fetch_info.get("infrastructure", "Unknown")
+        if "CDN" in infra or "AWS" in infra or "Google Cloud" in infra or "Azure" in infra:
+            is_consistent = True
+            
+        # Result mapping
+        # If mismatch detected (and not CDN), mark as Phishing
+        full_features["abnormal_url"] = 1 if not is_consistent else -1
+        
+        metadata["abnormal_url_metadata"] = {
+            "is_consistent": is_consistent,
+            "detected_infrastructure": infra,
+            "resolved_ip": fetch_info.get("resolved_ip"),
+            "ssl_host_match": True if (ssl_meta and ssl_meta.get("subject_cn") and is_consistent) else False
+        }
+
         # DNS Consistency Check
         if fetch_info.get("resolved_ip") and full_features["dnsrecord"] == 1:
             # If we successfully resolved an IP, DNS cannot be missing. Override it.

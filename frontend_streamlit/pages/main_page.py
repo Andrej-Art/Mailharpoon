@@ -320,6 +320,25 @@ if st.button("Check and analyze your URL", type="primary"):
                                 "Additional '//' after scheme: No"
                             )
                         },
+                        "abnormal_url": {
+                            "name": "Abnormal URL / Infrastructure Check",
+                            "insight": lambda m: (
+                                "The hostname does not align with the underlying hosting infrastructure or SSL certificate."
+                                if m.get("abnormal_url_metadata", {}).get("is_consistent") is False else
+                                "The hostname aligns with the DNS resolution and hosting infrastructure."
+                            ),
+                            "tech": lambda m: (
+                                "A mismatch was detected between the URL hostname and the SSL certificate's Common Name or Subject Alternative Names."
+                                if m.get("abnormal_url_metadata", {}).get("is_consistent") is False else
+                                f"Infrastructure verified: {m.get('abnormal_url_metadata', {}).get('detected_infrastructure', 'Standard Server')}."
+                            ),
+                            "get_val": lambda m: (
+                                f"URL hostname: {m.get('hostname', 'N/A')}\n"
+                                f"Resolved IP: {m.get('abnormal_url_metadata', {}).get('resolved_ip', 'N/A')}\n"
+                                f"Infrastructure: {m.get('abnormal_url_metadata', {}).get('detected_infrastructure', 'Unknown')}\n"
+                                f"Infrastructure consistency: {'✅ Valid' if m.get('abnormal_url_metadata', {}).get('is_consistent') else '🚩 Inconsistent / Mismatch'}"
+                            ) if m.get("abnormal_url_metadata") else "Not evaluated"
+                        },
                         "redirect": {
                             "name": "Redirect Count",
                             "insight": (

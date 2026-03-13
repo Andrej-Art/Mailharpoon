@@ -73,10 +73,22 @@ def check_ssl_certificate(url: str) -> Tuple[int, Dict[str, Any]]:
                 metadata["protocol"] = ssock.version()
                 
                 if cert:
-                    # Extract Issuer (usually a list of tuples)
+                    # Extract Issuer
                     issuer = dict(x[0] for x in cert.get('issuer', []))
                     metadata["issuer"] = issuer.get('commonName') or issuer.get('organizationName')
                     metadata["expiry"] = cert.get('notAfter')
+                    
+                    # Extract Subject Common Name
+                    subject = dict(x[0] for x in cert.get('subject', []))
+                    metadata["subject_cn"] = subject.get('commonName')
+                    
+                    # Extract Subject Alternative Names (SANs)
+                    sans = []
+                    for alt_name in cert.get('subjectAltName', []):
+                        if alt_name[0] == 'DNS':
+                            sans.append(alt_name[1])
+                    metadata["sans"] = sans
+                    
                     return -1, metadata
                 else:
                     metadata["error"] = "No certificate received"
