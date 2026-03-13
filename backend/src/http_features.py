@@ -405,8 +405,37 @@ def extract_features_from_html(html: str, base_url: str, final_url: str) -> Tupl
     }
 
     # 7. rightclick: Disabling right-click to prevent source inspection
-    has_rightclick_disable = any(x in html.lower() for x in ["event.button==2", "contextmenu", "preventdefault()"])
-    features["rightclick"] = 1 if has_rightclick_disable else -1
+    context_handlers = soup.find_all(lambda t: t.has_attr("oncontextmenu"))
+    blocking_method = None
+    
+    # Check inline attributes
+    for el in context_handlers:
+        attr_val = el.get("oncontextmenu", "").lower()
+        if "return false" in attr_val or "preventdefault()" in attr_val:
+            blocking_method = "oncontextmenu attribute (return false / preventDefault)"
+            break
+            
+    # Check script blocks for programmatic blocking
+    if not blocking_method:
+        scripts = soup.find_all("script")
+        for s in scripts:
+            content = s.string
+            if content:
+                content_lower = content.lower()
+                if "contextmenu" in content_lower:
+                    if "preventdefault()" in content_lower or "return false" in content_lower or "return_value = false" in content_lower:
+                        blocking_method = "Script-based contextmenu blocking"
+                        break
+
+    has_rightclick_disable = blocking_method is not None
+    # Risk mapping: -1 (Low Risk) if not blocked, 0 (Neutral) if blocked
+    features["rightclick"] = 0 if has_rightclick_disable else -1
+    
+    metadata["rightclick_metadata"] = {
+        "is_blocked": has_rightclick_disable,
+        "blocking_method": blocking_method,
+        "handler_count": len(context_handlers)
+    }
 
     # 8. popupwidnow: Phishing sites often use fake popups
     has_popup = "window.open(" in html.lower() or "window.location.replace(" in html.lower()

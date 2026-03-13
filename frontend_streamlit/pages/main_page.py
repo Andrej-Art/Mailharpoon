@@ -477,6 +477,24 @@ if st.button("Check and analyze your URL", type="primary"):
                                 )
                             ) if m.get("on_mouseover_metadata") else "Not evaluated"
                         },
+                        "rightclick": {
+                            "name": "Right-Click Context Menu",
+                            "insight": lambda m: (
+                                "JavaScript prevents the browser context menu from opening. Attackers sometimes do this to hide malicious code from inspection."
+                                if m.get("rightclick_metadata", {}).get("is_blocked") else
+                                "Some phishing pages disable right-click functionality to prevent users from inspecting malicious links."
+                            ),
+                            "tech": lambda m: (
+                                "JavaScript code blocking the context menu was detected."
+                                if m.get("rightclick_metadata", {}).get("is_blocked") else
+                                "No JavaScript code blocking the context menu was detected."
+                            ),
+                            "get_val": lambda m: (
+                                f"Context menu blocking detected: {'Yes' if m.get('rightclick_metadata', {}).get('is_blocked') else 'No'}\n"
+                                f"Blocking method: {m.get('rightclick_metadata', {}).get('blocking_method', 'None')}\n"
+                                f"Contextmenu event handlers: {m.get('rightclick_metadata', {}).get('handler_count', 0)}"
+                            ) if m.get("rightclick_metadata") else "Not evaluated"
+                        },
                         "page_rank": {
                             "name": "Domain Popularity",
                             "insight": lambda m: (
