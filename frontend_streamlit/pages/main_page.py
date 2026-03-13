@@ -114,6 +114,20 @@ if st.button("Check and analyze your URL", type="primary"):
                         if fetch_info.get("error"):
                             st.error(f"**Fetch Error:** {fetch_info['error']}")
 
+                # Page Screenshot Section
+                metadata = data.get("feature_metadata", {})
+                screenshot_info = metadata.get("screenshot_metadata")
+                if screenshot_info:
+                    st.divider()
+                    st.subheader("📸 Page Screenshot")
+                    if screenshot_info.get("success"):
+                        screenshot_url = f"http://127.0.0.1:8000{screenshot_info['screenshot_url']}"
+                        st.image(screenshot_url, caption=f"Snapshot of {screenshot_info['final_url']}", use_container_width=True)
+                        st.caption(f"Captured at: {screenshot_info['timestamp']}")
+                        st.write(f"**Final Rendered URL:** `{screenshot_info['final_url']}`")
+                    else:
+                        st.warning(f"Screenshot could not be captured: {screenshot_info.get('error', 'Unknown error')}")
+
                 st.caption(f"Model used: `{model_used}` | Threshold: `{threshold:.2f}`")
 
                 # display metrics

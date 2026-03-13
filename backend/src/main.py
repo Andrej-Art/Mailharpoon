@@ -10,9 +10,11 @@ from datetime import datetime, timezone
 from typing import List, Dict, Any, Tuple, Optional
 from urllib.parse import urlparse
 from fastapi import FastAPI, HTTPException, Body
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from http_features import safe_fetch_html, extract_features_from_html, get_ip_geolocation
 from security.tls_checks import check_ssl_certificate
+from security.screenshot_service import capture_screenshot
 from features.dns_features import check_dns_record
 from features.domain_metadata_features import (
     get_domain_age, 
@@ -455,6 +457,9 @@ app = FastAPI(
     version="1.2.0"
 )
 
+# Static files for screenshots
+app.mount("/images", StaticFiles(directory="/Users/andrejartuschenko/Desktop/mailharpoon/images"), name="images")
+
 # global state 
 models = {}
 feature_sets = {}
@@ -504,7 +509,7 @@ def health():
     return {"status": "ok", "loaded_models": list(models.keys())}
 
 @app.post("/predict-url", response_model=PredictResponse)
-def predict_url(request_data: PredictUrlRequest):
+async def predict_url(request_data: PredictUrlRequest):
     model_name = request_data.model
     if model_name not in models:
         raise HTTPException(status_code=400, detail=f"Model '{model_name}' not available.")
@@ -516,6 +521,11 @@ def predict_url(request_data: PredictUrlRequest):
     
     if model_name == "rf_full":
         features, feature_metadata, fetch_info = extract_features_rf_full(request_data.url, request_data.extended)
+        
+        # Capture Screenshot only for extended full check
+        if request_data.extended:
+            screenshot_meta = await capture_screenshot(request_data.url)
+            feature_metadata["screenshot_metadata"] = screenshot_meta
     else:
         features = extract_features_url_only(request_data.url)
     
