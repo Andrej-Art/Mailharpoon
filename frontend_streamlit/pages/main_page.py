@@ -416,6 +416,27 @@ if st.button("Check and analyze your URL", type="primary"):
                                 )
                             ) if m.get("sfh_metadata") else "Not evaluated"
                         },
+                        "submitting_to_email": {
+                            "name": "Submitting to Email (mailto:)",
+                            "insight": lambda m: (
+                                "Phishing pages sometimes send stolen credentials directly to attacker-controlled email addresses using mailto form actions."
+                                if m.get("submitting_to_email_metadata", {}).get("has_mailto_form") else
+                                "Legitimate websites typically send form data to server-side endpoints rather than using email submission handlers."
+                            ),
+                            "tech": lambda m: (
+                                "One or more forms on this page submit data using the mailto: protocol."
+                                if m.get("submitting_to_email_metadata", {}).get("has_mailto_form") else
+                                "No forms submit data via email handlers."
+                            ),
+                            "get_val": lambda m: (
+                                f"Forms analyzed: {m.get('submitting_to_email_metadata', {}).get('forms_checked', 0)}\n"
+                                f"Email form submission detected: {'Yes' if m.get('submitting_to_email_metadata', {}).get('has_mailto_form') else 'No'}"
+                                + (
+                                    "\nDetected mailto actions:\n" + "\n".join([f"- {u}" for u in m.get('submitting_to_email_metadata', {}).get('mailto_actions', [])])
+                                    if m.get('submitting_to_email_metadata', {}).get('mailto_actions') else ""
+                                )
+                            ) if m.get("submitting_to_email_metadata") else "Not evaluated"
+                        },
                         "page_rank": {
                             "name": "Domain Popularity",
                             "insight": lambda m: (
