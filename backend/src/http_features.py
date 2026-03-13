@@ -313,19 +313,50 @@ def extract_features_from_html(html: str, base_url: str, final_url: str) -> Tupl
         features["links_in_tags"] = 1
 
     # 5. SFH (Server Form Handler): Empty action or external action in forms
-    forms = soup.find_all("form", action=True)
-    if not forms:
+    forms = soup.find_all("form")
+    
+    total_forms = len(forms)
+    internal_handlers = 0
+    external_handlers = 0
+    empty_actions = 0
+    external_urls = []
+    
+    sfh_val = -1 # Default legitimate if no forms or only internal handlers
+    
+    for f in forms:
+        action = f.get("action", "").strip()
+        
+        if not action or action.lower() in ["", "about:blank", "#"]:
+            empty_actions += 1
+            sfh_val = max(sfh_val, 0) # Suspicious / Neutral
+        else:
+            # Check if it's explicitly javascript
+            if action.lower().startswith("javascript:"):
+                empty_actions += 1
+                sfh_val = max(sfh_val, 0)
+                continue
+                
+            abs_action = urljoin(final_url, action)
+            action_domain = get_registrable_domain(abs_action)
+            
+            if action_domain == final_domain:
+                internal_handlers += 1
+            else:
+                external_handlers += 1
+                external_urls.append(abs_action)
+                sfh_val = 1 # Phishing / High Risk
+
+    metadata["sfh_metadata"] = {
+        "total": total_forms,
+        "internal": internal_handlers,
+        "external": external_handlers,
+        "empty": empty_actions,
+        "external_urls": external_urls
+    }
+    
+    if total_forms == 0:
         features["sfh"] = -1
     else:
-        sfh_val = -1
-        for f in forms:
-            action = f["action"].strip().lower()
-            if action in ["", "about:blank"]:
-                sfh_val = 1
-                break
-            abs_action = urljoin(final_url, action)
-            if get_registrable_domain(abs_action) != final_domain:
-                sfh_val = 0 # Suspicious but not fatal
         features["sfh"] = sfh_val
 
     # 6. on_mouseover: Phishers hide real URLs in status bar
