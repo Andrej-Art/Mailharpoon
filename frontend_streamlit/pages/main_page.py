@@ -352,6 +352,25 @@ if st.button("Check and analyze your URL", type="primary"):
                                 if m.get('total_assets') is not None else "N/A"
                             )
                         },
+                        "links_in_tags": {
+                            "name": "Links in Tags (Meta/Script/Link)",
+                            "insight": lambda m: (
+                                "Phishing pages sometimes reuse scripts and styles from legitimate sites they attempt to imitate."
+                                if m.get("links_in_tags_metadata", {}).get("ratio", 0) > 0.3 else
+                                "Legitimate websites typically serve their resources from their own infrastructure or trusted CDN services."
+                            ),
+                            "tech": lambda m: (
+                                "A large proportion of assets are loaded from external domains."
+                                if m.get("links_in_tags_metadata", {}).get("ratio", 0) > 0.3 else
+                                "Most assets are hosted on the same registered domain."
+                            ),
+                            "get_val": lambda m: (
+                                f"Total assets analyzed: {m.get('links_in_tags_metadata', {}).get('total', 0)}\n"
+                                f"Internal resources: {m.get('links_in_tags_metadata', {}).get('internal', 0)}\n"
+                                f"External resources: {m.get('links_in_tags_metadata', {}).get('external', 0)}\n"
+                                f"External ratio: {m.get('links_in_tags_metadata', {}).get('ratio', 0) * 100:.1f}%"
+                            ) if m.get("links_in_tags_metadata") else "Not evaluated"
+                        },
                         "url_of_anchor": {
                             "name": "Suspicious Anchors",
                             "insight": (
