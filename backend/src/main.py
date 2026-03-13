@@ -21,6 +21,7 @@ from features.domain_metadata_features import (
     get_domain_dates
 )
 from features.google_index_features import is_domain_indexed
+from features.reputation_features import check_domain_reputation
 
 # configuration 
 MODELS_BASE = "/Users/andrejartuschenko/Desktop/mailharpoon/backend/models"
@@ -262,7 +263,7 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str
         "page_rank": 0,
         "google_index": 0, # Placeholder, will be refined if extended=True
         "links_pointing_to_page": 0,
-        "statistical_report": 1
+        "statistical_report": 0, # Placeholder, will be refined if extended=True
     }
     
     # Metadata for technical insights
@@ -365,6 +366,11 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str
             g_index = is_domain_indexed(url)
             full_features["google_index"] = g_index["risk_score"]
             metadata["google_index_metadata"] = g_index
+
+            # Check Domain Reputation (Statistical Report)
+            reputation = check_domain_reputation(url)
+            full_features["statistical_report"] = reputation["risk_score"]
+            metadata["reputation_metadata"] = reputation
         else:
             # If fetch failed, use suspicious defaults for some features
             full_features["redirect"] = -1
