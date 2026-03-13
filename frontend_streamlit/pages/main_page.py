@@ -552,6 +552,23 @@ if st.button("Check and analyze your URL", type="primary"):
                                 f"Index status: {m.get('google_index_metadata', {}).get('status', 'Unknown')}"
                             ) if m.get("google_index_metadata") else "Not evaluated"
                         },
+                        "statistical_report": {
+                            "name": "Domain Reputation Analysis",
+                            "insight": lambda m: (
+                                "The domain appears in one or more phishing reputation databases. Threat intelligence feeds indicate it has been associated with malicious campaigns."
+                                if (m.get("reputation_metadata", {}).get("risk_score", -1) >= 0) else
+                                "No matches were found in external threat intelligence databases. Legitimate domains are typically absent from these feeds."
+                            ),
+                            "tech": lambda m: (
+                                f"Reputation Status: {m.get('reputation_metadata', {}).get('status', 'Unknown')}"
+                            ),
+                            "get_val": lambda m: (
+                                f"Domain analyzed: {m.get('reputation_metadata', {}).get('domain_analyzed', 'N/A')}\n"
+                                f"Matches found: {'Yes' if m.get('reputation_metadata', {}).get('urlhaus_match') else 'No'}\n"
+                                f"URLHaus detections: {m.get('reputation_metadata', {}).get('urlhaus_detections', 0)}\n"
+                                f"Intelligence sources: {', '.join(m.get('reputation_metadata', {}).get('sources', [])) if m.get('reputation_metadata', {}).get('sources') else 'None'}"
+                            ) if m.get("reputation_metadata") else "Not evaluated"
+                        },
                         "page_rank": {
                             "name": "Domain Popularity",
                             "insight": lambda m: (
