@@ -536,6 +536,22 @@ if st.button("Check and analyze your URL", type="primary"):
                                 )
                             ) if m.get("iframe_metadata") else "Not evaluated"
                         },
+                        "google_index": {
+                            "name": "Google Index Status",
+                            "insight": lambda m: (
+                                "The domain appears in Google search results. Legitimate websites are commonly indexed."
+                                if m.get("google_index_metadata", {}).get("is_indexed") else
+                                "The domain does not appear in Google search results. Newly created phishing domains are often not indexed."
+                            ),
+                            "tech": lambda m: (
+                                m.get("google_index_metadata", {}).get("technical_interpretation", "Status unknown.")
+                            ),
+                            "get_val": lambda m: (
+                                f"Domain analyzed: {m.get('google_index_metadata', {}).get('domain_analyzed', 'N/A')}\n"
+                                f"Google indexed: {'Yes' if m.get('google_index_metadata', {}).get('is_indexed') else 'No'}\n"
+                                f"Index status: {m.get('google_index_metadata', {}).get('status', 'Unknown')}"
+                            ) if m.get("google_index_metadata") else "Not evaluated"
+                        },
                         "page_rank": {
                             "name": "Domain Popularity",
                             "insight": lambda m: (
