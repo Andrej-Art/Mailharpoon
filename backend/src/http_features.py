@@ -374,9 +374,35 @@ def extract_features_from_html(html: str, base_url: str, final_url: str) -> Tupl
         "mailto_actions": mailto_actions
     }
 
-    # 6. on_mouseover: Phishers hide real URLs in status bar
-    has_mouseover = soup.find(lambda t: t.has_attr("onmouseover")) or "onmouseover" in html.lower()
-    features["on_mouseover"] = 1 if has_mouseover else -1
+    # 6. on_mouseover: Phishers hide real URLs in status bar or perform dynamic redirects
+    hover_elements = soup.find_all(lambda t: t.has_attr("onmouseover") or t.has_attr("onmouseenter"))
+    
+    malicious_scripts = []
+    suspicious_patterns = ["window.status", "location.href", "document.location"]
+    total_handlers = 0
+    
+    for el in hover_elements:
+        # Check and count attributes
+        mo = el.get("onmouseover")
+        me = el.get("onmouseenter")
+        
+        if mo: total_handlers += 1
+        if me: total_handlers += 1
+        
+        script = (mo or "") + " " + (me or "")
+        script_lower = script.lower()
+        
+        if any(p in script_lower for p in suspicious_patterns):
+            malicious_scripts.append(script.strip())
+            
+    has_malicious_hover = len(malicious_scripts) > 0
+    features["on_mouseover"] = 1 if has_malicious_hover else -1
+    
+    metadata["on_mouseover_metadata"] = {
+        "total_hover_handlers": total_handlers,
+        "malicious_scripts_found": malicious_scripts,
+        "is_suspicious": has_malicious_hover
+    }
 
     # 7. rightclick: Disabling right-click to prevent source inspection
     has_rightclick_disable = any(x in html.lower() for x in ["event.button==2", "contextmenu", "preventdefault()"])
