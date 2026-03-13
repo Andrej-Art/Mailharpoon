@@ -359,6 +359,21 @@ def extract_features_from_html(html: str, base_url: str, final_url: str) -> Tupl
     else:
         features["sfh"] = sfh_val
 
+    # 6. submitting_to_email: Phishers send stolen credentials via email
+    mailto_actions = []
+    for f in forms:
+        action = f.get("action", "").strip().lower()
+        if action.startswith("mailto:"):
+            mailto_actions.append(action)
+
+    has_mailto_form = len(mailto_actions) > 0
+    features["submitting_to_email"] = 1 if has_mailto_form else -1
+    metadata["submitting_to_email_metadata"] = {
+        "forms_checked": total_forms,
+        "has_mailto_form": has_mailto_form,
+        "mailto_actions": mailto_actions
+    }
+
     # 6. on_mouseover: Phishers hide real URLs in status bar
     has_mouseover = soup.find(lambda t: t.has_attr("onmouseover")) or "onmouseover" in html.lower()
     features["on_mouseover"] = 1 if has_mouseover else -1
