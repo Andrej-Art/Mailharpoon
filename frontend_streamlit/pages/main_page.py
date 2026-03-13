@@ -252,6 +252,27 @@ if st.button("Check and analyze your URL", type="primary"):
                                 f"Same registered domain: {'Yes' if m.get('favicon_metadata', {}).get('is_same_domain') else 'No'}"
                             ) if m.get("favicon_metadata") else "Not evaluated"
                         },
+                        "https_token": {
+                            "name": "HTTPS Token in Hostname",
+                            "insight": lambda m: (
+                                "Attackers sometimes include 'https' in domain names (e.g. https-login-paypal.com) to create a false sense of security."
+                                if m.get("https_token_metadata", {}).get("has_token") else
+                                "Some phishing domains embed the word 'https' in the hostname to mimic secure websites."
+                            ),
+                            "tech": lambda m: (
+                                "The hostname contains the token 'https'."
+                                if m.get("https_token_metadata", {}).get("has_token") else
+                                "The hostname does not contain the string 'https'."
+                            ),
+                            "get_val": lambda m: (
+                                f"Hostname analyzed: {m.get('sub_meta', {}).get('hostname', 'Unknown')}\n"
+                                f"HTTPS token in hostname: {'Yes' if m.get('https_token_metadata', {}).get('has_token') else 'No'}"
+                                + (
+                                    f"\nToken location: {'registered domain' if m.get('https_token_metadata', {}).get('in_domain') else 'subdomain'}"
+                                    if m.get("https_token_metadata", {}).get("has_token") else ""
+                                )
+                            ) if m.get("https_token_metadata") else "Not evaluated"
+                        },
                         "port": {
                             "name": "Port Usage",
                             "insight": lambda m: (

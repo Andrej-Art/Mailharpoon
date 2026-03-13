@@ -149,7 +149,7 @@ def extract_features_url_only(url: str) -> dict:
         # Port check: non-standard ports (not 80/443/None)
         "port": 0 if parsed.port and parsed.port not in [80, 443] else -1,
         "having_sub_domain": sub_domain,
-        "https_token": 1 if "https" in host.lower() else -1
+        "https_token": 0 if "https" in host.lower() else -1
     }
     
     # Prefix/Suffix check using accurate sub_meta
@@ -304,6 +304,11 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str
             "scheme": parsed.scheme or "http",
             "is_explicit": parsed.port is not None,
             "detected_port": parsed.port if parsed.port is not None else (443 if (parsed.scheme or "").lower() == "https" else 80)
+        },
+        "https_token_metadata": {
+            "has_token": "https" in host.lower(),
+            "in_domain": "https" in analyze_subdomains(url)["domain"].lower(),
+            "in_subdomain": any("https" in sub.lower() for sub in analyze_subdomains(url)["subdomains"])
         },
         "sub_meta": analyze_subdomains(url),
         "domain_age_days": None,
