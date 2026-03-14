@@ -8,12 +8,12 @@ class TestScreenshot(unittest.TestCase):
     
     def test_hashed_filename(self):
         url = "https://example.com"
-        url_hash = hashlib.md5(url.encode('utf-8')).hexdigest()
+        url_hash = hashlib.sha256(url.encode('utf-8')).hexdigest()
         expected_filename = f"{url_hash}.png"
         
-        # This is a bit internal but good to verify the logic
+        # SHA-256 is 64 characters long
         self.assertTrue(expected_filename.endswith(".png"))
-        self.assertEqual(len(url_hash), 32)
+        self.assertEqual(len(url_hash), 64)
 
     def test_capture_real_page(self):
         # We need an event loop to run the async function
