@@ -62,7 +62,7 @@ if st.button("Check and analyze your URL", type="primary"):
                     API_URL, 
                     json=payload, 
                     headers=headers, 
-                    timeout=15
+                    timeout=60
                 )
 
             if response.status_code == 200:
