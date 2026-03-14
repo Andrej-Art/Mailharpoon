@@ -39,21 +39,21 @@ def check_dns_record(domain: str) -> Tuple[int, Dict[str, Any]]:
     try:
         # A
         try:
-            dns.resolver.resolve(domain, 'A', timeout=2.0, lifetime=2.0)
+            dns.resolver.resolve(domain, 'A', lifetime=2.0)
             metadata["a_record"] = True
             found_any = True
         except (dns.resolver.NoAnswer, dns.resolver.NoNameservers): pass
 
         # AAAA
         try:
-            dns.resolver.resolve(domain, 'AAAA', timeout=2.0, lifetime=2.0)
+            dns.resolver.resolve(domain, 'AAAA', lifetime=2.0)
             metadata["aaaa_record"] = True
             found_any = True
         except (dns.resolver.NoAnswer, dns.resolver.NoNameservers): pass
         
         # CNAME
         try:
-            answers = dns.resolver.resolve(domain, 'CNAME', timeout=2.0, lifetime=2.0)
+            answers = dns.resolver.resolve(domain, 'CNAME', lifetime=2.0)
             metadata["cname_record"] = True
             metadata["cname_target"] = str(answers[0].target)
             found_any = True
@@ -61,7 +61,7 @@ def check_dns_record(domain: str) -> Tuple[int, Dict[str, Any]]:
 
         # NS
         try:
-            dns.resolver.resolve(domain, 'NS', timeout=2.0, lifetime=2.0)
+            dns.resolver.resolve(domain, 'NS', lifetime=2.0)
             metadata["ns_record"] = True
             found_any = True
         except (dns.resolver.NoAnswer, dns.resolver.NoNameservers): pass

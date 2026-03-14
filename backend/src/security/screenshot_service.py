@@ -59,7 +59,7 @@ async def capture_screenshot(url: str) -> dict:
             # Navigate to the URL
             try:
                 # wait_until="networkidle" is preferred for full rendering but "load" is safer for timeout
-                response = await page.goto(url, wait_until="load", timeout=15000)
+                response = await page.goto(url, wait_until="load", timeout=12000)
                 
                 # record final URL (after redirects)
                 result["final_url"] = page.url
