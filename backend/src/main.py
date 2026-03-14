@@ -14,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from http_features import safe_fetch_html, extract_features_from_html, get_ip_geolocation
 from security.tls_checks import check_ssl_certificate
-from security.screenshot_service import capture_screenshot
+from security.screenshot_service import capture_screenshot, cleanup_screenshots
 from features.dns_features import check_dns_record
 from features.domain_metadata_features import (
     get_domain_age, 
@@ -458,7 +458,7 @@ app = FastAPI(
 )
 
 # Static files for screenshots
-app.mount("/images", StaticFiles(directory="/Users/andrejartuschenko/Desktop/mailharpoon/images"), name="images")
+app.mount("/images/screenshots", StaticFiles(directory="/tmp/mailharpoon_screenshots"), name="screenshots")
 
 # global state 
 models = {}
@@ -495,6 +495,8 @@ def load_model_assets(name: str, config: dict):
 
 @app.on_event("startup")
 async def startup_event():
+    # Cleanup old screenshots
+    cleanup_screenshots()
     load_model_assets("url_only", URL_ONLY_CONFIG)
     load_model_assets("rf_full", RF_FULL_CONFIG)
 
