@@ -69,9 +69,16 @@ PROJECT_DIR = APP_DIR.parent
 
 PAGES_DIR = APP_DIR / "pages"
 LOGO_PATH = PROJECT_DIR / "images" / "Mailharpoon_image.png"
+TAB_ICO_PATH = PROJECT_DIR / "images" / "mailharpoon_logo.ico"
 
 def img_to_base64(path: Path) -> str:
     return base64.b64encode(path.read_bytes()).decode()
+
+st.set_page_config(
+    page_title="Mailharpoon",
+    page_icon=TAB_ICO_PATH,
+    layout="wide" 
+)
 
 
 # Sidebar (centered logo + clean header)
