@@ -86,6 +86,9 @@ st.set_page_config(
 with st.sidebar:
     logo_b64 = img_to_base64(LOGO_PATH)
 
+
+
+
     st.markdown(
         f"""
         <div style="text-align:center; padding: 0.25rem 0 0.5rem 0;">
@@ -98,6 +101,39 @@ with st.sidebar:
         <hr />
         """,
         unsafe_allow_html=True,
+    )
+
+    # Project Links Section
+    st.markdown("#### 🔗 Project Links")
+    
+    st.markdown(
+        """
+        <div style="font-size: 0.95rem; line-height: 1.8;">
+          <a href="mailto:andrejart95@gmail.com?subject=Mailharpoon Feedback" style="text-decoration: none; color: inherit;">
+            📧 <b>Contact Researcher</b>
+          </a><br>
+          <a href="https://github.com/Andrej-Art/Mailharpoon" target="_blank" style="text-decoration: none; color: inherit;">
+            🐙 <b>GitHub Repository</b>
+          </a><br>
+          <a href="https://github.com/Andrej-Art/Mailharpoon/blob/main/LICENSE" target="_blank" style="text-decoration: none; color: inherit;">
+            ⚖️ <b>License: MIT</b>
+          </a>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown("---")
+    
+    # Attribution
+    st.markdown(
+        """
+        <div style="opacity: 0.6; font-size: 0.8rem; text-align: center;">
+          Created by <b>Andrej Art</b><br>
+          Mailharpoon © 2026
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
 

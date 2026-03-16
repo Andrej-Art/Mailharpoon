@@ -13,20 +13,21 @@ st.title("ML Phishing URL Detector")
 st.write("Enter a URL to check if it is legitimate or phishing.")
 
 #  Sidebar 
-with st.sidebar:
-    st.header("Settings & Tools")
-    if st.button("Check Backend Health"):
-        try:
-            h_resp = requests.get(HEALTH_URL, timeout=5)
-            if h_resp.status_code == 200:
-                st.success("Backend is online")
-            else:
-                st.error(f"Backend error: {h_resp.status_code}")
-        except Exception:
-            st.error("Backend unreachable")
+# with st.sidebar:
+#     st.header("Settings & Tools")
+#     if st.button("Check Backend Health"):
+#         try:
+#             h_resp = requests.get(HEALTH_URL, timeout=5)
+#             if h_resp.status_code == 200:
+#                 st.success("Backend is online")
+#             else:
+#                 st.error(f"Backend error: {h_resp.status_code}")
+#         except Exception:
+#             st.error("Backend unreachable")
     
-    st.divider()
-    st.caption(f"Target: {API_URL}")
+#     st.divider()
+#     st.caption(f"Target: {API_URL}")
+
 
 # URL Input Section 
 col_url, col_model = st.columns([3, 1])
