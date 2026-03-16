@@ -30,13 +30,28 @@ st.write("Enter a URL to check if it is legitimate or phishing.")
 
 
 # URL Input Section 
-url_input = st.text_input("Enter URL:", placeholder="https://example.com").strip()
+with st.form(key='url_analyzer_form', clear_on_submit=False):
+    col_input, col_submit = st.columns([4, 1])
+    
+    with col_input:
+        url_input = st.text_input(
+            "Enter URL:", 
+            placeholder="https://example.com", 
+            label_visibility="collapsed"
+        ).strip()
+    
+    with col_submit:
+        submit_button = st.form_submit_button(
+            "Check and analyze your URL", 
+            type="primary",
+            use_container_width=True
+        )
 
 # Default to Full model and Extended checks
 model_choice = "rf_full"
 extended_checks = True
 
-if st.button("Check and analyze your URL", type="primary"):
+if submit_button:
     if not url_input:
         st.warning("Please enter a URL first.")
     else:
