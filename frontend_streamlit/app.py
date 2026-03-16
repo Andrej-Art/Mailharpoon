@@ -106,17 +106,20 @@ with st.sidebar:
     # Project Links Section
     st.markdown("#### 🔗 Project Links")
     
+    GITHUB_LOGO_PATH = PROJECT_DIR / "images" / "GitHub_Invertocat_White_Clearspace.png"
+    github_logo_b64 = img_to_base64(GITHUB_LOGO_PATH)
+    
     st.markdown(
-        """
-        <div style="font-size: 0.95rem; line-height: 1.8;">
-          <a href="mailto:andrejart95@gmail.com?subject=Mailharpoon Feedback" style="text-decoration: none; color: inherit;">
-            📧 <b>Contact Researcher</b>
-          </a><br>
-          <a href="https://github.com/Andrej-Art/Mailharpoon" target="_blank" style="text-decoration: none; color: inherit;">
-            🐙 <b>GitHub Repository</b>
-          </a><br>
-          <a href="https://github.com/Andrej-Art/Mailharpoon/blob/main/LICENSE" target="_blank" style="text-decoration: none; color: inherit;">
-            ⚖️ <b>License: MIT</b>
+        f"""
+        <div style="display: flex; justify-content: space-evenly; align-items: center; padding: 10px 0;">
+          <a href="mailto:andrejart95@gmail.com?subject=Mailharpoon Feedback" title="Contact Researcher" style="text-decoration: none;">
+            <div style="font-size: 28px;">📧</div>
+          </a>
+          <a href="https://github.com/Andrej-Art/Mailharpoon" target="_blank" title="GitHub Repository">
+            <img src="data:image/png;base64,{github_logo_b64}" width="32" />
+          </a>
+          <a href="https://github.com/Andrej-Art/Mailharpoon/blob/main/LICENSE" target="_blank" title="MIT License" style="text-decoration: none;">
+            <div style="font-size: 28px;">⚖️</div>
           </a>
         </div>
         """,
@@ -129,7 +132,7 @@ with st.sidebar:
     st.markdown(
         """
         <div style="opacity: 0.6; font-size: 0.8rem; text-align: center;">
-          Created by <b>Andrej Art</b><br>
+          Created by <b>Andrej Artuschenko</b><br>
           Mailharpoon © 2026
         </div>
         """,
