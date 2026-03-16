@@ -30,21 +30,11 @@ st.write("Enter a URL to check if it is legitimate or phishing.")
 
 
 # URL Input Section 
-col_url, col_model = st.columns([3, 1])
+url_input = st.text_input("Enter URL:", placeholder="https://example.com").strip()
 
-with col_url:
-    url_input = st.text_input("Enter URL:", placeholder="https://example.com").strip()
-
-with col_model:
-    model_choice = st.selectbox(
-        "Model",
-        options=["url_only", "rf_full"],
-        format_func=lambda x: "Fast (URL Only)" if x == "url_only" else "Full (30 Features)"
-    )
-
-extended_checks = False
-if model_choice == "rf_full":
-    extended_checks = st.toggle("Extended checks (Experimental)", value=False, help="Perform DNS and HTTP lookups (currently mostly imputed).")
+# Default to Full model and Extended checks
+model_choice = "rf_full"
+extended_checks = True
 
 if st.button("Check and analyze your URL", type="primary"):
     if not url_input:
@@ -645,10 +635,6 @@ if st.button("Check and analyze your URL", type="primary"):
                                 icon, label, _ = get_status_info(features[f])
                                 st.write(f"{icon} **{f}**: {label}")
                         
-                        # in work
-                        if model_used == "rf_full" and not extended_checks:
-                            st.info("💡 Some features were imputed with safe defaults because 'Extended checks' were disabled.")
-
             else:
                 st.error(f"API Error: Received status code {response.status_code}")
                 try:
