@@ -101,6 +101,8 @@ with st.sidebar:
         <hr />
         """,
         unsafe_allow_html=True,
+
+        
     )
 
     # Project Links Section
@@ -112,13 +114,13 @@ with st.sidebar:
     st.markdown(
         f"""
         <div style="display: flex; justify-content: space-evenly; align-items: center; padding: 10px 0;">
-          <a href="mailto:andrejart95@gmail.com?subject=Mailharpoon Feedback" title="Contact Researcher" style="text-decoration: none;">
+          <a href="mailto:andrejart95@gmail.com?subject=Mailharpoon Feedback" title="Contact Mailharpoon" style="text-decoration: none;">
             <div style="font-size: 28px;">📧</div>
           </a>
           <a href="https://github.com/Andrej-Art/Mailharpoon" target="_blank" title="GitHub Repository">
             <img src="data:image/png;base64,{github_logo_b64}" width="32" />
           </a>
-          <a href="https://github.com/Andrej-Art/Mailharpoon/blob/main/LICENSE" target="_blank" title="MIT License" style="text-decoration: none;">
+          <a href="https://github.com/Andrej-Art/Mailharpoon/blob/main/LICENSE.md" target="_blank" title="MIT License" style="text-decoration: none;">
             <div style="font-size: 28px;">⚖️</div>
           </a>
         </div>
