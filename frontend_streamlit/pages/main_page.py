@@ -85,6 +85,33 @@ if submit_button:
                     st.error(f"### 🚨 Prediction: {prediction}")
                 else:
                     st.success(f"### ✅ Prediction: {prediction}")
+
+                # Modern Probability Display
+                legit_pct = legit_prob * 100
+                phish_pct = phish_prob * 100
+                
+                # Determine emphasis and background
+                legit_bg = "rgba(40, 167, 69, 0.15)" if legit_pct >= phish_pct else "rgba(255, 255, 255, 0.05)"
+                phish_bg = "rgba(220, 53, 69, 0.15)" if phish_pct > legit_pct else "rgba(255, 255, 255, 0.05)"
+                
+                legit_color = "#28a745" if legit_pct >= phish_pct else "#888"
+                phish_color = "#dc3545" if phish_pct > legit_pct else "#888"
+                
+                legit_border = "1px solid #28a745" if legit_pct >= phish_pct else "1px solid #444"
+                phish_border = "1px solid #dc3545" if phish_pct > legit_pct else "1px solid #444"
+
+                st.markdown(f"""
+                    <div style="display: flex; gap: 15px; margin-top: 10px; margin-bottom: 25px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 160px; background: {legit_bg}; border: {legit_border}; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            <div style="font-size: 0.85rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Legitimate</div>
+                            <div style="font-size: 2rem; font-weight: 800; color: {legit_color};">{legit_pct:.1f}%</div>
+                        </div>
+                        <div style="flex: 1; min-width: 160px; background: {phish_bg}; border: {phish_border}; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            <div style="font-size: 0.85rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Phishing</div>
+                            <div style="font-size: 2rem; font-weight: 800; color: {phish_color};">{phish_pct:.1f}%</div>
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
                 
                 # Fetch Info (Extended Checks)
                 fetch_info = data.get("fetch_info")
@@ -134,12 +161,6 @@ if submit_button:
                     else:
                         st.warning(f"Screenshot could not be captured: {screenshot_info.get('error', 'Unknown error')}")
 
-                st.caption(f"Model used: `{model_used}` | Threshold: `{threshold:.2f}`")
-
-                # display metrics
-                col1, col2 = st.columns(2)
-                col1.metric("Phishing Prob.", f"{phish_prob:.3f}")
-                col2.metric("Legit Prob.", f"{legit_prob:.3f}")
                
                 # Feature Breakdown
                 st.subheader("Technical URL Analysis Report")
