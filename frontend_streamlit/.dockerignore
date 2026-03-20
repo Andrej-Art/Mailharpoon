@@ -1,0 +1,28 @@
+# Docker build context exclusions
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Project files
+.DS_Store
+.git/
+.gitignore
+.env
+.ipynb_checkpoints/
+
+# Other context exclusions
+backend/
+images/ # Only if building from root, otherwise it's just a folder
+tests/
+data/
+
+# Log files
+*.log
