@@ -3,29 +3,49 @@ import pandas as pd
 
 st.title("About the Mailharpoon Project")
 
-
-with st.expander("**About the general Phishing Problem**", expanded=False):
+# Section 1: About the Project
+with st.expander("1. About the Project", expanded=True):
     st.markdown("""
-Phishing attacks remain one of the most critical cybersecurity threats worldwide. In 2025, phishing activity reached an all-time high, with over one million reported attacks in a single quarter. Modern phishing campaigns increasingly leverage AI-generated content, making fraudulent emails, messages, and websites more convincing and harder to detect.
-
-Traditional blacklist and rule-based security mechanisms struggle to keep pace with rapidly evolving and polymorphic attack patterns. As phishing expands across email, SMS, voice, and social media platforms, there is a growing need for intelligent, adaptive detection systems capable of identifying malicious content in real time.
-
-Therefore, developing an automated phishing detection system is essential to reduce successful attacks and better protect users’ sensitive information.
-""")
-
-
-
-with st.expander("**About the Data**", expanded=False):
-
-    st.markdown("""
-    This project primarily uses the Website Phishing Dataset from the UC Irvine Machine Learning Repository, 
-    containing 1,353 labeled URLs with 30 feature attributes and 1 class label (legitimate, suspicious, phishing). 
+    **Mailharpoon** is an intelligent analysis tool designed to protect users from deceptive websites and phishing attempts.
     
-    In addition, other phishing-related datasets and feature sets were evaluated. However, many traditional 
-    URL-based features showed high false-positive rates in real-world scenarios.
+    **The mission:** To leverage machine learning and real-time network intelligence to identify malicious URLs before they can compromise your security.
+    
+    Whether you are a security professional or an everyday web user, Mailharpoon provides the transparency and insights needed to navigate the web safely.
     """)
 
-    # Full Feature Table (30 Features based on rf_full)
+# Section 2: The Phishing Problem
+with st.expander("2. The Phishing Problem", expanded=False):
+    st.markdown("""
+    Phishing remains one of the most pervasive cyber threats globally. Modern attacks have evolved from simple "bad spelling" emails into sophisticated, AI-driven replicas of trusted financial institutions and services.
+    
+    The danger lies in targeting the human element rather than just technical vulnerabilities. A single click can lead to identity theft, financial loss, or act as an entry point for ransomware. Because attackers constantly rotate domains and use "polymorphic" URLs, traditional blacklists often struggle to keep up.
+    """)
+
+# Section 3: How Mailharpoon Works
+with st.expander("3. How Mailharpoon Works", expanded=False):
+    st.markdown("""
+    Our analysis process is transparent and multi-layered:
+    1. **Input:** You enter a suspicious URL into the analyzer.
+    2. **Extraction:** The system scans over 30 distinct features of the URL, the page structure, and the underlying network infrastructure.
+    3. **Inference:** A Random Forest machine learning model compares these patterns against thousands of verified safe and malicious sites.
+    4. **Prediction:** You receive a clear risk assessment (Legitimate or Malicious) alongside a detailed technical breakdown of *why* the site was flagged.
+    """)
+
+# Section 4: Data & Machine Learning
+with st.expander("4. Data & Machine Learning", expanded=False):
+    st.markdown("""
+    Mailharpoon is built on a foundation of data-driven security. The core model was trained using the **Website Phishing Dataset** from the **UC Irvine Machine Learning Repository** (https://archive.ics.uci.edu/dataset/327/phishing+websites), which contains thousands of labeled URLs analyzed across 30 different attributes. 
+    
+    In addition, other phishing-related datasets and feature sets were evaluated during development. This mathematical approach allows us to detect subtle "tells" that humans might miss—such as unusual link ratios or suspicious domain registration patterns. We prioritize "Explainable AI," ensuring that every prediction is supported by visible metrics.
+    """)
+
+# Section 5: Analyzed Features (Full Overview)
+with st.expander("5. Full Overview of Analyzed Features", expanded=False):
+    st.markdown("""
+    The Mailharpoon model analyzes the following 30 parameters to determine the risk level of a URL:
+    """)
+    
+    # Full Feature Table (30 Features based on original UCI set)
     data = {
         "Feature": [
             "having_IP_Address", "URL_Length", "Shortining_Service", "having_At_Symbol",
@@ -73,8 +93,44 @@ with st.expander("**About the Data**", expanded=False):
 
     df = pd.DataFrame(data)
     df.index = df.index + 1 
-
-    st.subheader("Model Feature Overview (30 Features)")
     st.table(df)
+
+# Section 6: Network Intelligence & Analysis
+with st.expander("6. Network Intelligence & Analysis", expanded=False):
+    st.markdown("""
+    A URL is only the surface. Mailharpoon performs deep background verification to uncover the hidden infrastructure of a site:
+    - **IP & Hosting:** We resolve the domain and identify the hosting provider to spot high-risk infrastructure.
+    - **Geolocation:** We estimate the physical server location to detect regional discrepancies.
+    - **Redirect Tracking:** We follow the full chain of redirects to see the ultimate destination of a link.
+    - **Visual Capture:** We take a secure snapshot of the page, allowing you to safely preview the site's appearance.
+    
+    This deep intelligence helps reveal the intent behind a link, beyond what is visible in the browser address bar.
+    """)
+
+# Section 7: Limitations & Responsible Use
+with st.expander("7. Limitations & Responsible Use", expanded=False):
+    st.markdown("""
+    While Mailharpoon utilizes advanced modeling, no automated system is 100% infallible. Cybercriminals are constantly innovating to bypass security filters.
+    
+    Occasionally, safe sites may be flagged as suspicious (False Positive), or brand-new threats might be missed (False Negative). Mailharpoon is designed to **support** your judgment, not replace it. Always remain cautious when interacting with unknown links.
+    """)
+
+# Section 8: Project Goal & Vision
+with st.expander("8. Project Goal & Vision", expanded=False):
+    st.markdown("""
+    The vision for Mailharpoon is to bridge the gap between complex security data and user understanding. We want to build a tool that isn't just a "black box," but an educational resource that empowers users.
+    
+    By combining state-of-the-art machine learning with clear, explainable insights, we aim to help users understand *how* phishing works, enabling everyone to build a more resilient and safer internet.
+    """)
+
+# Section 9: The future of Mailharpoon
+with st.expander("9. The future of the Mailharpoon Project", expanded=False):
+    st.markdown("""
+Mailharpoon will continue to evolve as we work on improving both the quality and quantity of our data. By incorporating more recent and diverse datasets, we aim to continuously refine our machine learning models and achieve more accurate and reliable phishing predictions.
+
+In addition, new features will be introduced to enhance usability and provide more value to users. Planned improvements include the ability to export key analysis results of a scanned URL in multiple formats such as JSON, TXT, and PDF, enabling easy sharing and documentation.
+
+Looking ahead, Mailharpoon will expand beyond URL analysis into a broader security intelligence platform. One of the next steps is the development of email account analysis, allowing users to identify which accounts are most exposed to phishing threats and at higher risk. This will help organizations and individuals better understand their attack surface and take proactive security measures.
+""")
 
 
