@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # --- Backend Service (FastAPI) ---
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mailharpoon-backend
+    # Expose port 8000 to the host for direct API access if needed
+    ports:
+      - "8000:8000"
+    environment:
+      - MAILHARPOON_API_HOST=0.0.0.0
+      - MAILHARPOON_API_PORT=8000
+    restart: unless-stopped
+    # Healthcheck to allow the frontend to wait for backend readiness
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    # Persistent volume for screenshots
+    volumes:
+      - screenshot_data:/tmp/mailharpoon_screenshots
+
+  # --- Frontend Service (Streamlit) ---
+  frontend:
+    build:
+      context: ./frontend_streamlit
+      dockerfile: Dockerfile
+    container_name: mailharpoon-frontend
+    # Expose port 8501 for the web interface
+    ports:
+      - "8501:8501"
+    environment:
+      # Tell the frontend how to reach the backend service via the Docker network
+      - MAILHARPOON_BACKEND_URL=http://backend:8000
+    # Wait for the backend to be healthy before starting the frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+# Named volumes for persistent data across container restarts
+volumes:
+  screenshot_data:

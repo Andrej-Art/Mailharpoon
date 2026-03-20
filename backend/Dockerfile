@@ -11,10 +11,11 @@ ENV PYTHONPATH /app/src
 # Set working directory inside the container
 WORKDIR /app
 
-# Install basic system utilities
+# Install basic system utilities and curl for healthcheck
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     gnupg \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install Python dependencies
@@ -35,6 +36,10 @@ RUN mkdir -p /tmp/mailharpoon_screenshots && chmod 777 /tmp/mailharpoon_screensh
 
 # Expose the API port (default 8000)
 EXPOSE 8000
+
+# Healthcheck to ensure the API is responsive and models are loaded
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+  CMD curl -f http://localhost:8000/health || exit 1
 
 # Set default environment variables for the deployment-safe path logic
 # These can be overridden at runtime via docker run -e or docker-compose
