@@ -1,3 +1,5 @@
+# site deleted in the sidebar!
+
 import streamlit as st
 
 st.title("About the Dataset and Machine Learning Models")
