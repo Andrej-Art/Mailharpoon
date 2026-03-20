@@ -435,7 +435,7 @@ def extract_features_rf_full(url: str, extended: bool = False) -> Tuple[Dict[str
 
 # api models 
 class PredictUrlRequest(BaseModel):
-    url: str = Field(..., example="https://phishing-site-example.com/login")
+    url: str = Field(..., json_schema_extra={"example": "https://phishing-site-example.com/login"})
     model: str = Field("rf_full", description="Model to use: 'url_only' or 'rf_full'")
     extended: bool = Field(True, description="Whether to perform extended checks (DNS/HTTP)")
 
@@ -458,7 +458,9 @@ app = FastAPI(
 )
 
 # Static files for screenshots
-app.mount("/images/screenshots", StaticFiles(directory="/tmp/mailharpoon_screenshots"), name="screenshots")
+screenshot_dir = "/tmp/mailharpoon_screenshots"
+os.makedirs(screenshot_dir, exist_ok=True)
+app.mount("/images/screenshots", StaticFiles(directory=screenshot_dir), name="screenshots")
 
 # global state 
 models = {}
