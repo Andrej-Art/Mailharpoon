@@ -2,13 +2,19 @@ import asyncio
 import hashlib
 import os
 import logging
+import sys
 from playwright.async_api import async_playwright
 from datetime import datetime
+from pathlib import Path
+
+# Add parent dir to path to find config if needed
+try:
+    from config import SCREENSHOT_DIR
+except ImportError:
+    sys.path.append(str(Path(__file__).resolve().parent.parent))
+    from config import SCREENSHOT_DIR
 
 logger = logging.getLogger(__name__)
-
-# Base directory for screenshots
-SCREENSHOT_DIR = "/tmp/mailharpoon_screenshots"
 
 def cleanup_screenshots():
     """

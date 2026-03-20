@@ -1,12 +1,14 @@
 # streamlit frontend
 
+import os
 import requests
 import streamlit as st
 
 # Configuration 
-# Lokaler API-Endpoint für die URL-basierte Inferenz
-API_URL = "http://127.0.0.1:8000/predict-url"
-HEALTH_URL = "http://127.0.0.1:8000/health"
+# Get backend URL from environment, default to local if not set
+BASE_BACKEND_URL = os.getenv("MAILHARPOON_BACKEND_URL", "http://127.0.0.1:8000").rstrip("/")
+API_URL = f"{BASE_BACKEND_URL}/predict-url"
+HEALTH_URL = f"{BASE_BACKEND_URL}/health"
 
 # Page Layout 
 st.title("ML Phishing URL Detector")
@@ -159,7 +161,7 @@ if submit_button:
                             if screenshot_info:
                                 st.markdown("##### 📸 Page Preview")
                                 if screenshot_info.get("success"):
-                                    screenshot_url = f"http://127.0.0.1:8000{screenshot_info['screenshot_url']}"
+                                    screenshot_url = f"{BASE_BACKEND_URL}{screenshot_info['screenshot_url']}"
                                     st.image(screenshot_url, use_container_width=True)
                                     st.caption(f"**Captured at:** {screenshot_info.get('timestamp')}")
                                     st.write(f"**Final Destination:** `{screenshot_info.get('final_url')}`")

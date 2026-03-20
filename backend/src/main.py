@@ -25,22 +25,13 @@ from features.domain_metadata_features import (
 from features.google_index_features import is_domain_indexed
 from features.reputation_features import check_domain_reputation
 
-# configuration 
-MODELS_BASE = "/Users/andrejartuschenko/Desktop/mailharpoon/backend/models"
+from config import MODELS_DIR, SCREENSHOT_DIR, API_HOST, API_PORT, get_model_config
 
-# URL Only Model
-URL_ONLY_CONFIG = {
-    "model_path": f"{MODELS_BASE}/rf_url_only/rf_url_final.joblib",
-    "features_path": f"{MODELS_BASE}/rf_url_only/rf_url_features.json",
-    "threshold_path": f"{MODELS_BASE}/rf_url_only/rf_url_only_threshold.json"
-}
+# URL Only Model Configuration
+URL_ONLY_CONFIG = get_model_config("url_only")
 
-# Full Model
-RF_FULL_CONFIG = {
-    "model_path": f"{MODELS_BASE}/rf_full_final.joblib",
-    "features_path": f"{MODELS_BASE}/rf_full_features.json",
-    "threshold_path": f"{MODELS_BASE}/rf_threshold.json"
-}
+# Full Model Configuration
+RF_FULL_CONFIG = get_model_config("rf_full")
 
 #internal constants for url shortner
 SHORTENER_LIST = ["bit.ly", "tinyurl.com", "t.co", "is.gd", "cutt.ly"]
@@ -458,7 +449,7 @@ app = FastAPI(
 )
 
 # Static files for screenshots
-screenshot_dir = "/tmp/mailharpoon_screenshots"
+screenshot_dir = str(SCREENSHOT_DIR)
 os.makedirs(screenshot_dir, exist_ok=True)
 app.mount("/images/screenshots", StaticFiles(directory=screenshot_dir), name="screenshots")
 
@@ -575,5 +566,5 @@ async def predict_url(request_data: PredictUrlRequest):
     )
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("main:app", host=API_HOST, port=API_PORT, reload=True)
 
