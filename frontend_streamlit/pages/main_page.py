@@ -113,53 +113,60 @@ if submit_button:
                     </div>
                 """, unsafe_allow_html=True)
                 
-                # Fetch Info (Extended Checks)
+                # Unified Network Intelligence & Page Preview Section
                 fetch_info = data.get("fetch_info")
-                if fetch_info:
-                    with st.container(border=True):
-                        st.caption("🌐 **Network Intelligence Report**")
-                        cols = st.columns(2)
-                        
-                        cols[0].write(f"**Status:** `{fetch_info.get('status_code', 'N/A')}`")
-                        cols[1].write(f"**Redirects:** `{fetch_info.get('redirect_count', 0)}` followed")
-                        
-                        st.write(f"**Resolved IP Address:** `{fetch_info.get('resolved_ip', 'Unknown')}`")
-                        
-                        geo = fetch_info.get("ip_info", {})
-                        if geo and geo.get("status") == "success":
-                            st.write(f"**Hosting Provider / ISP:** {geo.get('isp')}")
-                            st.write(f"**Infrastructure:** {fetch_info.get('infrastructure', 'Origin Server')}")
-                            st.write(f"**Estimated Edge Location:** {geo.get('city')}, {geo.get('country')}")
-                            st.write(f"**Coordinates:** {geo.get('lat')}, {geo.get('lon')}")
-                            
-                            # Show Map
-                            map_data = {"lat": [geo.get("lat")], "lon": [geo.get("lon")]}
-                            st.map(map_data, zoom=4)
-                            
-                            if "CDN" in fetch_info.get('infrastructure', ''):
-                                st.caption("📝 **Note:** CDN infrastructure may serve content from multiple global locations. The displayed location represents the approximate location of the edge node responding to the request.")
-                        elif fetch_info.get("resolved_ip"):
-                            st.write(f"**Infrastructure:** Unknown / Error")
-                            st.warning("Geolocation data unavailable for this IP.")
-
-                        if fetch_info.get("final_url"):
-                            st.write(f"**Final Destination:** `{fetch_info['final_url']}`")
-                        if fetch_info.get("error"):
-                            st.error(f"**Fetch Error:** {fetch_info['error']}")
-
-                # Page Screenshot Section
                 metadata = data.get("feature_metadata", {})
                 screenshot_info = metadata.get("screenshot_metadata")
-                if screenshot_info:
-                    st.divider()
-                    st.subheader("📸 Page Screenshot")
-                    if screenshot_info.get("success"):
-                        screenshot_url = f"http://127.0.0.1:8000{screenshot_info['screenshot_url']}"
-                        st.image(screenshot_url, caption=f"Snapshot of {screenshot_info['final_url']}", use_container_width=True)
-                        st.caption(f"Captured at: {screenshot_info['timestamp']}")
-                        st.write(f"**Final Rendered URL:** `{screenshot_info['final_url']}`")
-                    else:
-                        st.warning(f"Screenshot could not be captured: {screenshot_info.get('error', 'Unknown error')}")
+
+                if fetch_info or screenshot_info:
+                    with st.container(border=True):
+                        st.subheader("🌐 Network Intelligence & Page Preview")
+                        
+                        col1, col2 = st.columns([1, 1], gap="large")
+                        
+                        with col1:
+                            # Left Column: Network Info + Map
+                            if fetch_info:
+                                st.markdown("##### 📡 Network Details")
+                                info_cols = st.columns(2)
+                                info_cols[0].write(f"**Status:** `{fetch_info.get('status_code', 'N/A')}`")
+                                info_cols[1].write(f"**Redirects:** `{fetch_info.get('redirect_count', 0)}` followed")
+                                
+                                st.write(f"**Resolved IP:** `{fetch_info.get('resolved_ip', 'Unknown')}`")
+                                
+                                geo = fetch_info.get("ip_info", {})
+                                if geo and geo.get("status") == "success":
+                                    st.write(f"**ISP:** {geo.get('isp')}")
+                                    st.write(f"**Infrastructure:** {fetch_info.get('infrastructure', 'Origin Server')}")
+                                    st.write(f"**Location:** {geo.get('city')}, {geo.get('country')}")
+                                    
+                                    # Show Map directly below info
+                                    map_data = {"lat": [geo.get("lat")], "lon": [geo.get("lon")]}
+                                    st.map(map_data, zoom=4)
+                                    
+                                    if "CDN" in fetch_info.get('infrastructure', ''):
+                                        st.caption("📝 CDN infrastructure may serve content from multiple global locations.")
+                                elif fetch_info.get("resolved_ip"):
+                                    st.warning("Geolocation data unavailable.")
+                                
+                                if fetch_info.get("error"):
+                                    st.error(f"**Fetch Error:** {fetch_info['error']}")
+                            else:
+                                st.info("Network details not available.")
+
+                        with col2:
+                            # Right Column: Screenshot + Meta
+                            if screenshot_info:
+                                st.markdown("##### 📸 Page Preview")
+                                if screenshot_info.get("success"):
+                                    screenshot_url = f"http://127.0.0.1:8000{screenshot_info['screenshot_url']}"
+                                    st.image(screenshot_url, use_container_width=True)
+                                    st.caption(f"**Captured at:** {screenshot_info.get('timestamp')}")
+                                    st.write(f"**Final Destination:** `{screenshot_info.get('final_url')}`")
+                                else:
+                                    st.warning(f"Screenshot unavailable: {screenshot_info.get('error', 'Unknown')}")
+                            else:
+                                st.info("Page preview not available.")
 
                
                 # Feature Breakdown
