@@ -176,7 +176,7 @@ what_is_phishing = st.Page(
 pg = st.navigation(
     {
         "Mailharpoon": [main_page],
-        "About": [phishing_page, ml_principles, what_is_phishing],
+        "About": [phishing_page, what_is_phishing],
     }
 )
 
