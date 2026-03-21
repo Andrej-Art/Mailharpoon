@@ -1,92 +1,140 @@
-# <img src="images/Mailharpoon_image.png" width="80" align="top" /> Mailharpoon: Phishing Detection & Insights
-![Status](https://img.shields.io/badge/status-active%20development-orange)
+# MailHarpoon – Phishing URL Detection System ⚓🛡️
 
-**Mailharpoon** is a machine learning-based tool designed to analyze URLs and identify potential phishing attempts. The project combines data science techniques with an interactive web interface to provide users with a risk score and detailed insights into suspicious URL characteristics.
+[![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.133.1-009688.svg)](https://fastapi.tiangolo.com/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.54.0-FF4B4B.svg)](https://streamlit.io/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
+[![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.8.0-F7931E.svg)](https://scikit-learn.org/)
 
-## Overview
-
-Phishing attacks often use deceptive URLs to trick users into revealing sensitive information. Mailharpoon leverages the **UCI Phishing Websites Dataset** to train classification models that can distinguish between legitimate and malicious websites based on 30+ features (e.g., URL length, SSL state, domain registration length).
-
-## Key Features
-
-- **Interactive URL Analyzer**: Paste a URL to get an instant risk assessment.
-- **Machine Learning Insights**: Explore the principles behind the classification models.
-- **Educational Content**: Learn what phishing is and how to protect yourself.
-- **Modern UI**: A sleek, dark-mode dashboard built with Streamlit.
-
-## Machine Learning Models
-
-Various machine learning models were trained and evaluated to identify the best performing model for phishing detection. The following models were trained:
-
-- Random Forest
-- MLP
-- Decision Tree
-- SVM
-- Gradient Boosting
-- KNN 
-- Logistic Regression
-- Naive Bayes
-
-![Model Performance](images/train_test_performance.png)
-
-To assess the stability and generalization capability of the Random Forest classifier, a 5-fold Stratified Cross-Validation was performed on the full dataset. Stratification ensures that the class distribution (phishing vs. legitimate) is preserved across all folds.
-
-![RF Cross Validation](images/rf_cross_validation.png)
-
-The Random Forest model demonstrates:
-
-- High predictive performance across all evaluation metrics.
-
-- Very low standard deviation, indicating strong stability across different data splits.
-
-- Consistent recall for phishing detection, which is critical in a security context.
-
-- Excellent discriminative power, as reflected by the near-perfect ROC-AUC.
-
-The small variance between folds suggests that the Random Forest model generalizes well and is not overly dependent on a specific train-test split. This confirms that the previously observed strong test performance is not due to randomness or data leakage.
-
-## Project Structure
-
-- `backend/`: Data processing and model development.
-  - `data/`: Raw and processed datasets.
-  - `notebooks/`: Jupyter Notebooks for EDA, Preprocessing, and Modeling.
-- `frontend_streamlit/`: The interactive web application.
-- `images/`: Brand assets and supplementary visuals.
-- `requirements.txt`: Project dependencies.
-
-## Tech Stack
-
-- **Language**: Python
-- **Web Framework**: Streamlit
-- **Data Science**: Pandas, NumPy, Scikit-learn
-- **Visualization**: Matplotlib, Seaborn
-
-## How to Run
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/Andrej-Art/Mailharpoon.git
-   cd Mailharpoon
-   ```
-
-2. **Install dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Run the Streamlit app**:
-   ```bash
-   streamlit run frontend_streamlit/app.py
-   ```
-
-
-## Some Screenshots
-
-![Main Page](images/mh_1.png)
-
-![About Project](images/mh_2.png)
-
-![About Dataset](images/mh_3.png)
+**MailHarpoon** is a professional-grade, machine learning-powered security tool designed to identify and analyze phishing URLs with high precision. By combining advanced feature extraction with a robust Random Forest classifier, it provides real-time risk assessment and deep network intelligence for any given URL.
 
 ---
-*Developed by Andrej Artuschenko*
+
+## 🚀 Key Features
+
+- **🧠 Intelligent Detection**: Uses a Random Forest model trained on the UCI Phishing Dataset to classify URLs based on 30+ distinct technical features.
+- **🌐 Network Intelligence**: Performs real-time DNS records, SSL/TLS certificate validation, and WHOIS domain age lookups.
+- **📸 Visual Preview**: Safely captures a full-page screenshot of the target site using Playwright to identify visual deception.
+- **🛡️ Reputation Checks**: Integrates with reputation APIs to check domains against known blacklists.
+- **⚡ High Performance**: Fast inference engine built with FastAPI and an interactive, modern dashboard powered by Streamlit.
+- **🐳 Deployment Ready**: Fully containerized with Docker and Docker Compose for seamless deployment in any environment.
+
+---
+
+## 🏗️ System Architecture
+
+<p align="center">
+  <img src="./system_Architecture.png" alt="MailHarpoon Architecture" width="800">
+</p>
+
+The system follows a modern, containerized microservices architecture:
+1.  **Frontend (Streamlit)**: High-level UI for user interaction and report generation.
+2.  **Backend (FastAPI)**: Heavy-lifting service for feature extraction, external lookups, and model inference.
+3.  **Intelligence Layer**: Asynchronous tasks for screenshot capturing and multi-source data gathering.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend**: Streamlit, Requests, Pandas
+- **Backend**: FastAPI, Uvicorn, Pydantic, Playwright
+- **Machine Learning**: Scikit-Learn, Joblib, NumPy
+- **DevOps**: Docker, Docker Compose, Pathlib (deployment-safe path logic)
+
+---
+
+## 📁 Project Structure
+
+```text
+mailharpoon/
+├── backend/                # FastAPI Microservice
+│   ├── src/                # Source code (API, Logic, Config)
+│   ├── models/             # Trained ML models & feature sets
+│   └── Dockerfile          # Backend containerization
+├── frontend_streamlit/     # Streamlit Web App
+│   ├── pages/              # Multi-page application structure
+│   ├── images/             # UI assets
+│   └── Dockerfile          # Frontend containerization
+├── docker-compose.yml      # Multi-container orchestration
+├── .env.example            # Deployment environment template
+└── requirements.txt        # Full project dependencies
+```
+
+---
+
+## 🚦 Getting Started
+
+### Prerequisites
+- Python 3.11+
+- Docker & Docker Compose (Recommended)
+
+### Option 1: Running with Docker (Recommended)
+The fastest way to get the entire system up and running:
+
+```bash
+# Clone the repository
+git clone https://github.com/Andrej-Art/Mailharpoon.git
+cd Mailharpoon
+
+# Launch the system
+docker-compose up --build
+```
+*The frontend will be available at `http://localhost:8501`, and the backend at `http://localhost:8000`.*
+
+### Option 2: Local Development
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Start Backend
+cd backend/src
+python main.py
+
+# Start Frontend (in a new terminal)
+cd frontend_streamlit
+streamlit run app.py
+```
+
+---
+
+## 🔌 API Reference
+
+### Predict URL
+`POST /predict-url`
+
+**Request:**
+```json
+{
+  "url": "https://suspicious-site.com/login",
+  "model": "rf_full",
+  "extended": true
+}
+```
+
+**Response:**
+```json
+{
+  "prediction": "Malicious",
+  "phishing_probability": 0.86,
+  "legit_probability": 0.14,
+  "model_used": "rf_full"
+}
+```
+
+---
+
+## 🗺️ Roadmap
+- [ ] Integration of Vision-based Phishing Detection (CNNs).
+- [ ] Real-time browser extension for live protection.
+- [ ] Advanced behavioral analysis of redirection chains.
+- [ ] Multi-user support with historical analysis tracking.
+
+---
+
+## 👨‍💻 Author
+**Andrej Artuschenko**
+- GitHub: [@Andrej-Art](https://github.com/Andrej-Art)
+- Email: andrejart95@gmail.com
+
+---
+*MailHarpoon – Precision hunting for phishing threats.*
