@@ -5,9 +5,8 @@ import requests
 import streamlit as st
 
 # Configuration 
-# Get backend URL from environment, default to local if not set
-MAILHARPOON_BACKEND_URL = "https://mailharpoon-backend.onrender.com"
-BASE_BACKEND_URL = os.getenv("MAILHARPOON_BACKEND_URL", "http://127.0.0.1:8000").rstrip("/")
+# Get backend URL from environment, fallback to local development if not set
+BASE_BACKEND_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000").rstrip("/")
 API_URL = f"{BASE_BACKEND_URL}/predict-url"
 HEALTH_URL = f"{BASE_BACKEND_URL}/health"
 
