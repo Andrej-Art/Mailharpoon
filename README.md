@@ -1,4 +1,4 @@
-# MailHarpoon – Phishing URL Detection System ⚓🛡️
+# <img src="images/Mailharpoon_image.png" width="80" align="top" /> Mailharpoon: Phishing Detection & Insights
 
 [![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.133.1-009688.svg)](https://fastapi.tiangolo.com/)
@@ -21,7 +21,7 @@
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 <p align="center">
   <img src="./system_Architecture.png" alt="MailHarpoon Architecture" width="800">
@@ -62,7 +62,7 @@ mailharpoon/
 
 ---
 
-## 🚦 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Python 3.11+
@@ -97,7 +97,7 @@ streamlit run app.py
 
 ---
 
-## 🔌 API Reference
+## API Reference
 
 ### Predict URL
 `POST /predict-url`
@@ -123,18 +123,8 @@ streamlit run app.py
 
 ---
 
-## 🗺️ Roadmap
-- [ ] Integration of Vision-based Phishing Detection (CNNs).
-- [ ] Real-time browser extension for live protection.
-- [ ] Advanced behavioral analysis of redirection chains.
-- [ ] Multi-user support with historical analysis tracking.
-
----
-
-## 👨‍💻 Author
+## Author
 **Andrej Artuschenko**
 - GitHub: [@Andrej-Art](https://github.com/Andrej-Art)
 - Email: andrejart95@gmail.com
 
----
-*MailHarpoon – Precision hunting for phishing threats.*
