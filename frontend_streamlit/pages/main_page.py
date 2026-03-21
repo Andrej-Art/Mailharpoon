@@ -1,14 +1,17 @@
 # streamlit frontend
 
-import os
-import requests
 import streamlit as st
+import requests
+import sys
+from pathlib import Path
 
-# Configuration 
-# Get backend URL from environment, fallback to local development if not set
-BASE_BACKEND_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000").rstrip("/")
-API_URL = f"{BASE_BACKEND_URL}/predict-url"
-HEALTH_URL = f"{BASE_BACKEND_URL}/health"
+# Add project root to sys.path to allow importing config.py
+project_root = str(Path(__file__).resolve().parent.parent)
+if project_root not in sys.path:
+    sys.path.append(project_root)
+
+# Centralized Configuration
+from config import BASE_BACKEND_URL, API_URL, HEALTH_URL
 
 # Page Layout 
 st.title("ML Phishing URL Detector")
@@ -691,7 +694,7 @@ if submit_button:
             st.error("Request timed out. The backend might be busy or unreachable.")
         except requests.exceptions.ConnectionError:
             st.error("Connection Error: Could not connect to the backend.")
-            st.info(f"Ensure that the FastAPI server is running at {API_URL.replace('/predict-url', '')}")
+            st.info(f"Ensure that the FastAPI server is running at **{BASE_BACKEND_URL}**")
         except Exception as e:
             st.error(f"An unexpected error occurred: {str(e)}")
 
