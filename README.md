@@ -36,9 +36,9 @@ The system follows a modern, containerized microservices architecture:
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: Streamlit, Requests, Pandas
-- **Backend**: FastAPI, Uvicorn, Pydantic, Playwright
-- **Machine Learning**: Scikit-Learn, Joblib, NumPy
+- **Frontend**: Streamlit
+- **Backend**: FastAPI, Uvicorn, Pydantic, Playwright, Requests
+- **Machine Learning**: Scikit-Learn, Joblib, NumPy, Pandas
 - **DevOps**: Docker, Docker Compose, Pathlib (deployment-safe path logic)
 
 ---
