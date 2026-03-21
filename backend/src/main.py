@@ -12,20 +12,20 @@ from urllib.parse import urlparse
 from fastapi import FastAPI, HTTPException, Body
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
-from http_features import safe_fetch_html, extract_features_from_html, get_ip_geolocation
-from security.tls_checks import check_ssl_certificate
-from security.screenshot_service import capture_screenshot, cleanup_screenshots
-from features.dns_features import check_dns_record
-from features.domain_metadata_features import (
+from .http_features import safe_fetch_html, extract_features_from_html, get_ip_geolocation
+from .security.tls_checks import check_ssl_certificate
+from .security.screenshot_service import capture_screenshot, cleanup_screenshots
+from .features.dns_features import check_dns_record
+from .features.domain_metadata_features import (
     get_domain_age, 
     get_domain_registration_length, 
     get_registrable_domain,
     get_domain_dates
 )
-from features.google_index_features import is_domain_indexed
-from features.reputation_features import check_domain_reputation
+from .features.google_index_features import is_domain_indexed
+from .features.reputation_features import check_domain_reputation
 
-from config import MODELS_DIR, SCREENSHOT_DIR, API_HOST, API_PORT, get_model_config
+from .config import MODELS_DIR, SCREENSHOT_DIR, API_HOST, API_PORT, get_model_config
 
 # URL Only Model Configuration
 URL_ONLY_CONFIG = get_model_config("url_only")
