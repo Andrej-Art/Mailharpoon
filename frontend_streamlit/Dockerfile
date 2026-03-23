@@ -33,7 +33,7 @@ EXPOSE 8501
 
 # Default environment variables for backend communication
 # This can be overridden at runtime (e.g., to http://backend:8000 in docker-compose)
-ENV MAILHARPOON_BACKEND_URL=http://localhost:8000
+ENV BACKEND_URL=http://localhost:8000
 
 # Configure Streamlit to run in a containerized environment
 ENV STREAMLIT_SERVER_PORT=8501
