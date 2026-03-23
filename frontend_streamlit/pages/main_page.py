@@ -254,9 +254,9 @@ if submit_button:
                             "name": "Domain Age",
                             "insight": "Phishing campaigns typically rely on newly registered domains. Older domains are generally more trustworthy.",
                             "get_val": lambda m: (
-                                f"{m.get('domain_age_days')} days (~{m.get('domain_age_days', 0)/365:.1f} years)\n"
-                                f"Interpretation: {'Long-established domain' if m.get('domain_age_days', 0) > 730 else 'Recent domain'}"
-                            ) if m.get('domain_age_days') else "Unknown"
+                                f"{m.get('domain_age_days')} days (~{(m.get('domain_age_days') or 0)/365:.1f} years)\n"
+                                f"Interpretation: {'Long-established domain' if (m.get('domain_age_days') or 0) > 730 else 'Recent domain'}"
+                            ) if m.get('domain_age_days') is not None else "Unknown"
                         },
                         "domain_registeration_length": {
                             "name": "Remaining Registration",
@@ -428,19 +428,19 @@ if submit_button:
                             "name": "Links in Tags (Meta/Script/Link)",
                             "insight": lambda m: (
                                 "Phishing pages sometimes reuse scripts and styles from legitimate sites they attempt to imitate."
-                                if m.get("links_in_tags_metadata", {}).get("ratio", 0) > 0.3 else
+                                if (m.get("links_in_tags_metadata", {}).get("ratio") or 0) > 0.3 else
                                 "Legitimate websites typically serve their resources from their own infrastructure or trusted CDN services."
                             ),
                             "tech": lambda m: (
                                 "A large proportion of assets are loaded from external domains."
-                                if m.get("links_in_tags_metadata", {}).get("ratio", 0) > 0.3 else
+                                if (m.get("links_in_tags_metadata", {}).get("ratio") or 0) > 0.3 else
                                 "Most assets are hosted on the same registered domain."
                             ),
                             "get_val": lambda m: (
                                 f"Total assets analyzed: {m.get('links_in_tags_metadata', {}).get('total', 0)}\n"
                                 f"Internal resources: {m.get('links_in_tags_metadata', {}).get('internal', 0)}\n"
                                 f"External resources: {m.get('links_in_tags_metadata', {}).get('external', 0)}\n"
-                                f"External ratio: {m.get('links_in_tags_metadata', {}).get('ratio', 0) * 100:.1f}%"
+                                f"External ratio: {(m.get('links_in_tags_metadata', {}).get('ratio') or 0) * 100:.1f}%"
                             ) if m.get("links_in_tags_metadata") else "Not evaluated"
                         },
                         "url_of_anchor": {
@@ -465,16 +465,16 @@ if submit_button:
                             "name": "Server Form Handler (SFH)",
                             "insight": lambda m: (
                                 "Phishing pages frequently send stolen credentials to attacker-controlled servers."
-                                if m.get("sfh_metadata", {}).get("external") > 0 else
+                                if (m.get("sfh_metadata", {}).get("external") or 0) > 0 else
                                 ("Empty form actions can be used dynamically with JavaScript, but are also common in SPA frameworks."
-                                 if m.get("sfh_metadata", {}).get("empty") > 0 else
+                                 if (m.get("sfh_metadata", {}).get("empty") or 0) > 0 else
                                  "Legitimate websites typically process login and account forms on their own infrastructure.")
                             ),
                             "tech": lambda m: (
                                 "Data submits to an external or unknown domain."
-                                if m.get("sfh_metadata", {}).get("external") > 0 else
+                                if (m.get("sfh_metadata", {}).get("external") or 0) > 0 else
                                 ("Form(s) contain empty, blank, or JavaScript-based action handlers."
-                                 if m.get("sfh_metadata", {}).get("empty") > 0 else
+                                 if (m.get("sfh_metadata", {}).get("empty") or 0) > 0 else
                                  "All forms submit data to endpoints within the same registered domain.")
                             ),
                             "get_val": lambda m: (
@@ -571,12 +571,12 @@ if submit_button:
                             "name": "Iframe Analysis",
                             "insight": lambda m: (
                                 "A hidden iframe was detected. Hidden iframes are sometimes used by phishing pages to load malicious content or perform invisible redirects."
-                                if m.get("iframe_metadata", {}).get("hidden_iframes", 0) > 0 else
+                                if (m.get("iframe_metadata", {}).get("hidden_iframes") or 0) > 0 else
                                 "Iframes detected but none are hidden or suspicious. Legitimate websites often embed external content such as videos or widgets using iframes."
                             ),
                             "tech": lambda m: (
                                 "One or more iframes are hidden from the user (zero dimensions or invisible style)."
-                                if m.get("iframe_metadata", {}).get("hidden_iframes", 0) > 0 else
+                                if (m.get("iframe_metadata", {}).get("hidden_iframes") or 0) > 0 else
                                 "All detected iframes are visible and use standard embedding patterns."
                             ),
                             "get_val": lambda m: (
@@ -609,7 +609,7 @@ if submit_button:
                             "name": "Domain Reputation Analysis",
                             "insight": lambda m: (
                                 "The domain appears in one or more phishing reputation databases. Threat intelligence feeds indicate it has been associated with malicious campaigns."
-                                if (m.get("reputation_metadata", {}).get("risk_score", -1) >= 0) else
+                                if (m.get("reputation_metadata", {}).get("risk_score") if m.get("reputation_metadata", {}).get("risk_score") is not None else -1) >= 0 else
                                 "No matches were found in external threat intelligence databases. Legitimate domains are typically absent from these feeds."
                             ),
                             "tech": lambda m: (
