@@ -154,8 +154,8 @@ if submit_button:
                                 elif fetch_info.get("resolved_ip"):
                                     st.warning("Geolocation data unavailable.")
                                 
-                                if fetch_info.get("error"):
-                                    st.error(f"**Fetch Error:** {fetch_info['error']}")
+                                # if fetch_info.get("error"):
+                                #     st.error(f"**Fetch Error:** {fetch_info['error']}")
                             else:
                                 st.info("Network details not available.")
 
@@ -168,8 +168,8 @@ if submit_button:
                                     st.image(screenshot_url, use_container_width=True)
                                     st.caption(f"**Captured at:** {screenshot_info.get('timestamp')}")
                                     st.write(f"**Final Destination:** `{screenshot_info.get('final_url')}`")
-                                else:
-                                    st.warning(f"Screenshot unavailable: {screenshot_info.get('error', 'Unknown')}")
+                                # else:
+                                #     st.warning(f"Screenshot unavailable: {screenshot_info.get('error', 'Unknown')}")
                             else:
                                 st.info("Page preview not available.")
 
