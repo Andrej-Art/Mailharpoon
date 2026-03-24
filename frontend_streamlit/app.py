@@ -56,6 +56,11 @@ section[data-testid="stSidebar"] a[aria-current="page"] {
 section[data-testid="stSidebar"] h2 {
   margin-top: 0.9rem;
 }
+
+/* Suppress the temporary "Missing Submit Button" warning */
+div[data-testid="stForm"] [data-testid="stException"] {
+  display: none !important;
+}
 </style>
 """,
     unsafe_allow_html=True,
@@ -67,7 +72,7 @@ section[data-testid="stSidebar"] h2 {
 APP_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = APP_DIR.parent  
 
-PAGES_DIR = APP_DIR / "pages"
+PAGES_DIR = APP_DIR / "views"
 LOGO_PATH = PROJECT_DIR / "images" / "Mailharpoon_image.png"
 TAB_ICO_PATH = PROJECT_DIR / "images" / "mailharpoon_logo.ico"
 
