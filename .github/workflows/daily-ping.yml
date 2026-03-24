@@ -1,15 +1,13 @@
-# Simulated daily request to your render project so that the service doesn't go down
 name: Daily render ping
 
 on:
   schedule:
-    - cron: '*/10 * * * *'  # Runs every 10 minutes
-  workflow_dispatch:  # Allows manual triggering
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
 
 jobs:
   curl-website:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Run cURL on Website
-        run: curl -I https://mailharpoon-backend.onrender.com/
+      - name: Ping website
+        run: curl --fail --silent --show-error --max-time 30 -I https://mailharpoon-backend.onrender.com/
