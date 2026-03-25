@@ -6,7 +6,13 @@
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
 [![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.8.0-F7931E.svg)](https://scikit-learn.org/)
 
-**MailHarpoon** is a professional-grade, machine learning-powered security tool designed to identify and analyze phishing URLs with high precision. By combining advanced feature extraction with a robust Random Forest classifier, it provides real-time risk assessment and deep network intelligence for any given URL.
+By combining advanced feature extraction with a robust Random Forest classifier, it provides real-time risk assessment and deep network intelligence for any given URL.
+
+<p align="center">
+  <img src="images/mailharpoon_preview.gif" alt="Mailharpoon app preview" width="800">
+  <br>
+  <em>Preview of the Mailharpoon URL analysis workflow</em>
+</p>
 
 ---
 
@@ -31,6 +37,32 @@ The system follows a modern, containerized microservices architecture:
 1.  **Frontend (Streamlit)**: High-level UI for user interaction and report generation.
 2.  **Backend (FastAPI)**: Heavy-lifting service for feature extraction, external lookups, and model inference.
 3.  **Intelligence Layer**: Asynchronous tasks for screenshot capturing and multi-source data gathering.
+
+---
+
+## Machine Learning Model
+
+The project classifies URLs using a **Random Forest classifier**, which was selected after evaluating multiple different algorithms. **Random Forest achieved the best performance**, demonstrating excellent robustness against overfitting, strong generalization, and the ability to effectively handle a highly diverse set of features (ranging from URL structures to network signals). These results directly power the phishing prediction system used in the application.
+
+### Model Performance
+
+This section highlights the training and validation results for the selected Random Forest model.
+
+<p align="center">
+  <img src="images/train_test_performance.png" alt="Train vs Test Performance" width="600">
+  <br>
+  <em>Comparison of training versus testing performance</em>
+</p>
+
+The Train vs. Test comparison displays highly stable performance metrics across both datasets. The minimal drop-off in performance on the unseen test data indicates extremely low overfitting and confirms the reliability of the model.
+
+<p align="center">
+  <img src="images/rf_cross_validation.png" alt="Random Forest Cross-Validation" width="600">
+  <br>
+  <em>Cross-validation results for the Random Forest model</em>
+</p>
+
+The cross-validation results reinforce the model's reliability. With consistently high and tight metric clusters across different data splits, the classifier proves excellent generalization capabilities.
 
 ---
 
