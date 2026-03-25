@@ -9,7 +9,7 @@
 By combining advanced feature extraction with a robust Random Forest classifier, it provides real-time risk assessment and deep network intelligence for any given URL.
 
 <p align="center">
-  <video src="https://raw.githubusercontent.com/Andrej-Art/Mailharpoon/main/images/mailharpoon_preview.mp4" width="800" autoplay loop muted playsinline controls></video>
+  <img src="images/mailharpoon_demo.gif" alt="Mailharpoon app demo" width="800">
   <br>
   <em>Preview of the Mailharpoon URL analysis workflow</em>
 </p>
