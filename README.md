@@ -71,7 +71,7 @@ The cross-validation results reinforce the model's reliability. With consistentl
 - **Frontend**: Streamlit
 - **Backend**: FastAPI, Uvicorn, Pydantic, Playwright, Requests
 - **Machine Learning**: Scikit-Learn, Joblib, NumPy, Pandas
-- **DevOps**: Docker, Docker Compose, Pathlib (deployment-safe path logic)
+- **DevOps**: Docker, Docker Compose
 
 ---
 
