@@ -2,11 +2,10 @@
 // inspect what a visitor actually sees. Phishing kits often build the login form in
 // JavaScript or show scanners a harmless page (CrawlPhish, IEEE S&P 2021), which the plain
 // HTML fetch in page.ts cannot see. All browser traffic passes the vetted egress proxy.
-import type { BrowserContext } from "puppeteer-core";
 import { parse } from "tldts";
 import { startEgressProxy } from "@/lib/net/egress-proxy";
 import { BROWSER_UA } from "@/lib/net/safe-fetch";
-import { acquireBrowser, renderEnabled } from "@/lib/render/browser";
+import { acquireBrowser, renderEnabled, type Lease } from "@/lib/render/browser";
 import { analyzeBrand } from "./brand";
 import { emptyPageData, GATE_RE, inspectHtml, type PageData } from "./page";
 import { signal, type LayerResult, type Signal } from "./types";
@@ -37,14 +36,12 @@ export async function analyzeRender(t: ParsedTarget, fetched?: LayerResult<PageD
   if (!renderEnabled()) return { layer: "render", status: "skipped", ms: 0, signals: [], note: "unavailable" };
 
   const proxy = await startEgressProxy();
-  let lease: Awaited<ReturnType<typeof acquireBrowser>> | null = null;
-  let context: BrowserContext | null = null;
+  let lease: Lease | null = null;
   let stage = "launch";
   try {
-    lease = await acquireBrowser();
+    lease = await acquireBrowser(proxy.url);
     stage = "context";
-    context = await lease.browser.createBrowserContext({ proxyServer: proxy.url, proxyBypassList: ["<-loopback>"] });
-    const page = await context.newPage();
+    const page = await lease.newPage();
     stage = "page";
     await page.setUserAgent({ userAgent: BROWSER_UA });
     await page.setViewport({ width: 1280, height: 800 });
@@ -112,8 +109,7 @@ export async function analyzeRender(t: ParsedTarget, fetched?: LayerResult<PageD
     const msg = (e instanceof Error ? e.message : String(e)).replace(/\s+/g, " ").slice(0, 300);
     return { layer: "render", status: "error", ms: Date.now() - start, signals: [], note: `failed:${stage}:${msg}` };
   } finally {
-    await context?.close().catch(() => {});
-    lease?.release();
+    await lease?.release();
     await proxy.close();
   }
 }
