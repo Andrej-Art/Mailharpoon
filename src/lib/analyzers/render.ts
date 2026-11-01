@@ -39,10 +39,13 @@ export async function analyzeRender(t: ParsedTarget, fetched?: LayerResult<PageD
   const proxy = await startEgressProxy();
   let lease: Awaited<ReturnType<typeof acquireBrowser>> | null = null;
   let context: BrowserContext | null = null;
+  let stage = "launch";
   try {
     lease = await acquireBrowser();
+    stage = "context";
     context = await lease.browser.createBrowserContext({ proxyServer: proxy.url, proxyBypassList: ["<-loopback>"] });
     const page = await context.newPage();
+    stage = "page";
     await page.setUserAgent({ userAgent: BROWSER_UA });
     await page.setViewport({ width: 1280, height: 800 });
     await page.setExtraHTTPHeaders({ "accept-language": "en-US,en;q=0.9,de;q=0.8" });
@@ -104,8 +107,10 @@ export async function analyzeRender(t: ParsedTarget, fetched?: LayerResult<PageD
     };
     return { layer: "render", status: "ok", ms: Date.now() - start, signals: renderSignals(t, fetched, data, found), data };
   } catch (e) {
-    if (process.env.RENDER_DEBUG) console.error("render failed", e);
-    return { layer: "render", status: "error", ms: Date.now() - start, signals: [], note: "failed" };
+    console.error(`render failed at ${stage}`, e);
+    // TEMP diagnostics for the first Vercel deployment.
+    const msg = (e instanceof Error ? e.message : String(e)).replace(/\s+/g, " ").slice(0, 300);
+    return { layer: "render", status: "error", ms: Date.now() - start, signals: [], note: `failed:${stage}:${msg}` };
   } finally {
     await context?.close().catch(() => {});
     lease?.release();
