@@ -41,6 +41,10 @@ Besides links, Mailharpoon checks pasted messages. The **content** layer has Ger
 
 Evaluation: `npx tsx scripts/eval-text.mts` (details in `ml/text-eval/README.md`). On a held-out English public corpus (150 phishing or spam, 150 benign), the rules alone catch 5%. Rules plus the Haiku AI layer catch 81% at threshold 50 with 1% false positives. The weights were tuned on a separate dev set.
 
+## News page (`/de/news`, `/en/news`)
+
+Current phishing and scam warnings from official feeds only (RSS, Atom, Mastodon), no article pages are scraped: Phishing-Radar of Verbraucherzentrale NRW, Watchlist Internet, Mimikama, heise Security, BleepingComputer, The Hacker News and Krebs on Security (`src/lib/news/sources.ts`, add more there). Claude (Haiku) filters general security news down to what matters to private users, removes duplicate reports, and writes a two-sentence summary in German and English in its own words with a link to the original. Each summary is cached by article link, so only new items cost a call; the page refreshes hourly via ISR. Without an API key only the titles of the consumer warning services are shown. `npx tsx scripts/news-probe.mts` prints what the page would show.
+
 ## Quick start
 
 ```bash

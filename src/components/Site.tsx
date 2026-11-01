@@ -30,6 +30,7 @@ export function SiteNav({ t, locale, path = "" }: { t: Dict; locale: Locale; pat
   const other = locale === "de" ? "en" : "de";
   const links: [string, string][] = [
     [`/${locale}#scanner`, t.nav.scanner],
+    [`/${locale}/news`, t.nav.news],
     [`/${locale}#how`, t.nav.how],
     [`/${locale}#guides`, t.nav.guides],
     [`/${locale}#help`, t.nav.help],
@@ -110,6 +111,7 @@ export function SiteFooter({ t, locale }: { t: Dict; locale: Locale }) {
         </div>
         <ul className="space-y-1.5 font-pixel text-[13px] text-muted">
           <li><Link className="hover:text-harpoon" href={`/${locale}#scanner`}>{t.nav.scanner}</Link></li>
+          <li><Link className="hover:text-harpoon" href={`/${locale}/news`}>{t.nav.news}</Link></li>
           <li><Link className="hover:text-harpoon" href={`/${locale}#guides`}>{t.nav.guides}</Link></li>
           <li><Link className="hover:text-harpoon" href={`/${locale}#help`}>{t.nav.help}</Link></li>
           <li><Link className="hover:text-harpoon" href={`/${locale}#faq`}>{t.nav.faq}</Link></li>
