@@ -1,0 +1,63 @@
+{
+  "test": {
+    "roc_auc": 0.8518,
+    "pr_auc": 0.7273,
+    "precision": 0.5795,
+    "recall": 0.6384,
+    "f1": 0.6076,
+    "brier": 0.1262,
+    "n": 75279
+  },
+  "tranco_top10k_false_positive_rate": 0.0721,
+  "openphish_fresh_recall": 0.8736,
+  "openphish_fresh_n": 269,
+  "features": [
+    "sld_len",
+    "sld_digit_count",
+    "sld_digit_ratio",
+    "sld_hyphen_count",
+    "sld_entropy",
+    "sld_vowel_ratio",
+    "sld_max_consonant_run",
+    "sld_max_digit_run",
+    "sld_max_repeat_run",
+    "sld_token_count",
+    "sld_longest_token",
+    "sld_keyword_count",
+    "sld_brand_hit",
+    "is_punycode",
+    "is_free_hosting",
+    "suffix_levels",
+    "tld_len",
+    "tld_risk",
+    "sld_ngram_llr"
+  ],
+  "train_size": 301115,
+  "sources": {
+    "phiusiil": "UCI PhiUSIIL (Prasad & Chandra, 2024)",
+    "tranco": "Tranco top 200,000 (legitimate)",
+    "openphish": "OpenPhish public feed (held out, recency test)"
+  },
+  "iterations": 250,
+  "live_eval": {
+    "date": "2026-10-30",
+    "description": "Full pipeline, threat intel disabled. 40 fresh OpenPhish URLs (distinct domains) vs 40 random Tranco rank 300k-1M domains; disjoint from the set used for weight tuning; measured before final list fixes.",
+    "rows": [
+      {
+        "threshold": 35,
+        "recall": 0.65,
+        "fpr": 0.175
+      },
+      {
+        "threshold": 50,
+        "recall": 0.55,
+        "fpr": 0.1
+      },
+      {
+        "threshold": 70,
+        "recall": 0.5,
+        "fpr": 0.0
+      }
+    ]
+  }
+}

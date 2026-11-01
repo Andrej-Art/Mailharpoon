@@ -1,162 +1,93 @@
-# <img src="images/Mailharpoon_image.png" width="80" align="top" /> Mailharpoon: Phishing Detection & Insights
+# <img src="public/logo-160.png" width="64" align="top" /> Mailharpoon 2.0 – Explainable Phishing URL Scanner
 
-[![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.133.1-009688.svg)](https://fastapi.tiangolo.com/)
-[![Streamlit](https://img.shields.io/badge/Streamlit-1.54.0-FF4B4B.svg)](https://streamlit.io/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
-[![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.8.0-F7931E.svg)](https://scikit-learn.org/)
+Mailharpoon inspects a link live across **eight independent layers** and fuses the evidence into one explainable 0–100 risk score. You see the verdict and the evidence behind it.
 
-By combining advanced feature extraction with a robust Random Forest classifier, it provides real-time risk assessment and deep network intelligence for any given URL.
+**Stack:** Next.js 15 (App Router, TypeScript) · one Vercel deployment · Python only for offline model training.
 
-<p align="center">
-  <img src="images/mailharpoon_demo.gif" alt="Mailharpoon app demo" width="800">
-  <br>
-  <em>Preview of the Mailharpoon URL analysis workflow</em>
-</p>
+| Layer | What it does |
+|---|---|
+| Threat intel | OpenPhish live feed (no key), Quad9 protective-DNS check (filtered vs. unfiltered resolver over DoH, no key), Google Safe Browsing, URLhaus. A confirmed list hit overrides everything else |
+| Reputation | Tranco popularity, domain age via RDAP (IANA bootstrap), first certificate in CT logs (crt.sh) |
+| URL + ML | Gradient-boosted domain model (19 features, runs in pure TS) + URL-structure heuristics |
+| Brand | Typosquatting, homoglyphs (Unicode TR39 skeletons), brands in subdomains/paths, mixed scripts |
+| Live page | SSRF-safe fetch: login/card forms, external form targets, Telegram/Discord exfiltration, obfuscation, cloaking, brand-vs-domain mismatch, hosting-provider phishing warnings |
+| Browser render | Headless Chromium behind a vetted egress proxy: forms built by JavaScript, fake "verifying your browser" gates (waited out once), script redirects, screenshot |
+| Destination | Re-analyses the final URL after redirects (shorteners, open redirects) |
+| Network/TLS | DNS, certificate validity and hostname match, SPF/DMARC, hosting ASN |
+| AI analyst *(optional)* | Claude Haiku 5.5 by default reads the evidence, the rendered page and its screenshot (or a message) and returns a schema-constrained verdict |
+| Visual brand check *(with AI)* | Claude names the brand the page presents itself as and what it asks for; whether the domain is official is decided from the curated list and a Wikidata knowledge base, never by the model |
 
----
+## Rendered page and visual brand check
 
-## 🚀 Key Features
+Many phishing kits only build their login form in JavaScript or show scanners a harmless page first. `src/lib/analyzers/render.ts` therefore opens the link in headless Chromium (`@sparticuz/chromium` on Vercel, an installed Chrome locally) and reports only what the plain fetch missed, so no evidence is counted twice.
 
-- **🧠 Intelligent Detection**: Uses a Random Forest model trained on the UCI Phishing Dataset to classify URLs based on 30+ distinct technical features.
-- **🌐 Network Intelligence**: Performs real-time DNS records, SSL/TLS certificate validation, and WHOIS domain age lookups.
-- **📸 Visual Preview**: Safely captures a full-page screenshot of the target site using Playwright to identify visual deception.
-- **🛡️ Reputation Checks**: Integrates with reputation APIs to check domains against known blacklists.
-- **⚡ High Performance**: Fast inference engine built with FastAPI and an interactive, modern dashboard powered by Streamlit.
-- **🐳 Deployment Ready**: Fully containerized with Docker and Docker Compose for seamless deployment in any environment.
+The browser never resolves a host name itself (`--host-resolver-rules`). All traffic goes through a local forward proxy (`src/lib/net/egress-proxy.ts`) that resolves each host, refuses private, loopback, link-local and reserved addresses, allows only ports 80, 443, 8080 and 8443, and caps connections and bytes. Downloads, popups, dialogs and media are blocked.
 
----
+The screenshot goes to Claude together with the page facts. Claude names the brand on screen and what the page asks for. Mailharpoon then checks the landing domain against the curated brand list and `src/lib/data/brand-kb.json`, built from Wikidata's official-website property (P856) by `scripts/build-brand-kb.mts`. A brand login on a foreign domain scores high only when the brand's real domains are on record; the model's own list of official domains can spare a domain but never condemn one, so a page cannot talk its way into "official". This follows the brand-to-domain consistency idea of Phishpedia, PhishIntention, PhishLLM and KnowPhish. The same knowledge base (48,381 organisations, 52,823 domains) also stops the address check from flagging regional brands on their own domains, such as individual Sparkassen.
 
-## System Architecture
+Evaluation (`scripts/eval-visual.mts`, 1 Nov 2026, AI on, threat lists off, 20 URLs per set): fresh phishing detected at threshold 70 rose from 90 % to 95 %; genuine login pages of well-known brands flagged at 50 fell from 5 % to 0 %; random legitimate sites unchanged at 5 %. Most phishing URLs in the sample had already been replaced by Cloudflare's phishing warning, which is now recognised. The sample is small and the result is a direction, not a precise figure.
 
-<p align="center">
-  <img src="./system_Architecture.png" alt="MailHarpoon Architecture" width="800">
-</p>
+## Link unwrapping and QR codes
 
-The system follows a modern, containerized microservices architecture:
-1.  **Frontend (Streamlit)**: High-level UI for user interaction and report generation.
-2.  **Backend (FastAPI)**: Heavy-lifting service for feature extraction, external lookups, and model inference.
-3.  **Intelligence Layer**: Asynchronous tasks for screenshot capturing and multi-source data gathering.
+Links rewritten by email security gateways and redirect services are unwrapped before the check, so the real destination is analysed. This covers Microsoft Safe Links, Proofpoint URL Defense v1/v2/v3, Barracuda, Trend Micro, and Google, Facebook, LinkedIn, YouTube, Steam and Slack redirects (`src/lib/analyzers/unwrap.ts`). QR codes are decoded in the browser with jsQR (Apache-2.0), and the image never leaves the device.
 
----
+## Weekly evaluation
 
-## Machine Learning Model
+`.github/workflows/weekly-eval.yml` runs `scripts/eval-weekly.mts` every Monday. It pits 40 fresh OpenPhish URLs against 40 legitimate domains outside the popularity list, with all threat lists switched off, and stores the result in `ml/eval-history/`. The job fails on a clear breakdown (recall at 50 below 30 % or false alarms at 70 above 15 %).
 
-The project classifies URLs using a **Random Forest classifier**, which was selected after evaluating multiple different algorithms. **Random Forest achieved the best performance**, demonstrating excellent robustness against overfitting, strong generalization, and the ability to effectively handle a highly diverse set of features (ranging from URL structures to network signals). These results directly power the phishing prediction system used in the application.
+## Message check (email, SMS, chat)
 
-### Model Performance
+Besides links, Mailharpoon checks pasted messages. The **content** layer has German and English rules for current scam types: parcel fees, account suspension, "Hi Mum" messages, gift cards, CEO fraud, fake support, refunds, prizes and advance fee. It also flags HTML links whose visible text points to a different domain. The **sender** layer evaluates SPF, DKIM and DMARC results, Reply-To mismatches, display-name spoofing and lookalike sender domains. This works best when the full email source is pasted. In the **links** layer, every link in the message (up to 3) runs through the full URL pipeline. Before the AI layer sees a message, phone numbers, email addresses, IBANs and card numbers are redacted.
 
-This section highlights the training and validation results for the selected Random Forest model.
+Evaluation: `npx tsx scripts/eval-text.mts` (details in `ml/text-eval/README.md`). On a held-out English public corpus (150 phishing or spam, 150 benign), the rules alone catch 5%. Rules plus the Haiku AI layer catch 81% at threshold 50 with 1% false positives. The weights were tuned on a separate dev set.
 
-<p align="center">
-  <img src="images/train_test_performance.png" alt="Train vs Test Performance" width="600">
-  <br>
-  <em>Comparison of training versus testing performance</em>
-</p>
-
-The Train vs. Test comparison displays highly stable performance metrics across both datasets. The minimal drop-off in performance on the unseen test data indicates extremely low overfitting and confirms the reliability of the model.
-
-<p align="center">
-  <img src="images/rf_cross_validation.png" alt="Random Forest Cross-Validation" width="600">
-  <br>
-  <em>Cross-validation results for the Random Forest model</em>
-</p>
-
-The cross-validation results reinforce the model's reliability. With consistently high and tight metric clusters across different data splits, the classifier proves excellent generalization capabilities.
-
----
-
-## 🛠️ Tech Stack
-
-- **Frontend**: Streamlit
-- **Backend**: FastAPI, Uvicorn, Pydantic, Playwright, Requests
-- **Machine Learning**: Scikit-Learn, Joblib, NumPy, Pandas
-- **DevOps**: Docker, Docker Compose
-
----
-
-## 📁 Project Structure
-
-```text
-mailharpoon/
-├── backend/                # FastAPI Microservice
-│   ├── src/                # Source code (API, Logic, Config)
-│   ├── models/             # Trained ML models & feature sets
-│   └── Dockerfile          # Backend containerization
-├── frontend_streamlit/     # Streamlit Web App
-│   ├── pages/              # Multi-page application structure
-│   ├── images/             # UI assets
-│   └── Dockerfile          # Frontend containerization
-├── docker-compose.yml      # Multi-container orchestration
-├── .env.example            # Deployment environment template
-└── requirements.txt        # Full project dependencies
-```
-
----
-
-## Getting Started
-
-### Prerequisites
-- Python 3.11+
-- Docker & Docker Compose (Recommended)
-
-### Option 1: Running with Docker (Recommended)
-The fastest way to get the entire system up and running:
+## Quick start
 
 ```bash
-# Clone the repository
-git clone https://github.com/Andrej-Art/Mailharpoon.git
-cd Mailharpoon
-
-# Launch the system
-docker-compose up --build
+npm install
+cp .env.example .env.local   # all keys optional
+npm run dev                  # http://localhost:3000
+npm test                     # 319 tests incl. Python/TS model parity, SSRF guards and the browser egress proxy
+npx tsx scripts/scan-cli.mts https://example.com   # full pipeline in the terminal
 ```
-*The frontend will be available at `http://localhost:8501`, and the backend at `http://localhost:8000`.*
 
-### Option 2: Local Development
+## Deploy to Vercel
+
+1. Push the repo to GitHub and import it at [vercel.com/new](https://vercel.com/new). The framework is detected automatically and needs no `vercel.json`.
+2. Optionally add the environment variables from `.env.example` (Settings → Environment Variables).
+3. Recommended: add a Vercel Firewall rate-limit rule for `/api/scan`. The built-in limiter only works per serverless instance.
+
+`/api/scan` runs on the Node.js runtime with `maxDuration = 60`, which fits the Hobby plan.
+
+## The model (`ml/`)
+
 ```bash
-# Install dependencies
-pip install -r requirements.txt
-
-# Start Backend
-cd backend/src
-python main.py
-
-# Start Frontend (in a new terminal)
-cd frontend_streamlit
-streamlit run app.py
+python -m venv .venv && .venv/bin/pip install scikit-learn pandas tldextract
+.venv/bin/python ml/train.py --phiusiil PhiUSIIL_Phishing_URL_Dataset.csv --tranco top-1m.csv --openphish feed.txt
 ```
 
----
+- **Data:** PhiUSIIL (UCI, 2024), Tranco top-200k (legitimate), OpenPhish (held out as a recency test).
+- **Key design decision:** every legitimate URL in PhiUSIIL is a bare `https://www.<domain>`, so a model trained on full URLs only learns "has a path → phishing". The model therefore sees only the registrable domain (with private PSL suffixes such as `*.pages.dev`). Path signals are handled by explainable heuristics instead.
+- **Leakage control:** TLD risk and character-trigram likelihood ratios are fitted out-of-fold.
+- **Export:** trees → `src/lib/model/domain-model.json`, inferred in TypeScript in under 1 ms. `parity.json` plus the vitest parity test guarantee identical features and probabilities in both languages.
 
-## API Reference
+| Metric (held-out) | Value |
+|---|---|
+| ROC-AUC (domain only) | 0.852 |
+| Recall on fresh OpenPhish domains | 87 % |
+| Full pipeline, blacklists **off**, live holdout @ threshold 70 | 50 % recall, 0 % false alarms |
 
-### Predict URL
-`POST /predict-url`
+Full methodology and limitations: `/en/methodology`.
 
-**Request:**
-```json
-{
-  "url": "https://suspicious-site.com/login",
-  "model": "rf_full",
-  "extended": true
-}
-```
+## What was fixed from v1
 
-**Response:**
-```json
-{
-  "prediction": "Malicious",
-  "phishing_probability": 0.86,
-  "legit_probability": 0.14,
-  "model_used": "rf_full"
-}
-```
+The v1 Random Forest got **inverted inputs and an inverted output**. Features were encoded as 1 = phishing while the UCI data uses 1 = legitimate, and the API read class 0 (legitimate) as "phishing". The two bugs partly cancelled out, and `google.com` scored 54 % malicious. Seven of 30 features were constants. The v1 code is kept in `legacy/` for reference.
 
----
+## Security notes
 
-## Author
-**Andrej Artuschenko**
-- GitHub: [@Andrej-Art](https://github.com/Andrej-Art)
-- Email: andrejart95@gmail.com
+- The fetcher resolves DNS once, rejects private, reserved and IPv4-mapped addresses, **pins the vetted IP** for the connection (no DNS rebinding), re-validates every redirect hop, and caps size and time.
+- The headless browser cannot resolve names itself and reaches the internet only through the vetted egress proxy, which applies the same address rules (tested in `src/lib/__tests__/egress-proxy.test.ts`).
+- Page content and screenshots passed to the LLM are treated as untrusted data, and the output is constrained by a JSON schema.
+- Strict CSP and security headers live in `next.config.ts`.
 
+MIT licensed · Andrej Artuschenko
