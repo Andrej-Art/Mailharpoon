@@ -3,7 +3,7 @@
 // JavaScript or show scanners a harmless page (CrawlPhish, IEEE S&P 2021), which the plain
 // HTML fetch in page.ts cannot see. All browser traffic passes the vetted egress proxy.
 import { parse } from "tldts";
-import { startEgressProxy } from "@/lib/net/egress-proxy";
+import { BLOCKED_HEADER, startEgressProxy } from "@/lib/net/egress-proxy";
 import { BROWSER_UA } from "@/lib/net/safe-fetch";
 import { acquireBrowser, renderEnabled, type Lease } from "@/lib/render/browser";
 import { analyzeBrand } from "./brand";
@@ -65,7 +65,7 @@ export async function analyzeRender(t: ParsedTarget, fetched?: LayerResult<PageD
     // is on screen when the budget runs out gets inspected.
     const deadline = Date.now() + 13_000;
     const left = (cap: number) => Math.max(0, Math.min(cap, deadline - Date.now()));
-    await page.goto(t.href, { waitUntil: "domcontentloaded", timeout: 9000 }).catch(() => {});
+    const nav = await page.goto(t.href, { waitUntil: "domcontentloaded", timeout: 9000 }).catch(() => null);
     await page.waitForFunction(() => document.readyState === "complete", { timeout: left(3000) }).catch(() => {});
     await page.waitForNetworkIdle({ idleTime: 500, timeout: left(1500) }).catch(() => {});
     // Kits put a fake "verifying your browser" screen in front of the login. Wait it out once.
@@ -76,7 +76,8 @@ export async function analyzeRender(t: ParsedTarget, fetched?: LayerResult<PageD
     }
 
     const finalUrl = page.url();
-    if (!/^https?:/i.test(finalUrl)) return { layer: "render", status: "error", ms: Date.now() - start, signals: [], note: "not_loaded" };
+    // A plain http target the proxy refused shows the proxy's 403, not the page.
+    if (!/^https?:/i.test(finalUrl) || nav?.headers()[BLOCKED_HEADER] === proxy.token) return { layer: "render", status: "error", ms: Date.now() - start, signals: [], note: "not_loaded" };
 
     const html = (await within(2000, page.content(), "")).slice(0, MAX_HTML);
     let passwordFields = 0;
@@ -104,10 +105,9 @@ export async function analyzeRender(t: ParsedTarget, fetched?: LayerResult<PageD
     };
     return { layer: "render", status: "ok", ms: Date.now() - start, signals: renderSignals(t, fetched, data, found), data };
   } catch (e) {
+    // Server log only; the report just says the check was unavailable.
     console.error(`render failed at ${stage}`, e);
-    // TEMP diagnostics for the first Vercel deployment.
-    const msg = (e instanceof Error ? e.message : String(e)).replace(/\s+/g, " ").slice(0, 300);
-    return { layer: "render", status: "error", ms: Date.now() - start, signals: [], note: `failed:${stage}:${msg}` };
+    return { layer: "render", status: "error", ms: Date.now() - start, signals: [], note: "failed" };
   } finally {
     await lease?.release();
     await proxy.close();

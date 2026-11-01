@@ -3,9 +3,13 @@
 // where names become addresses: each host is resolved here, every address must be public,
 // and the connection goes to exactly the vetted address. That closes SSRF and DNS rebinding
 // for the browser the same way safe-fetch.ts does for plain requests.
+import { randomBytes } from "node:crypto";
 import http from "node:http";
 import net from "node:net";
 import { BlockedTargetError, resolvePublic } from "./safe-fetch";
+
+/** Marks a response the proxy refused, so the browser check can tell it from a real page. */
+export const BLOCKED_HEADER = "x-egress-blocked";
 
 const ALLOWED_PORTS = new Set([80, 443, 8080, 8443]);
 const MAX_SOCKETS = 160; // client and upstream sides together
@@ -14,6 +18,8 @@ export interface EgressProxy {
   url: string;
   /** Requests refused because they pointed at a private or reserved address. */
   blocked: () => number;
+  /** Value of BLOCKED_HEADER on refusals; random, so a site cannot fake a refusal. */
+  token: string;
   bytes: () => number;
   close: () => Promise<void>;
 }
@@ -22,6 +28,7 @@ export async function startEgressProxy({ maxBytes = 25_000_000 } = {}): Promise<
   const sockets = new Set<net.Socket>();
   let blocked = 0;
   let bytes = 0;
+  const token = randomBytes(12).toString("hex");
 
   const track = (s: net.Socket) => {
     sockets.add(s);
@@ -75,7 +82,7 @@ export async function startEgressProxy({ maxBytes = 25_000_000 } = {}): Promise<
       upstream.on("error", () => res.headersSent ? res.destroy() : res.writeHead(502).end());
       req.pipe(upstream);
     } catch {
-      res.writeHead(403).end();
+      res.writeHead(403, { [BLOCKED_HEADER]: token }).end();
     }
   });
 
@@ -96,7 +103,7 @@ export async function startEgressProxy({ maxBytes = 25_000_000 } = {}): Promise<
       upstream.on("close", () => client.destroy());
       client.on("close", () => upstream.destroy());
     } catch {
-      client.end("HTTP/1.1 403 Forbidden\r\n\r\n");
+      client.end(`HTTP/1.1 403 Forbidden\r\n${BLOCKED_HEADER}: ${token}\r\n\r\n`);
     }
   });
   server.on("connection", track);
@@ -107,6 +114,7 @@ export async function startEgressProxy({ maxBytes = 25_000_000 } = {}): Promise<
   return {
     url: `http://127.0.0.1:${port}`,
     blocked: () => blocked,
+    token,
     bytes: () => bytes,
     close: () =>
       new Promise((resolve) => {
