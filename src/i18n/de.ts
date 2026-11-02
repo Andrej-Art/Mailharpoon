@@ -34,7 +34,6 @@ export const de: Dict = {
     threatUnknown: "Live-Bedrohungsdaten nicht verfügbar",
     trendsAll: "Alle Warnungen ansehen",
     updated: "Stand {time} Uhr",
-    hint: "Wählen Sie ein Symbol oder fügen Sie etwas Verdächtiges ein.",
   },
   hero: {
     label: "LINK_CHECKER",

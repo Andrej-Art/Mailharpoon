@@ -131,10 +131,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                   <ArrowRight className="size-3.5" /> {os.trendsAll}
                 </Link>
               </Window>
-              <div className="hidden items-end gap-3 lg:flex">
-                <Image src="/mascot-pixel.png" alt="" width={288} height={144} className="pixelated w-40" />
-                <p className="pb-2 font-pixel text-[11px] leading-snug text-dim uppercase">{os.hint}</p>
-              </div>
+              <Image src="/logo.png" alt="" width={512} height={438} className="mx-auto w-full max-w-[240px]" />
             </aside>
 
             {/* Center: wordmark + scanner window */}

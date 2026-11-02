@@ -33,7 +33,6 @@ export const en = {
     threatUnknown: "Live threat data unavailable",
     trendsAll: "See all warnings",
     updated: "Updated {time}",
-    hint: "Pick an icon or paste something suspicious.",
   },
   hero: {
     label: "LINK_CHECKER",
