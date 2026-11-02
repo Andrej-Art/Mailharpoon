@@ -11,10 +11,15 @@ import { parseTarget } from "@/lib/analyzers/url";
 const DAYS_KEPT = 9;
 const TTL = DAYS_KEPT * 86_400;
 
+// The Vercel integration names the variables KV_REST_API_URL by default, or with a custom
+// prefix (MY_KV_REST_API_URL); Upstash itself uses UPSTASH_REDIS_REST_URL.
 function config() {
-  const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-  return url && token ? { url: url.replace(/\/$/, ""), token } : null;
+  const env = process.env;
+  for (const [u, t] of [["KV_REST_API_URL", "KV_REST_API_TOKEN"], ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"]]) {
+    const key = Object.keys(env).find((k) => (k === u || k.endsWith(`_${u}`)) && env[k] && env[k.slice(0, -u.length) + t]);
+    if (key) return { url: env[key]!.replace(/\/$/, ""), token: env[key.slice(0, -u.length) + t]! };
+  }
+  return null;
 }
 
 export const trendsEnabled = () => config() !== null;

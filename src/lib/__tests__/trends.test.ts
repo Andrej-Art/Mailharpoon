@@ -90,3 +90,13 @@ describe("redis calls", () => {
     expect((await readTrends()).domains).toEqual([]);
   });
 });
+
+describe("database settings", () => {
+  afterEach(() => vi.unstubAllEnvs());
+  it("accepts a custom prefix from the Vercel integration", async () => {
+    vi.stubEnv("MAILHARPOON_KV_REST_API_URL", "https://example.upstash.io/");
+    vi.stubEnv("MAILHARPOON_KV_REST_API_TOKEN", "secret");
+    const { trendsEnabled } = await import("../trends/store");
+    expect(trendsEnabled()).toBe(true);
+  });
+});
