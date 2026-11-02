@@ -8,7 +8,7 @@ import { fill, getDict, isLocale } from "@/i18n";
 import { unstable_cache } from "next/cache";
 import { getNews } from "@/lib/news/news";
 import { externalCounts } from "@/lib/trends/external";
-import { defang, readTrends, type TrendEntry } from "@/lib/trends/store";
+import { defang, readTrends, reportTotal, type TrendEntry } from "@/lib/trends/store";
 
 // New items are summarised once and cached; the page itself refreshes every 15 minutes.
 export const revalidate = 900;
@@ -38,7 +38,7 @@ export default async function News({ params }: { params: Promise<{ locale: strin
   const day = new Intl.DateTimeFormat(locale, { ...tz, day: "numeric", month: "short", year: "numeric" });
   const evidence = (e: TrendEntry) => [
     ...(e.people > 0 ? [e.people === 1 ? n.trendPerson : fill(n.trendPeople, { n: e.people })] : []),
-    ...Object.entries(e.reports ?? {}).map(([source, k]) => fill(k === 1 ? n.trendReport : n.trendReports, { n: k, source })),
+    ...(reportTotal(e) > 0 ? [reportTotal(e) === 1 ? n.trendReport : fill(n.trendReports, { n: reportTotal(e) })] : []),
   ];
   // Domains are text, never links, so nobody opens them by accident.
   const domainRow = (e: TrendEntry) => (
