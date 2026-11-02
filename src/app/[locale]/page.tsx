@@ -9,6 +9,7 @@ import { Window } from "@/components/os/Window";
 import { GUIDES, guidePath } from "@/content/guides";
 import { fill, getDict, isLocale } from "@/i18n";
 import { abs, JsonLd, REPO_URL, SITE_NAME } from "@/lib/seo";
+import { evalCounts, latestEval } from "@/lib/eval";
 import { getThreatStats } from "@/lib/threat-stats";
 import { cachedTrends, trendEvidence } from "@/lib/trends/cached";
 import { defang } from "@/lib/trends/store";
@@ -60,6 +61,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const [threats, trends] = await Promise.all([getThreatStats(), cachedTrends().catch(() => null)]);
   const stamp = new Intl.DateTimeFormat(locale, { timeZone: "Europe/Berlin", hour: "2-digit", minute: "2-digit" }).format(new Date());
   const clicked = GUIDES.find((g) => g.id === "clicked")!;
+  const counts = evalCounts();
+  const evalDate = new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(latestEval.date));
+  const evalVars = { ...counts, date: evalDate };
 
   const icons: DesktopItem[] = [
     { icon: "link", label: os.icons.link, href: "#scanner", mode: "url" },
@@ -209,19 +213,23 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             <div className="flex flex-wrap items-end justify-between gap-6">
               <div>
                 <H2>{t.stats.title}</H2>
-                <p className="mt-2 text-muted">{t.stats.lead}</p>
+                <p className="mt-2 max-w-3xl text-muted">{fill(t.stats.lead, evalVars)}</p>
               </div>
               <Link href={`/${locale}/methodology`} className="btn">
                 {t.stats.link} <ArrowRight className="size-4" />
               </Link>
             </div>
             <ul className="mt-8 grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
-              {t.stats.items.map(([n, label]) => (
-                <li key={label} className="bg-void p-6">
-                  <p className="phosphor font-vt text-6xl leading-none">{n}</p>
-                  <p className="mt-3 text-sm leading-snug text-muted">{label}</p>
-                </li>
-              ))}
+              {t.stats.items.map(({ value, label, note }, i) => {
+                const more = [counts.caughtSuspicious, counts.falseSuspicious][i];
+                return (
+                  <li key={label} className="bg-void p-6">
+                    <p className="phosphor font-vt text-6xl leading-none">{fill(value, evalVars)}</p>
+                    <p className="mt-3 text-sm leading-snug text-muted">{label}</p>
+                    {note && more > 0 && <p className="mt-2 font-mono text-xs text-dim">{fill(note, { n: more })}</p>}
+                  </li>
+                );
+              })}
             </ul>
           </Window>
 

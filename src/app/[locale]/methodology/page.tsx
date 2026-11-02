@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import card from "../../../../ml/model-card.json";
 import kb from "@/lib/data/brand-kb.json";
+import { latestEval } from "@/lib/eval";
 import { SiteFooter, SiteNav } from "@/components/Site";
 import { Window } from "@/components/os/Window";
 import { fill, getDict, isLocale } from "@/i18n";
@@ -82,15 +83,20 @@ verdict = dangerous if p ≥ .70, suspicious if p ≥ .35, else safe`}
 
         <section className="mt-14">
           <h2 className="text-xl font-bold">{m.evalTitle}</h2>
-          <p className="mt-3 text-muted">{m.evalLead}</p>
+          <p className="mt-3 text-muted">{fill(m.evalLead, latestEval.sample)}</p>
+          <p className="mt-3 font-mono text-xs text-dim">
+            {fill(m.evalDate, { date: new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(latestEval.date)) })}
+          </p>
           <div className="overflow-x-auto"><table className="mt-5 w-full border border-line text-left font-mono text-sm">
             <thead className="bg-panel text-xs text-muted uppercase">
               <tr><th className="p-3 font-normal">{m.threshold}</th><th className="p-3 font-normal">{m.recall}</th><th className="p-3 font-normal">{m.fpr}</th></tr>
             </thead>
             <tbody>
-              {card.live_eval.rows.map((r) => (
+              {latestEval.metrics.map((r) => (
                 <tr key={r.threshold} className="border-t border-line">
-                  <td className="p-3 text-harpoon">{r.threshold}</td>
+                  <td className="p-3 text-harpoon">
+                    {r.threshold} <span className="text-dim">{m.thresholdNames[r.threshold]}</span>
+                  </td>
                   <td className="p-3">{pct(r.recall)}</td>
                   <td className="p-3">{pct(r.fpr)}</td>
                 </tr>

@@ -84,12 +84,12 @@ export const en = {
   stats: {
     label: "MEASUREMENTS",
     title: "Tested against real phishing",
-    lead: "All figures come from tests with links the system had not seen before.",
+    lead: "Every week Mailharpoon automatically tests {phishing} brand-new phishing links and {legitimate} little-known real websites. Threat lists and AI are switched off, so this measures only what its own analysis detects. In real use both are added. Last measured on {date}.",
     items: [
-      ["87%", "of new phishing domains are identified by their name alone"],
-      ["0 of 40", "legitimate websites were incorrectly rated dangerous in the live test"],
-      ["81%", "of phishing and scam messages detected in a public test dataset"],
-      ["~3 s", "to a first assessment, with the full report after about 20 seconds"],
+      { value: "{caught} of {phishing}", label: "brand-new phishing links rated dangerous, although they were on no blocklist", note: "{n} more flagged as suspicious" },
+      { value: "{falseAlarms} of {legitimate}", label: "real websites incorrectly rated dangerous", note: "{n} more flagged as suspicious" },
+      { value: "81%", label: "of phishing and scam messages detected in a public test dataset" },
+      { value: "~3 s", label: "to a first assessment, with the full report after about 20 seconds" },
     ],
     link: "View methodology",
   },
@@ -359,13 +359,15 @@ export const en = {
     modelLine: "HistGradientBoosting with {trees} trees and {features} features, trained on {n} domains",
     fusionTitle: "Calculating the risk score",
     fusion:
-      "Every signal carries a weight in log odds. The sum per layer is capped so that no single check decides on its own. A sigmoid function converts the total into a probability. A match on a threat list takes precedence over all other signals. The weights are set manually and validated in a live evaluation, which keeps the system transparent.",
-    evalTitle: "Live evaluation without threat lists",
+      "Every signal carries a weight in log odds. The sum per layer is capped so that no single check decides on its own. A sigmoid function converts the total into a probability. A match on a threat list takes precedence over all other signals. The weights are set manually and checked in a weekly measurement, which keeps the system transparent.",
+    evalTitle: "Weekly measurement without threat lists",
     evalLead:
-      "To measure the detection of new phishing pages, all threat lists were disabled. We tested 40 current OpenPhish URLs against 40 legitimate domains outside the bundled popularity list (Tranco rank 300,000 to 1 million). This dataset was not used to tune the system.",
+      "To measure how well Mailharpoon detects new phishing pages, a test runs automatically every Monday. All threat lists and the AI analysis are switched off. It checks {phishing} current OpenPhish URLs against {legitimate} legitimate domains outside the bundled popularity list (Tranco rank 300,000 to 1 million). The links are drawn fresh each week and never used to tune the system. With samples this small, the figures vary by a few percentage points from week to week.",
+    evalDate: "Measured on {date}",
     threshold: "Threshold",
     recall: "Phishing detected",
     fpr: "False alarms",
+    thresholdNames: { 35: "from “Suspicious”", 70: "“Dangerous”" } as Record<number, string>,
     limitsTitle: "Known limitations",
     limits: [
       "Cloaked pages that show scanners harmless content, and phishing on compromised established websites, are difficult to detect until they appear on a threat list.",

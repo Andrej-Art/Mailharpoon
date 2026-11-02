@@ -64,6 +64,8 @@ const date = new Date().toISOString().slice(0, 10);
 const result = { date, sample: { phishing: p.length, legitimate: n.length }, metrics };
 mkdirSync("ml/eval-history", { recursive: true });
 writeFileSync(`ml/eval-history/${date}.json`, JSON.stringify(result, null, 2) + "\n");
+// The site reads this copy, so every weekly commit updates the published figures.
+writeFileSync("ml/eval-history/latest.json", JSON.stringify(result, null, 2) + "\n");
 
 const table = [
   `### Mailharpoon weekly evaluation (${date})`,

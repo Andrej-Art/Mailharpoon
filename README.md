@@ -89,7 +89,9 @@ python -m venv .venv && .venv/bin/pip install scikit-learn pandas tldextract
 |---|---|
 | ROC-AUC (domain only) | 0.852 |
 | Recall on fresh OpenPhish domains | 87 % |
-| Full pipeline, blacklists **off**, live holdout @ threshold 70 | 50 % recall, 0 % false alarms |
+| Full pipeline, blacklists and AI **off**, weekly live test @ threshold 70 (2026-11-02, 40 + 40) | 82.5 % recall, 2.5 % false alarms |
+
+The weekly test (`scripts/eval-weekly.mts`, every Monday via GitHub Actions) writes `ml/eval-history/<date>.json` and `latest.json`. The home and methodology pages read `latest.json`, so the published figures follow each run.
 
 Full methodology and limitations: `/en/methodology`.
 

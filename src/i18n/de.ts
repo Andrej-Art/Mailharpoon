@@ -85,12 +85,12 @@ export const de: Dict = {
   stats: {
     label: "MESSWERTE",
     title: "Getestet an echtem Phishing",
-    lead: "Alle Werte stammen aus Tests mit Links, die das System zuvor nicht kannte.",
+    lead: "Jede Woche testet Mailharpoon automatisch {phishing} brandneue Phishing-Links und {legitimate} wenig bekannte echte Websites. Sperrlisten und KI sind dabei abgeschaltet, gemessen wird also nur, was die eigene Analyse erkennt. Im echten Einsatz kommen beide hinzu. Letzte Messung am {date}.",
     items: [
-      ["87 %", "neuer Phishing-Domains werden bereits am Namen erkannt"],
-      ["0 von 40", "legitimen Websites wurden im Live-Test fälschlich als gefährlich eingestuft"],
-      ["81 %", "der Phishing- und Betrugsnachrichten in einem öffentlichen Testdatensatz erkannt"],
-      ["~3 s", "bis zur ersten Einschätzung, der vollständige Bericht folgt nach etwa 20 Sekunden"],
+      { value: "{caught} von {phishing}", label: "brandneuen Phishing-Links als gefährlich erkannt, obwohl sie auf keiner Sperrliste standen", note: "{n} weitere als verdächtig markiert" },
+      { value: "{falseAlarms} von {legitimate}", label: "echten Websites fälschlich als gefährlich eingestuft", note: "{n} weitere als verdächtig markiert" },
+      { value: "81 %", label: "der Phishing- und Betrugsnachrichten in einem öffentlichen Testdatensatz erkannt" },
+      { value: "~3 s", label: "bis zur ersten Einschätzung, der vollständige Bericht folgt nach etwa 20 Sekunden" },
     ],
     link: "Zur Methodik",
   },
@@ -360,13 +360,15 @@ export const de: Dict = {
     modelLine: "HistGradientBoosting mit {trees} Bäumen und {features} Merkmalen, trainiert auf {n} Domains",
     fusionTitle: "Berechnung des Risikowerts",
     fusion:
-      "Jedes Signal trägt ein Gewicht in Log-Odds. Die Summe je Prüfschicht ist begrenzt, damit keine einzelne Prüfung allein entscheidet. Eine Sigmoid-Funktion überführt die Gesamtsumme in eine Wahrscheinlichkeit. Ein Treffer auf einer Betrugsliste hat Vorrang vor allen anderen Signalen. Die Gewichte sind manuell festgelegt und in einer Live-Evaluation überprüft, wodurch das System nachvollziehbar bleibt.",
-    evalTitle: "Live-Evaluation ohne Betrugslisten",
+      "Jedes Signal trägt ein Gewicht in Log-Odds. Die Summe je Prüfschicht ist begrenzt, damit keine einzelne Prüfung allein entscheidet. Eine Sigmoid-Funktion überführt die Gesamtsumme in eine Wahrscheinlichkeit. Ein Treffer auf einer Betrugsliste hat Vorrang vor allen anderen Signalen. Die Gewichte sind manuell festgelegt und werden jede Woche in einer Messung überprüft, wodurch das System nachvollziehbar bleibt.",
+    evalTitle: "Wöchentliche Messung ohne Betrugslisten",
     evalLead:
-      "Um die Erkennung neuer Phishing-Seiten zu messen, wurden sämtliche Betrugslisten deaktiviert. Getestet wurden 40 aktuelle OpenPhish-URLs gegen 40 legitime Domains außerhalb der verwendeten Popularitätsliste (Tranco-Rang 300.000 bis 1 Million). Dieser Datensatz wurde nicht zur Abstimmung des Systems verwendet.",
+      "Um zu messen, wie gut Mailharpoon neue Phishing-Seiten erkennt, läuft jeden Montag automatisch ein Test. Sämtliche Betrugslisten und die KI-Analyse sind dabei abgeschaltet. Getestet werden {phishing} aktuelle OpenPhish-URLs gegen {legitimate} legitime Domains außerhalb der verwendeten Popularitätsliste (Tranco-Rang 300.000 bis 1 Million). Die Links werden jede Woche neu gezogen und nicht zur Abstimmung des Systems verwendet. Bei so kleinen Stichproben schwanken die Werte von Woche zu Woche um einige Prozentpunkte.",
+    evalDate: "Messung vom {date}",
     threshold: "Schwelle",
     recall: "Erkannte Phishing-Seiten",
     fpr: "Fehlalarme",
+    thresholdNames: { 35: "ab „Verdächtig“", 70: "„Gefährlich“" } as Record<number, string>,
     limitsTitle: "Bekannte Grenzen",
     limits: [
       "Getarnte Seiten, die Scannern unbedenkliche Inhalte anzeigen, sowie Phishing auf kompromittierten, etablierten Websites sind schwer zu erkennen, solange sie auf keiner Betrugsliste stehen.",
