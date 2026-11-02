@@ -40,7 +40,8 @@ Write a headline (at most 90 characters) and a summary of two sentences, at most
 The summary says what is happening and, if the item gives it, how to recognise or avoid it. Use your own words, do not copy sentences, and only state what the item says.
 German: formal "Sie", plain language, correct spelling with hyphenated compounds (E-Mail-Adresse, KI-Schlüssel). Do not use a dash between clauses and no middle dots; use a comma or a new sentence instead.`;
 
-const MODEL = process.env.ANTHROPIC_MODEL || "claude-haiku-5-5";
+// Sonnet writes noticeably cleaner German than Haiku; every item is summarised only once.
+const MODEL = process.env.NEWS_MODEL || "claude-sonnet-5-5";
 
 // Dashes and middle dots as punctuation are not part of the site's style.
 const tidy = (s: string) => s.replace(/\s+[–—-]\s+/g, ", ").replace(/\s*[·•]\s*/g, ", ").replace(/[–—]/g, "-").trim();

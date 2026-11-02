@@ -45,6 +45,10 @@ Evaluation: `npx tsx scripts/eval-text.mts` (details in `ml/text-eval/README.md`
 
 Current phishing and scam warnings from official feeds only (RSS, Atom, Mastodon), no article pages are scraped: Phishing-Radar of Verbraucherzentrale NRW, Watchlist Internet, Mimikama, heise Security, BleepingComputer, The Hacker News and Krebs on Security (`src/lib/news/sources.ts`, add more there). Claude (Haiku) filters general security news down to what matters to private users, removes duplicate reports, and writes a two-sentence summary in German and English in its own words with a link to the original. Each summary is cached by article link, so only new items cost a call; the page refreshes hourly via ISR. Without an API key only the titles of the consumer warning services are shown. `npx tsx scripts/news-probe.mts` prints what the page would show.
 
+## Currently circulating phishing (news page)
+
+When a scan rates a link dangerous, only its registrable domain and the impersonated brand are counted in Upstash Redis (Vercel Marketplace, `KV_REST_API_URL` / `KV_REST_API_TOKEN`). Requesters are counted with HyperLogLog over a salted daily hash, so no IP address, full link or message is stored. A domain is listed only after `TREND_MIN_PEOPLE` (default 3) different people checked it within 7 days; sites in the Tranco top 10k are never listed, and domains are shown defanged (`example[.]top`). Data expires after 9 days.
+
 ## Quick start
 
 ```bash

@@ -1,9 +1,11 @@
+import { after } from "next/server";
 import { z } from "zod";
 import { aiEnabled } from "@/lib/analyzers/ai";
 import { InvalidUrlError } from "@/lib/analyzers/url";
 import { rateLimit } from "@/lib/rate-limit";
 import { runScan, type ScanEvent } from "@/lib/scan";
 import { EmptyMessageError, runMessageScan } from "@/lib/scan-message";
+import { recordScan } from "@/lib/trends/store";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -33,8 +35,14 @@ export async function POST(req: Request) {
     async start(controller) {
       const emit = (e: ScanEvent) => controller.enqueue(encoder.encode(JSON.stringify(e) + "\n"));
       try {
-        if (body.mode === "message") await runMessageScan(body.text, { locale: body.locale, ai }, emit);
-        else await runScan(body.url, { locale: body.locale, ai }, emit);
+        const report =
+          body.mode === "message" ? await runMessageScan(body.text, { locale: body.locale, ai }, emit) : await runScan(body.url, { locale: body.locale, ai }, emit);
+        // Counted after the response, for the list of currently circulating phishing domains.
+        try {
+          after(() => recordScan(report, ip));
+        } catch {
+          await recordScan(report, ip);
+        }
       } catch (e) {
         const code = e instanceof InvalidUrlError ? `invalid_url:${e.message}` : e instanceof EmptyMessageError ? "empty_message" : "scan_failed";
         emit({ type: "error", code });
