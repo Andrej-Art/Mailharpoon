@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Report } from "../scan";
+import { countDomains } from "../trends/external";
 import { defang, readTrends, recordScan, sightings } from "../trends/store";
 
 const report = (over: Partial<Report>): Report =>
@@ -80,6 +81,39 @@ describe("redis calls", () => {
     const t = await readTrends({ now, minPeople: 3 });
     expect(t.domains.map((d) => [d.name, d.people])).toEqual([["a-phish.top", 5]]);
     expect(t.brands).toEqual([{ name: "PayPal", people: 3, scans: 5 }]);
+  });
+
+  it("adds reports of other services and lists domains they confirm", async () => {
+    vi.stubEnv("KV_REST_API_URL", "https://example.upstash.io");
+    vi.stubEnv("KV_REST_API_TOKEN", "secret");
+    const fetch = vi.fn(async (_url: string, init: RequestInit) => {
+      const cmds = JSON.parse(String(init.body)) as string[][];
+      const result = cmds.map((c) => {
+        if (c[0] === "ZRANGE" && c[1] === "tr:2026-11-02:d") return { result: ["a-phish.top", "9", "b-phish.top", "1"] };
+        if (c[0] === "PFCOUNT") return { result: c[1].includes("a-phish") ? 5 : 1 };
+        return { result: null };
+      });
+      return new Response(JSON.stringify(result), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetch);
+    const external = {
+      bySource: {
+        OpenPhish: new Map([["b-phish.top", 2], ["c-phish.top", 40], ["google.com", 3]]),
+        URLhaus: new Map([["c-phish.top", 1]]),
+      },
+    };
+    const t = await readTrends({ now: Date.parse("2026-11-02T10:00:00Z"), minPeople: 3, external });
+    // One person on Mailharpoon is enough once another service confirms the domain.
+    expect(t.domains.map((d) => [d.name, d.people, d.reports])).toEqual([
+      ["a-phish.top", 5, undefined],
+      ["b-phish.top", 1, { OpenPhish: 2 }],
+      ["c-phish.top", 0, { OpenPhish: 40, URLhaus: 1 }],
+    ]);
+  });
+
+  it("counts reported links per registrable domain and skips IP addresses", () => {
+    const m = countDomains(["https://a.paket-zoll.top/x", "http://b.paket-zoll.top/y", "http://203.0.113.9:8080/bins/x", "kaputt"]);
+    expect([...m]).toEqual([["paket-zoll.top", 2]]);
   });
 
   it("does nothing without a database", async () => {

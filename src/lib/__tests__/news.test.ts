@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseFeed, type FeedItem } from "../news/feeds";
-import { pickCandidates, sameStory } from "../news/news";
+import { pickCandidates, sameStory, shortTitle } from "../news/news";
 import { NEWS_SOURCES } from "../news/sources";
 import type { Summary } from "../news/summarize";
 
@@ -69,5 +69,14 @@ describe("sameStory", () => {
   });
   it("keeps different stories apart", () => {
     expect(sameStory(s("Fake parcel texts in the name of DHL", "Gefälschte Paket-SMS im Namen von DHL"), s("Chainalysis reports data leak", "Chainalysis meldet Datenleck"))).toBe(false);
+  });
+});
+
+describe("shortTitle", () => {
+  it("uses the first sentence of a Mastodon post without hashtag signs", () => {
+    expect(shortTitle("#Phishing bei der #Commerzbank. Ihre Karte wird gesperrt")).toBe("Phishing bei der Commerzbank.");
+  });
+  it("shortens long text at a word boundary", () => {
+    expect(shortTitle("wort ".repeat(40), 20)).toBe("wort wort wort wort …");
   });
 });

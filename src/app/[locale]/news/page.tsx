@@ -8,12 +8,13 @@ import { fill, getDict, isLocale } from "@/i18n";
 import { unstable_cache } from "next/cache";
 import { getNews } from "@/lib/news/news";
 import { NEWS_SOURCES } from "@/lib/news/sources";
-import { defang, readTrends, trendsEnabled } from "@/lib/trends/store";
+import { externalCounts } from "@/lib/trends/external";
+import { defang, readTrends, type TrendEntry } from "@/lib/trends/store";
 
 // New items are summarised once and cached; the page itself refreshes every 15 minutes.
 export const revalidate = 900;
 
-const cachedTrends = unstable_cache(() => readTrends(), ["trends-v1"], { revalidate: 600 });
+const cachedTrends = unstable_cache(async () => readTrends({ external: await externalCounts() }), ["trends-v2"], { revalidate: 600 });
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -31,9 +32,13 @@ export default async function News({ params }: { params: Promise<{ locale: strin
   if (!isLocale(locale)) notFound();
   const t = getDict(locale);
   const n = t.news;
-  const [items, trends] = await Promise.all([getNews(), trendsEnabled() ? cachedTrends() : Promise.resolve(null)]);
+  const [items, trends] = await Promise.all([getNews(), cachedTrends().catch(() => null)]);
   const tz = { timeZone: "Europe/Berlin" } as const;
   const day = new Intl.DateTimeFormat(locale, { ...tz, day: "numeric", month: "short", year: "numeric" });
+  const evidence = (e: TrendEntry) => [
+    ...(e.people > 0 ? [e.people === 1 ? n.trendPerson : fill(n.trendPeople, { n: e.people })] : []),
+    ...Object.entries(e.reports ?? {}).map(([source, k]) => fill(k === 1 ? n.trendReport : n.trendReports, { n: k, source })),
+  ];
   const stamp = new Intl.DateTimeFormat(locale, { ...tz, day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date());
 
   return (
@@ -54,26 +59,36 @@ export default async function News({ params }: { params: Promise<{ locale: strin
               ) : (
                 <>
                   <div className="mt-4 grid gap-6 sm:grid-cols-2">
-                    {([
-                      [n.trendDomains, trends.domains, true],
-                      [n.trendBrands, trends.brands, false],
-                    ] as const).map(([title, list, isDomain]) =>
-                      list.length ? (
-                        <div key={title}>
-                          <h3 className="label">{title}</h3>
-                          <ol className="mt-2 space-y-1.5 text-sm">
-                            {list.map((e) => (
-                              <li key={e.name} className="flex items-baseline justify-between gap-3">
-                                <span className={isDomain ? "font-mono break-all text-bad" : "font-bold"}>
-                                  {isDomain ? defang(e.name) : e.name}
-                                  {isDomain && e.brand && <span className="ml-2 font-sans text-xs text-dim">{e.brand}</span>}
-                                </span>
-                                <span className="shrink-0 font-mono text-xs text-dim">{fill(n.trendPeople, { n: e.people })}</span>
-                              </li>
-                            ))}
-                          </ol>
-                        </div>
-                      ) : null,
+                    {trends.domains.length > 0 && (
+                      <div>
+                        <h3 className="label">{n.trendDomains}</h3>
+                        <ol className="mt-2 space-y-2.5 text-sm">
+                          {trends.domains.map((e) => (
+                            <li key={e.name}>
+                              <span className="font-mono break-all text-bad">{defang(e.name)}</span>
+                              {e.brand && <span className="ml-2 text-xs text-dim">{e.brand}</span>}
+                              <span className="mt-0.5 flex flex-wrap gap-x-3 font-mono text-xs text-dim">
+                                {evidence(e).map((x) => (
+                                  <span key={x}>{x}</span>
+                                ))}
+                              </span>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+                    )}
+                    {trends.brands.length > 0 && (
+                      <div>
+                        <h3 className="label">{n.trendBrands}</h3>
+                        <ol className="mt-2 space-y-1.5 text-sm">
+                          {trends.brands.map((e) => (
+                            <li key={e.name} className="flex items-baseline justify-between gap-3">
+                              <span className="font-bold">{e.name}</span>
+                              <span className="shrink-0 font-mono text-xs text-dim">{fill(n.trendPeople, { n: e.people })}</span>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
                     )}
                   </div>
                   {trends.domains.length > 0 && <p className="mt-4 text-xs text-dim">{n.trendNote}</p>}

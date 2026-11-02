@@ -62,6 +62,13 @@ export function pickCandidates(items: FeedItem[], now = Date.now()): FeedItem[] 
   });
 }
 
+/** Mastodon posts have no title: the first sentence of the post stands in for one. */
+export function shortTitle(text: string, max = 120): string {
+  const t = text.replace(/#(\p{L}+)/gu, "$1").trim();
+  const first = t.match(/^.+?[.!?](?=\s|$)/u)?.[0] ?? t;
+  return first.length <= max ? first : `${first.slice(0, max).replace(/\s+\S*$/, "")} …`;
+}
+
 const words = (s: string) => new Set(s.toLowerCase().match(/[\p{L}\p{N}]{4,}/gu) ?? []);
 
 /** Two sources reporting the same story share many headline words in both languages. */
@@ -83,12 +90,14 @@ export async function getNews(): Promise<NewsItem[]> {
   candidates.forEach((item, i) => {
     const source = byName.get(item.source)!;
     const summary = summaries[i];
-    // Without a summary only titled items of warning services are shown, under their own title.
-    const keep = summary ? summary.relevant || source.warnings : !ai && source.warnings && item.title;
+    // Without a summary (no API key, or the call failed) the warning services still show,
+    // under their own title; general security news needs Claude's relevance filter.
+    const title = item.title || shortTitle(item.text);
+    const keep = summary ? summary.relevant || source.warnings : source.warnings && title;
     if (!keep || (count.get(source.id) ?? 0) >= PER_SOURCE) return;
     if (summary && out.some((o) => o.summary && sameStory(o.summary, summary))) return;
     count.set(source.id, (count.get(source.id) ?? 0) + 1);
-    out.push({ ...item, sourceName: source.name, sourceLang: source.lang, summary });
+    out.push({ ...item, title, sourceName: source.name, sourceLang: source.lang, summary });
   });
   return out.slice(0, NEWS_LIMIT);
 }

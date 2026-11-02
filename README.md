@@ -43,11 +43,13 @@ Evaluation: `npx tsx scripts/eval-text.mts` (details in `ml/text-eval/README.md`
 
 ## News page (`/de/news`, `/en/news`)
 
-Current phishing and scam warnings from official feeds only (RSS, Atom, Mastodon), no article pages are scraped: Phishing-Radar of Verbraucherzentrale NRW, Watchlist Internet, Mimikama, heise Security, BleepingComputer, The Hacker News and Krebs on Security (`src/lib/news/sources.ts`, add more there). Claude (Haiku) filters general security news down to what matters to private users, removes duplicate reports, and writes a two-sentence summary in German and English in its own words with a link to the original. Each summary is cached by article link, so only new items cost a call; the page refreshes hourly via ISR. Without an API key only the titles of the consumer warning services are shown. `npx tsx scripts/news-probe.mts` prints what the page would show.
+Current phishing and scam warnings from official feeds only (RSS, Atom, Mastodon), no article pages are scraped: Phishing-Radar of Verbraucherzentrale NRW, Watchlist Internet, Mimikama, heise Security, BleepingComputer, The Hacker News and Krebs on Security (`src/lib/news/sources.ts`, add more there). Claude (Haiku) filters general security news down to what matters to private users, removes duplicate reports, and writes a two-sentence summary in German and English in its own words with a link to the original. Each summary is cached by article link, so only new items cost a call; the page refreshes hourly via ISR. Without an API key, or when a call fails (for example with no API credit left), the consumer warning services are still shown under their own title. `npx tsx scripts/news-probe.mts` prints what the page would show.
 
 ## Currently circulating phishing (news page)
 
-When a scan rates a link dangerous, only its registrable domain and the impersonated brand are counted in Upstash Redis (Vercel Marketplace, `KV_REST_API_URL` / `KV_REST_API_TOKEN`). Requesters are counted with HyperLogLog over a salted daily hash, so no IP address, full link or message is stored. A domain is listed only after `TREND_MIN_PEOPLE` (default 3) different people checked it within 7 days; sites in the Tranco top 10k are never listed, and domains are shown defanged (`example[.]top`). Data expires after 9 days.
+When a scan rates a link dangerous, only its registrable domain and the impersonated brand are counted in Upstash Redis (Vercel Marketplace, `KV_REST_API_URL` / `KV_REST_API_TOKEN`). Requesters are counted with HyperLogLog over a salted daily hash, so no IP address, full link or message is stored. Data expires after 9 days.
+
+The list also counts how many links per domain OpenPhish and URLhaus currently report (`src/lib/trends/external.ts`). A domain checked only on Mailharpoon is listed after `TREND_MIN_PEOPLE` (default 3) different people checked it within 7 days, or earlier when one of these services confirms it. Domains checked on Mailharpoon come first, then domains reported only by the services, by number of reported links. Sites in the Tranco top 10k, shared file hosts and IP addresses are never listed, and domains are shown defanged (`example[.]top`).
 
 ## Quick start
 
@@ -55,7 +57,7 @@ When a scan rates a link dangerous, only its registrable domain and the imperson
 npm install
 cp .env.example .env.local   # all keys optional
 npm run dev                  # http://localhost:3000
-npm test                     # 319 tests incl. Python/TS model parity, SSRF guards and the browser egress proxy
+npm test                     # 340 tests incl. Python/TS model parity, SSRF guards and the browser egress proxy
 npx tsx scripts/scan-cli.mts https://example.com   # full pipeline in the terminal
 ```
 

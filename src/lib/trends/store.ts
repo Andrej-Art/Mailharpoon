@@ -7,6 +7,7 @@ import { createHash } from "node:crypto";
 import type { Report } from "@/lib/scan";
 import { trancoRank } from "@/lib/analyzers/reputation";
 import { parseTarget } from "@/lib/analyzers/url";
+import type { ExternalCounts } from "./external";
 
 const DAYS_KEPT = 9;
 const TTL = DAYS_KEPT * 86_400;
@@ -50,9 +51,11 @@ export interface Sighting {
 }
 
 // Big, established sites are never listed, even when a scan of one of their pages went wrong.
+// Shared file hosts hold the files of countless unrelated users, so they say nothing either.
+const SHARED_HOSTS = /\.githubusercontent\.com$/;
 const listable = (domain: string) => {
   const rank = trancoRank(domain);
-  return Boolean(domain) && (rank === null || rank > 10_000);
+  return Boolean(domain) && !SHARED_HOSTS.test(domain) && (rank === null || rank > 10_000);
 };
 
 /** Dangerous domains and claimed brands from a finished scan. */
@@ -94,10 +97,12 @@ export async function recordScan(report: Report, ip: string, now = Date.now()): 
 
 export interface TrendEntry {
   name: string;
-  /** Different people who checked it. */
+  /** Different people who checked it with Mailharpoon. */
   people: number;
   scans: number;
   brand?: string | null;
+  /** Links on this domain other services currently report, by service. */
+  reports?: Record<string, number>;
 }
 
 export interface Trends {
@@ -121,48 +126,74 @@ const hash = (r: unknown): Record<string, string> => {
   return out;
 };
 
-/** Most checked dangerous domains and brands of the last days, shown only above a minimum of different people. */
-export async function readTrends({ days = 7, minPeople = Number(process.env.TREND_MIN_PEOPLE ?? 3), limit = 8, now = Date.now() } = {}): Promise<Trends> {
-  const empty: Trends = { days, minPeople, domains: [], brands: [] };
-  if (!config()) return empty;
+export const reportTotal = (e: TrendEntry) => Object.values(e.reports ?? {}).reduce((a, b) => a + b, 0);
+
+/** Checks made with Mailharpoon in the last days, before any threshold. */
+async function readOwn(days: number, now: number): Promise<{ domains: TrendEntry[]; brands: TrendEntry[] }> {
+  if (!config()) return { domains: [], brands: [] };
   const dayList = Array.from({ length: days }, (_, i) => dayKey(now - i * 86_400_000));
-  try {
-    const first = await pipeline(
-      dayList.flatMap((d) => [
-        ["ZRANGE", `tr:${d}:d`, 0, 49, "REV", "WITHSCORES"],
-        ["ZRANGE", `tr:${d}:b`, 0, 49, "REV", "WITHSCORES"],
-        ["HGETALL", `tr:${d}:dm`],
-        ["HGETALL", `tr:${d}:bn`],
-      ]),
-    );
-    const scans = { d: new Map<string, number>(), b: new Map<string, number>() };
-    const brandOf: Record<string, string> = {};
-    const brandName: Record<string, string> = {};
-    // Oldest day first, so the newest brand label wins.
-    for (let i = dayList.length - 1; i >= 0; i--) {
-      for (const [k, v] of pairs(first[i * 4])) scans.d.set(k, (scans.d.get(k) ?? 0) + v);
-      for (const [k, v] of pairs(first[i * 4 + 1])) scans.b.set(k, (scans.b.get(k) ?? 0) + v);
-      Object.assign(brandOf, hash(first[i * 4 + 2]));
-      Object.assign(brandName, hash(first[i * 4 + 3]));
-    }
-    const top = (m: Map<string, number>) => [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 30);
-    const d = top(scans.d);
-    const b = top(scans.b);
-    // PFCOUNT over several keys counts the people across all days without double counting.
-    const counts = await pipeline([
-      ...d.map(([k]) => ["PFCOUNT", ...dayList.map((day) => `tr:${day}:r:${k}`)]),
-      ...b.map(([k]) => ["PFCOUNT", ...dayList.map((day) => `tr:${day}:rb:${k}`)]),
-    ]);
-    const rank = (xs: TrendEntry[]) => xs.filter((x) => x.people >= minPeople).sort((p, q) => q.people - p.people || q.scans - p.scans).slice(0, limit);
-    return {
-      days,
-      minPeople,
-      domains: rank(d.map(([k, n], i) => ({ name: k, scans: n, people: Number(counts[i]), brand: brandOf[k] ?? null }))),
-      brands: rank(b.map(([k, n], i) => ({ name: brandName[k] ?? k, scans: n, people: Number(counts[d.length + i]) }))),
-    };
-  } catch {
-    return empty;
+  const first = await pipeline(
+    dayList.flatMap((d) => [
+      ["ZRANGE", `tr:${d}:d`, 0, 49, "REV", "WITHSCORES"],
+      ["ZRANGE", `tr:${d}:b`, 0, 49, "REV", "WITHSCORES"],
+      ["HGETALL", `tr:${d}:dm`],
+      ["HGETALL", `tr:${d}:bn`],
+    ]),
+  );
+  const scans = { d: new Map<string, number>(), b: new Map<string, number>() };
+  const brandOf: Record<string, string> = {};
+  const brandName: Record<string, string> = {};
+  // Oldest day first, so the newest brand label wins.
+  for (let i = dayList.length - 1; i >= 0; i--) {
+    for (const [k, v] of pairs(first[i * 4])) scans.d.set(k, (scans.d.get(k) ?? 0) + v);
+    for (const [k, v] of pairs(first[i * 4 + 1])) scans.b.set(k, (scans.b.get(k) ?? 0) + v);
+    Object.assign(brandOf, hash(first[i * 4 + 2]));
+    Object.assign(brandName, hash(first[i * 4 + 3]));
   }
+  const top = (m: Map<string, number>) => [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 30);
+  const d = top(scans.d);
+  const b = top(scans.b);
+  // PFCOUNT over several keys counts the people across all days without double counting.
+  const counts = await pipeline([
+    ...d.map(([k]) => ["PFCOUNT", ...dayList.map((day) => `tr:${day}:r:${k}`)]),
+    ...b.map(([k]) => ["PFCOUNT", ...dayList.map((day) => `tr:${day}:rb:${k}`)]),
+  ]);
+  return {
+    domains: d.map(([k, n], i) => ({ name: k, scans: n, people: Number(counts[i]), brand: brandOf[k] ?? null })),
+    brands: b.map(([k, n], i) => ({ name: brandName[k] ?? k, scans: n, people: Number(counts[d.length + i]) })),
+  };
+}
+
+/**
+ * Most checked dangerous domains and brands of the last days. A domain checked with
+ * Mailharpoon is shown once enough different people checked it, or earlier when other
+ * services report it as well; then their report counts are added. Domains reported only
+ * by other services fill the rest of the list, so it shows what circulates right now.
+ */
+export async function readTrends({
+  days = 7,
+  minPeople = Number(process.env.TREND_MIN_PEOPLE ?? 3),
+  limit = 10,
+  now = Date.now(),
+  external,
+}: { days?: number; minPeople?: number; limit?: number; now?: number; external?: ExternalCounts } = {}): Promise<Trends> {
+  const own = await readOwn(days, now).catch(() => ({ domains: [] as TrendEntry[], brands: [] as TrendEntry[] }));
+  const byDomain = new Map(own.domains.map((e) => [e.name, { ...e }]));
+  for (const [service, counts] of Object.entries(external?.bySource ?? {})) {
+    for (const [domain, n] of counts) {
+      if (!listable(domain)) continue;
+      const e = byDomain.get(domain) ?? { name: domain, people: 0, scans: 0, brand: null };
+      e.reports = { ...e.reports, [service]: n };
+      byDomain.set(domain, e);
+    }
+  }
+  const domains = [...byDomain.values()]
+    .filter((e) => e.people >= minPeople || reportTotal(e) > 0)
+    // Checked with Mailharpoon first, then by the number of people and of reported links.
+    .sort((p, q) => Number(q.people > 0) - Number(p.people > 0) || q.people - p.people || reportTotal(q) - reportTotal(p))
+    .slice(0, limit);
+  const brands = own.brands.filter((x) => x.people >= minPeople).sort((p, q) => q.people - p.people || q.scans - p.scans).slice(0, 8);
+  return { days, minPeople, domains, brands };
 }
 
 /** Shown as text, never as a link: paypal-login.top becomes paypal-login[.]top. */
