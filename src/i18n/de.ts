@@ -9,12 +9,12 @@ export const de: Dict = {
     ogTitle: "Link oder Nachricht verdächtig? In Sekunden prüfen.",
   },
   nav: { menu: "Menü", lightMode: "Zum hellen Modus wechseln", darkMode: "Zum dunklen Modus wechseln", scanner: "Link-Checker", news: "Aktuelles", how: "Anleitung", learn: "Phishing erkennen", help: "Notfallplan", guides: "Ratgeber", faq: "FAQ", methodology: "Methodik", github: "GitHub", scan: "Link prüfen", home: "Startseite" },
-  status: { online: "Online", layers: "8 Prüfungen aktiv", feeds: "Aktuelle Bedrohungsdaten" },
+  status: { online: "Online", layers: "Über 40 Prüfungen aktiv", feeds: "Aktuelle Bedrohungsdaten" },
   os: {
     tagline: "Link- und Betrugs-Checker",
     windows: {
       scanner: "Link oder Nachricht prüfen",
-      system: "Systemstatus",
+      system: "Gerade im Umlauf",
       how: "Anleitung",
       layers: "Prüfungen",
       stats: "Messwerte",
@@ -32,7 +32,7 @@ export const de: Dict = {
     threatTitle: "Bedrohungslage",
     threatLine: "{n} aktive Phishing-Seiten derzeit im OpenPhish-Feed",
     threatUnknown: "Live-Bedrohungsdaten nicht verfügbar",
-    ready: "System bereit",
+    trendsAll: "Alle Warnungen ansehen",
     updated: "Stand {time} Uhr",
     hint: "Wählen Sie ein Symbol oder fügen Sie etwas Verdächtiges ein.",
   },

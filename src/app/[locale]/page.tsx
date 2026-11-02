@@ -4,15 +4,17 @@ import { notFound } from "next/navigation";
 import { ArrowRight, Eye, Fingerprint, Globe, KeyRound, Link2, Radar, Server, Sparkles } from "lucide-react";
 import { Scanner } from "@/components/Scanner";
 import { SiteFooter, SiteNav } from "@/components/Site";
-import { Clock } from "@/components/os/Clock";
 import { DesktopIcons, type DesktopItem } from "@/components/os/DesktopIcons";
 import { Window } from "@/components/os/Window";
 import { GUIDES, guidePath } from "@/content/guides";
 import { fill, getDict, isLocale } from "@/i18n";
 import { abs, JsonLd, REPO_URL, SITE_NAME } from "@/lib/seo";
 import { getThreatStats } from "@/lib/threat-stats";
+import { cachedTrends, trendEvidence } from "@/lib/trends/cached";
+import { defang } from "@/lib/trends/store";
 
-export const revalidate = 3600;
+// Matches the trends cache, so the list in the side window stays current.
+export const revalidate = 600;
 
 const LAYERS = [
   ["intel", Radar],
@@ -55,7 +57,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   if (!isLocale(locale)) notFound();
   const t = getDict(locale);
   const os = t.os;
-  const threats = await getThreatStats();
+  const [threats, trends] = await Promise.all([getThreatStats(), cachedTrends().catch(() => null)]);
+  const stamp = new Intl.DateTimeFormat(locale, { timeZone: "Europe/Berlin", hour: "2-digit", minute: "2-digit" }).format(new Date());
   const clicked = GUIDES.find((g) => g.id === "clicked")!;
 
   const icons: DesktopItem[] = [
@@ -105,26 +108,28 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             {/* Left: system widget */}
             <aside className="hidden space-y-6 lg:order-1 lg:block">
               <Window title={os.windows.system} bodyClassName="p-4">
-                <p className="phosphor font-vt text-[52px] leading-none">
-                  <Clock locale={locale} variant="big" />
+                <p className="label flex items-center gap-2">
+                  <span className="size-2 animate-blink bg-bad" /> {os.threatTitle}
                 </p>
-                <p className="mt-1 font-pixel text-[12px] text-dim uppercase">{os.ready}</p>
-                <div className="mt-4 border-t border-line pt-4">
-                  <p className="label flex items-center gap-2">
-                    <span className="size-2 animate-blink bg-bad" /> {os.threatTitle}
+                <p className="mt-1 font-mono text-[11px] text-dim">{fill(os.updated, { time: stamp })}</p>
+                {trends?.domains.length ? (
+                  // Domains are text, never links, so nobody opens them by accident.
+                  <ol className="mt-3 divide-y divide-line">
+                    {trends.domains.slice(0, 3).map((e) => (
+                      <li key={e.name} className="py-2.5">
+                        <p className="font-mono text-[13px] break-all text-bad">{defang(e.name)}</p>
+                        <p className="mt-0.5 font-mono text-[11px] text-dim">{[e.brand, ...trendEvidence(t.news, e)].filter(Boolean).join(" · ")}</p>
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p className="mt-3 text-sm leading-snug">
+                    {threats ? fill(os.threatLine, { n: threats.activePhishing.toLocaleString(locale) }) : os.threatUnknown}
                   </p>
-                  {threats ? (
-                    <p className="mt-2 text-sm leading-snug">
-                      {fill(os.threatLine, { n: threats.activePhishing.toLocaleString(locale) })}
-                    </p>
-                  ) : (
-                    <p className="mt-2 text-sm text-dim">{os.threatUnknown}</p>
-                  )}
-                </div>
-                <ul className="mt-4 space-y-1 border-t border-line pt-4 font-pixel text-[12px] text-muted">
-                  <li className="flex items-center gap-2"><span className="size-1.5 bg-ok" /> {t.status.layers}</li>
-                  <li className="flex items-center gap-2"><span className="size-1.5 bg-ok" /> {t.status.feeds}</li>
-                </ul>
+                )}
+                <Link href={`/${locale}/news`} className="mt-3 flex items-center gap-1.5 border-t border-line pt-3 font-pixel text-[12px] text-harpoon hover:underline">
+                  <ArrowRight className="size-3.5" /> {os.trendsAll}
+                </Link>
               </Window>
               <div className="hidden items-end gap-3 lg:flex">
                 <Image src="/mascot-pixel.png" alt="" width={96} height={82} className="pixelated w-40" />

@@ -8,12 +8,12 @@ export const en = {
     ogTitle: "Is this link or message a scam? Check it in seconds.",
   },
   nav: { menu: "Menu", lightMode: "Switch to light mode", darkMode: "Switch to dark mode", scanner: "Link checker", news: "News", how: "How it works", learn: "Spot phishing", help: "Incident response", guides: "Guides", faq: "FAQ", methodology: "Methodology", github: "GitHub", scan: "Check a link", home: "Home" },
-  status: { online: "Online", layers: "8 checks active", feeds: "Current threat data" },
+  status: { online: "Online", layers: "40+ checks active", feeds: "Current threat data" },
   os: {
     tagline: "Link & scam checker",
     windows: {
       scanner: "Check a link or message",
-      system: "System status",
+      system: "Circulating right now",
       how: "How it works",
       layers: "Checks",
       stats: "Measurements",
@@ -31,7 +31,7 @@ export const en = {
     threatTitle: "Threat level",
     threatLine: "{n} active phishing pages in the OpenPhish feed right now",
     threatUnknown: "Live threat data unavailable",
-    ready: "System ready",
+    trendsAll: "See all warnings",
     updated: "Updated {time}",
     hint: "Pick an icon or paste something suspicious.",
   },

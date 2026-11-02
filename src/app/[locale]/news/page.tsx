@@ -5,17 +5,14 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { SiteFooter, SiteNav } from "@/components/Site";
 import { Window } from "@/components/os/Window";
 import { fill, getDict, isLocale } from "@/i18n";
-import { unstable_cache } from "next/cache";
 import { getNews } from "@/lib/news/news";
-import { externalCounts } from "@/lib/trends/external";
-import { defang, readTrends, reportTotal, type TrendEntry } from "@/lib/trends/store";
+import { cachedTrends, trendEvidence } from "@/lib/trends/cached";
+import { defang, type TrendEntry } from "@/lib/trends/store";
 
 // New items are summarised once and cached; the page itself refreshes every 15 minutes.
 export const revalidate = 900;
 
 const TOP = 5;
-
-const cachedTrends = unstable_cache(async () => readTrends({ external: await externalCounts() }), ["trends-v2"], { revalidate: 600 });
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -36,10 +33,6 @@ export default async function News({ params }: { params: Promise<{ locale: strin
   const [items, trends] = await Promise.all([getNews(), cachedTrends().catch(() => null)]);
   const tz = { timeZone: "Europe/Berlin" } as const;
   const day = new Intl.DateTimeFormat(locale, { ...tz, day: "numeric", month: "short", year: "numeric" });
-  const evidence = (e: TrendEntry) => [
-    ...(e.people > 0 ? [e.people === 1 ? n.trendPerson : fill(n.trendPeople, { n: e.people })] : []),
-    ...(reportTotal(e) > 0 ? [reportTotal(e) === 1 ? n.trendReport : fill(n.trendReports, { n: reportTotal(e) })] : []),
-  ];
   // Domains are text, never links, so nobody opens them by accident.
   const domainRow = (e: TrendEntry) => (
     <li key={e.name} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 py-2">
@@ -48,7 +41,7 @@ export default async function News({ params }: { params: Promise<{ locale: strin
         {e.brand && <span className="ml-2 font-sans text-xs text-dim">{e.brand}</span>}
       </span>
       <span className="flex flex-wrap gap-x-3 font-mono text-xs text-dim">
-        {evidence(e).map((x) => (
+        {trendEvidence(n, e).map((x) => (
           <span key={x}>{x}</span>
         ))}
       </span>
