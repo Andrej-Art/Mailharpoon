@@ -132,7 +132,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 </Link>
               </Window>
               <div className="hidden items-end gap-3 lg:flex">
-                <Image src="/mascot-pixel.png" alt="" width={96} height={82} className="pixelated w-40" />
+                <Image src="/mascot-pixel.png" alt="" width={288} height={144} className="pixelated w-40" />
                 <p className="pb-2 font-pixel text-[11px] leading-snug text-dim uppercase">{os.hint}</p>
               </div>
             </aside>
@@ -303,7 +303,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
           {/* ---------- Alert dialog CTA ---------- */}
           <Window title={os.windows.alert} className="mx-auto max-w-2xl" bodyClassName="flex flex-col items-center gap-5 p-8 text-center sm:flex-row sm:text-left">
-            <Image src="/mascot-pixel.png" alt="" width={96} height={82} className="pixelated w-24 shrink-0" />
+            <Image src="/mascot-pixel.png" alt="" width={288} height={144} className="pixelated w-36 shrink-0" />
             <div className="flex-1">
               <p className="text-2xl font-bold">{t.cta.title}</p>
               <p className="mt-1 text-muted">{t.cta.sub}</p>
