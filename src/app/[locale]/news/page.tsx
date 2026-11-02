@@ -7,7 +7,6 @@ import { Window } from "@/components/os/Window";
 import { fill, getDict, isLocale } from "@/i18n";
 import { unstable_cache } from "next/cache";
 import { getNews } from "@/lib/news/news";
-import { NEWS_SOURCES } from "@/lib/news/sources";
 import { externalCounts } from "@/lib/trends/external";
 import { defang, readTrends, type TrendEntry } from "@/lib/trends/store";
 
@@ -137,19 +136,6 @@ export default async function News({ params }: { params: Promise<{ locale: strin
               {n.cta} <ArrowRight className="size-4" />
             </Link>
           </div>
-
-          <section className="mt-12">
-            <h2 className="text-sm font-bold">{n.sourcesTitle}</h2>
-            <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm">
-              {NEWS_SOURCES.map((s) => (
-                <li key={s.id}>
-                  <a className="text-muted underline decoration-harpoon/60 underline-offset-4 hover:text-fg" href={s.site} target="_blank" rel="noopener noreferrer">
-                    {s.name}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </section>
         </Window>
       </main>
       <SiteFooter t={t} locale={locale} />

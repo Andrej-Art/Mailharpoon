@@ -281,7 +281,6 @@ export const de: Dict = {
     trendReport: "1 Link bei {source}",
     trendEmpty: "Gerade liegen keine Daten vor. Eine Domain erscheint hier, sobald {n} verschiedene Personen sie mit Mailharpoon geprüft haben oder ein Sperrlistendienst sie meldet.",
     trendNote: "Die Domains werden absichtlich nicht als Link angezeigt. Bitte öffnen Sie sie nicht.",
-    sourcesTitle: "Quellen",
     ctaTitle: "Haben Sie selbst eine verdächtige Nachricht erhalten?",
     cta: "Jetzt prüfen",
     topics: { phishing: "Phishing", scam: "Betrug", fake_shop: "Fake-Shop", malware: "Schadsoftware", account: "Kontoschutz", data_leak: "Datenleck", other: "Sicherheit" },

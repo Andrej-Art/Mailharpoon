@@ -280,7 +280,6 @@ export const en = {
     trendReport: "1 link on {source}",
     trendEmpty: "No data right now. A domain appears here once {n} different people checked it with Mailharpoon or a blocklist service reports it.",
     trendNote: "Domains are deliberately not shown as links. Please do not open them.",
-    sourcesTitle: "Sources",
     ctaTitle: "Received a suspicious message yourself?",
     cta: "Check it now",
     topics: { phishing: "Phishing", scam: "Scam", fake_shop: "Fake shop", malware: "Malware", account: "Account security", data_leak: "Data leak", other: "Security" },
