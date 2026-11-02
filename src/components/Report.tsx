@@ -18,6 +18,7 @@ import type { Layer, LayerResult, Signal } from "@/lib/analyzers/types";
 import type { VisualData } from "@/lib/analyzers/visual";
 import { fill, type Dict } from "@/i18n";
 import { brandName } from "@/lib/data/brand-display";
+import { CheckReport } from "./CheckReport";
 import type { ScanState } from "./Scanner";
 
 const LAYER_ORDER: Layer[] = ["intel", "reputation", "lexical", "brand", "page", "render", "redirect", "network", "ai", "visual"];
@@ -271,6 +272,8 @@ export function Report({ state, t, onReset }: { state: ScanState; t: Dict; onRes
         </section>
 
       </div>
+
+      {!isMsg && <CheckReport t={t} layers={state.layers} done={done} />}
 
       {isMsg && (done || state.links.length > 0) && (
         <section className="mt-px border border-t-0 border-line bg-void p-6">

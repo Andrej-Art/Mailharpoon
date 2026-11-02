@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Pixelify_Sans, VT323 } from "next/font/google";
 import { notFound } from "next/navigation";
 import { getDict, isLocale, locales } from "@/i18n";
 import { ogLocale, REPO_URL, SITE_NAME, SITE_URL } from "@/lib/seo";
+import { Notice } from "@/components/os/Notice";
 import "../globals.css";
 
 const geist = Geist({ subsets: ["latin", "latin-ext"], variable: "--font-geist", display: "swap" });
@@ -34,8 +35,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#1b1c20" },
-    { media: "(prefers-color-scheme: light)", color: "#e7e3d8" },
+    { media: "(prefers-color-scheme: dark)", color: "#120d1a" },
+    { media: "(prefers-color-scheme: light)", color: "#ebe5f1" },
   ],
 };
 
@@ -54,6 +55,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
       </head>
       <body className="min-h-dvh overflow-x-hidden">
         {children}
+        <Notice n={getDict(locale).notice} locale={locale} />
         <div className="crt" aria-hidden />
       </body>
     </html>

@@ -18,7 +18,7 @@ export default async function OgImage({ params }: { params: Promise<{ locale: st
           flexDirection: "column",
           justifyContent: "space-between",
           padding: 72,
-          background: "#080a0b",
+          background: "#08060c",
           backgroundImage:
             "linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)",
           backgroundSize: "48px 48px",
@@ -29,12 +29,12 @@ export default async function OgImage({ params }: { params: Promise<{ locale: st
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
           <svg width="72" height="72" viewBox="0 0 64 64">
             <path d="M14 10H6v44h8M50 10h8v44h-8" fill="none" stroke="#e8ecef" strokeWidth="4" />
-            <path d="M18 46 44 20" stroke="#fc6c00" strokeWidth="5" />
-            <path d="M32 18h14v14" fill="none" stroke="#fc6c00" strokeWidth="5" />
-            <path d="M24 46h-8v-8" fill="none" stroke="#fc6c00" strokeWidth="4" />
+            <path d="M18 46 44 20" stroke="#ff2e97" strokeWidth="5" />
+            <path d="M32 18h14v14" fill="none" stroke="#ff2e97" strokeWidth="5" />
+            <path d="M24 46h-8v-8" fill="none" stroke="#ff2e97" strokeWidth="4" />
           </svg>
           <div style={{ display: "flex", fontSize: 40, fontWeight: 700 }}>
-            mail<span style={{ color: "#fc6c00" }}>harpoon</span>_
+            mail<span style={{ color: "#ff2e97" }}>harpoon</span>_
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
@@ -45,7 +45,7 @@ export default async function OgImage({ params }: { params: Promise<{ locale: st
           </div>
         </div>
         <div style={{ display: "flex", border: "1px solid rgba(255,255,255,0.22)", padding: "18px 24px", fontSize: 28, color: "#b2b8c8" }}>
-          <span style={{ color: "#fc6c00", marginRight: 16 }}>$</span> https://paypa1-secure-login.top/verify
+          <span style={{ color: "#ff2e97", marginRight: 16 }}>$</span> https://paypa1-secure-login.top/verify
         </div>
       </div>
     ),

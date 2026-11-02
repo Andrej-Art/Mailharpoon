@@ -41,7 +41,7 @@ function PixelWordmark({ tagline }: { tagline: string }) {
         Mailharpoon
       </p>
       <div className="mt-2 flex w-[min(100%,34rem)] flex-col gap-[2px] sm:gap-[3px]">
-        {["#fc6c00", "#ff8a2e", "#ffb000", "var(--color-chrome)", "#2a5fa8"].map((c) => (
+        {["#ff2e97", "#d94bd8", "#9d5cff", "var(--color-chrome)", "#33e6ef"].map((c) => (
           <span key={c} className="h-[3px] w-full" style={{ background: c }} />
         ))}
       </div>

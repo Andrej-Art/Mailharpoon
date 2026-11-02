@@ -9,10 +9,16 @@ const REPO = "https://github.com/Andrej-Art/Mailharpoon";
 export function Mark({ size = 28, className }: { size?: number; className?: string }) {
   return (
     <svg viewBox="0 0 64 64" width={size} height={size} className={className} shapeRendering="crispEdges" aria-hidden>
+      <defs>
+        <linearGradient id="mh-neon" x1="16" y1="48" x2="48" y2="16" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#ff2e97" />
+          <stop offset="1" stopColor="#9d5cff" />
+        </linearGradient>
+      </defs>
       <path d="M14 10H6v44h8M50 10h8v44h-8" fill="none" stroke="currentColor" strokeWidth="5" />
-      <path d="M18 46 44 20" stroke="#fc6c00" strokeWidth="6" strokeLinecap="square" />
-      <path d="M32 18h14v14" fill="none" stroke="#fc6c00" strokeWidth="6" />
-      <path d="M24 46h-8v-8" fill="none" stroke="#fc6c00" strokeWidth="5" />
+      <path d="M18 46 44 20" stroke="url(#mh-neon)" strokeWidth="6" strokeLinecap="square" />
+      <path d="M32 18h14v14" fill="none" stroke="url(#mh-neon)" strokeWidth="6" />
+      <path d="M24 46h-8v-8" fill="none" stroke="url(#mh-neon)" strokeWidth="5" />
     </svg>
   );
 }

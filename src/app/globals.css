@@ -1,20 +1,22 @@
 @import "tailwindcss";
 
-/* Mailharpoon OS – retro desktop / terminal design system.
-   Charcoal desktop, classic window chrome, pixel type, CRT glow. Accent: the logo's harpoon orange. */
+/* Mailharpoon OS: retro desktop and terminal design system.
+   Violet-black desktop, classic window chrome, pixel type, CRT glow. Accents: neon pink and violet from the logo. */
 @theme {
-  --color-desk: #1b1c20;
-  --color-void: #0b0c0e;
-  --color-panel: #101114;
-  --color-panel-2: #16181c;
-  --color-line: rgb(255 255 255 / 0.14);
-  --color-line-strong: rgb(255 255 255 / 0.28);
-  --color-chrome: #e8e6df;
-  --color-fg: #eceae4;
-  --color-muted: #b4b8c4;
-  --color-dim: #9096a4;
-  --color-harpoon: #fc6c00;
-  --color-harpoon-2: #ff8a2e;
+  --color-desk: #120d1a;
+  --color-void: #08060c;
+  --color-panel: #0f0b16;
+  --color-panel-2: #171021;
+  --color-line: rgb(220 190 255 / 0.15);
+  --color-line-strong: rgb(220 190 255 / 0.3);
+  --color-chrome: #ece6f6;
+  --color-fg: #efeaf6;
+  --color-muted: #bcb5cc;
+  --color-dim: #978fa9;
+  --color-harpoon: #ff2e97;
+  --color-harpoon-2: #ff63b3;
+  --color-violet: #9d5cff;
+  --color-cyan: #33e6ef;
   --color-amber: #ffb000;
   --color-phosphor: #7dff9b;
   --color-ok: #5cc98a;
@@ -36,18 +38,20 @@
 /* ---------- Light theme: follows the system unless the user picked one ---------- */
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
-    --color-desk: #e7e3d8;
-    --color-void: #fbfaf6;
+    --color-desk: #ebe5f1;
+    --color-void: #fcfaff;
     --color-panel: #ffffff;
-    --color-panel-2: #f3f1ea;
-    --color-line: rgb(0 0 0 / 0.14);
-    --color-line-strong: rgb(0 0 0 / 0.32);
-    --color-chrome: #16171b;
-    --color-fg: #14151a;
-    --color-muted: #3d424d;
-    --color-dim: #5a606c;
-    --color-harpoon: #c24e00;
-    --color-harpoon-2: #a84300;
+    --color-panel-2: #f4effa;
+    --color-line: rgb(40 0 80 / 0.14);
+    --color-line-strong: rgb(40 0 80 / 0.32);
+    --color-chrome: #18131f;
+    --color-fg: #16121c;
+    --color-muted: #423b4f;
+    --color-dim: #5e566d;
+    --color-harpoon: #c0126f;
+    --color-harpoon-2: #a10f5d;
+    --color-violet: #6d28d9;
+    --color-cyan: #0e7c86;
     --color-amber: #8a5a00;
     --color-phosphor: #1d7446;
     --color-ok: #1d7446;
@@ -55,22 +59,25 @@
     --color-bad: #c3281d;
     --dither: rgb(0 0 0 / 0.05);
     --glow: transparent;
+    --win-shadow: rgb(109 40 217 / 0.35);
     color-scheme: light;
   }
 }
 :root[data-theme="light"] {
-  --color-desk: #e7e3d8;
-  --color-void: #fbfaf6;
+  --color-desk: #ebe5f1;
+  --color-void: #fcfaff;
   --color-panel: #ffffff;
-  --color-panel-2: #f3f1ea;
-  --color-line: rgb(0 0 0 / 0.14);
-  --color-line-strong: rgb(0 0 0 / 0.32);
-  --color-chrome: #16171b;
-  --color-fg: #14151a;
-  --color-muted: #3d424d;
-  --color-dim: #5a606c;
-  --color-harpoon: #c24e00;
-  --color-harpoon-2: #a84300;
+  --color-panel-2: #f4effa;
+  --color-line: rgb(40 0 80 / 0.14);
+  --color-line-strong: rgb(40 0 80 / 0.32);
+  --color-chrome: #18131f;
+  --color-fg: #16121c;
+  --color-muted: #423b4f;
+  --color-dim: #5e566d;
+  --color-harpoon: #c0126f;
+  --color-harpoon-2: #a10f5d;
+  --color-violet: #6d28d9;
+  --color-cyan: #0e7c86;
   --color-amber: #8a5a00;
   --color-phosphor: #1d7446;
   --color-ok: #1d7446;
@@ -78,6 +85,7 @@
   --color-bad: #c3281d;
   --dither: rgb(0 0 0 / 0.05);
   --glow: transparent;
+  --win-shadow: rgb(109 40 217 / 0.35);
   color-scheme: light;
 }
 
@@ -102,9 +110,17 @@ body {
 
 @layer components {
   /* ---------- Classic window chrome ---------- */
+  /* Double frame like a text-mode dialog, with a hard neon shadow. */
   .win {
     @apply relative border border-chrome bg-panel;
-    box-shadow: 4px 4px 0 0 rgb(0 0 0 / 0.75);
+    box-shadow: 5px 5px 0 0 var(--win-shadow, rgb(157 92 255 / 0.55));
+  }
+  .win::after {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border: 1px solid var(--color-line-strong);
+    pointer-events: none;
   }
   .win-bar {
     @apply relative flex h-7 items-center justify-center border-b border-chrome px-2;
@@ -113,11 +129,30 @@ body {
     padding-block: 5px;
   }
   .win-title {
-    @apply relative z-10 bg-panel px-3 font-pixel text-[13px] leading-none tracking-wide text-fg;
+    @apply relative z-10 bg-chrome px-3 py-1 font-pixel text-[13px] leading-none tracking-wide text-void;
   }
   .win-box {
     @apply absolute top-1/2 z-10 size-3.5 -translate-y-1/2 border border-chrome bg-panel;
   }
+
+  /* Text-mode dialog: double violet frame with the title set into the top border. */
+  .tui {
+    @apply relative border border-violet bg-void;
+    box-shadow: inset 0 0 0 3px var(--color-void), inset 0 0 0 4px var(--color-violet), 5px 5px 0 0 rgb(0 0 0 / 0.75);
+  }
+  .tui-title {
+    @apply absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-chrome px-3 py-0.5 font-mono text-[13px] font-bold whitespace-nowrap text-void;
+  }
+
+  .notice { @apply border-violet bg-[#1d0f33] text-chrome; box-shadow: inset 0 0 0 3px #1d0f33, inset 0 0 0 4px var(--color-chrome), 6px 6px 0 0 rgb(0 0 0 / 0.8); }
+  .tui-btn {
+    @apply inline-flex items-center bg-chrome px-4 py-0.5 font-mono text-[13px] font-bold text-void;
+    box-shadow: 5px 5px 0 0 rgb(0 0 0 / 0.9);
+  }
+  .tui-btn:hover { transform: translate(-1px, -1px); }
+  .tui-btn:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0 0 rgb(0 0 0 / 0.9); }
+  .tui-btn:focus-visible { outline: 2px dashed var(--color-harpoon); outline-offset: 3px; }
+  .tui-btn-primary { @apply bg-harpoon text-void; }
 
   /* ---------- Legacy component names, restyled ---------- */
   .panel { @apply border border-line bg-panel/90; }
@@ -143,9 +178,16 @@ body {
       linear-gradient(to bottom, rgb(255 255 255 / 0.04) 1px, transparent 1px);
     background-size: 32px 32px;
   }
-  .glow { background: radial-gradient(circle, var(--glow, rgb(252 108 0 / 0.18)) 0%, transparent 65%); }
+  .glow { background: radial-gradient(circle, var(--glow, rgb(255 46 151 / 0.2)) 0%, transparent 65%); }
   .scanlines { background: repeating-linear-gradient(to bottom, rgb(255 255 255 / 0.03) 0 1px, transparent 1px 3px); }
-  .text-glow { text-shadow: 0 0 6px rgb(252 108 0 / 0.55), 0 0 18px rgb(252 108 0 / 0.25); }
+  .text-glow { text-shadow: 0 0 6px rgb(255 46 151 / 0.6), 0 0 22px rgb(157 92 255 / 0.4); }
+  /* Logo gradient, for headings and strokes that carry the brand. */
+  .neon-text {
+    background: linear-gradient(90deg, var(--color-harpoon), var(--color-violet));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
   .phosphor { color: var(--color-phosphor); text-shadow: 0 0 6px rgb(125 255 155 / 0.45); }
   :root[data-theme="light"] :is(.text-glow, .phosphor) { text-shadow: none; }
   @media (prefers-color-scheme: light) {

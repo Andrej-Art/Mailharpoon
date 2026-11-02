@@ -17,6 +17,10 @@ Mailharpoon inspects a link live across **eight independent layers** and fuses t
 | AI analyst *(optional)* | Claude Haiku 5.5 by default reads the evidence, the rendered page and its screenshot (or a message) and returns a schema-constrained verdict |
 | Visual brand check *(with AI)* | Claude names the brand the page presents itself as and what it asks for; whether the domain is official is decided from the curated list and a Wikidata knowledge base, never by the model |
 
+## Technical check report
+
+Every link result lists all checks that ran, about 40 in total, grouped by layer: each threat list, every address, brand, page, browser and connection check, and the AI assessment. Each shows OK, flagged, positive, not applicable or not checked, with the finding in words (`src/lib/checks.ts`, `src/components/CheckReport.tsx`). Checks that could not run, for example the certificate of a domain that no longer resolves, are marked as not checked instead of passed.
+
 ## Rendered page and visual brand check
 
 Many phishing kits only build their login form in JavaScript or show scanners a harmless page first. `src/lib/analyzers/render.ts` therefore opens the link in headless Chromium (`@sparticuz/chromium` on Vercel, an installed Chrome locally) and reports only what the plain fetch missed, so no evidence is counted twice.
@@ -57,7 +61,7 @@ The list also counts how many links per domain OpenPhish and URLhaus currently r
 npm install
 cp .env.example .env.local   # all keys optional
 npm run dev                  # http://localhost:3000
-npm test                     # 340 tests incl. Python/TS model parity, SSRF guards and the browser egress proxy
+npm test                     # 345 tests incl. Python/TS model parity, SSRF guards and the browser egress proxy
 npx tsx scripts/scan-cli.mts https://example.com   # full pipeline in the terminal
 ```
 
