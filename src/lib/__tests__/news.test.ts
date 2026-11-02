@@ -76,6 +76,11 @@ describe("shortTitle", () => {
   it("uses the first sentence of a Mastodon post without hashtag signs", () => {
     expect(shortTitle("#Phishing bei der #Commerzbank. Ihre Karte wird gesperrt")).toBe("Phishing bei der Commerzbank.");
   });
+  it("stops at the first link", () => {
+    expect(shortTitle("#Phishing heute: Angebliche Rückerstattung im Namen von #PayPal: https://verbraucherzentrale.nrw/phishing Screenshot einer Mail")).toBe(
+      "Phishing heute: Angebliche Rückerstattung im Namen von PayPal",
+    );
+  });
   it("shortens long text at a word boundary", () => {
     expect(shortTitle("wort ".repeat(40), 20)).toBe("wort wort wort wort …");
   });

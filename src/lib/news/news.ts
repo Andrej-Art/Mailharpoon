@@ -62,9 +62,9 @@ export function pickCandidates(items: FeedItem[], now = Date.now()): FeedItem[] 
   });
 }
 
-/** Mastodon posts have no title: the first sentence of the post stands in for one. */
+/** Mastodon posts have no title: the text up to the first link or sentence end stands in for one. */
 export function shortTitle(text: string, max = 120): string {
-  const t = text.replace(/#(\p{L}+)/gu, "$1").trim();
+  const t = text.split(/\s*https?:\/\//)[0].replace(/#(\p{L}+)/gu, "$1").replace(/[\s:]+$/, "").trim();
   const first = t.match(/^.+?[.!?](?=\s|$)/u)?.[0] ?? t;
   return first.length <= max ? first : `${first.slice(0, max).replace(/\s+\S*$/, "")} …`;
 }
