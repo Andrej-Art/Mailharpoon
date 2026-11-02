@@ -80,10 +80,6 @@ export function SiteNav({ t, locale, path = "" }: { t: Dict; locale: Locale; pat
               </a>
             </div>
           </details>
-          <span className="hidden items-center gap-1.5 lg:flex">
-            <span className="size-2 bg-ok" />
-            {t.status.layers}
-          </span>
           <span className="hidden sm:inline">
             <Clock locale={locale} />
           </span>
