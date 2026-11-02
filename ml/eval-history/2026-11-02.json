@@ -1,0 +1,24 @@
+{
+  "date": "2026-11-02",
+  "sample": {
+    "phishing": 40,
+    "legitimate": 40
+  },
+  "metrics": [
+    {
+      "threshold": 35,
+      "recall": 0.925,
+      "fpr": 0.175
+    },
+    {
+      "threshold": 50,
+      "recall": 0.875,
+      "fpr": 0.125
+    },
+    {
+      "threshold": 70,
+      "recall": 0.825,
+      "fpr": 0.025
+    }
+  ]
+}
