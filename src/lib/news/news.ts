@@ -8,6 +8,8 @@ import { summarize, type Summary } from "./summarize";
 export interface NewsItem extends FeedItem {
   sourceName: string;
   sourceLang: "de" | "en";
+  /** From a consumer warning service, shown under "Warnungen". */
+  warning: boolean;
   summary: Summary | null;
 }
 
@@ -97,7 +99,7 @@ export async function getNews(): Promise<NewsItem[]> {
     if (!keep || (count.get(source.id) ?? 0) >= PER_SOURCE) return;
     if (summary && out.some((o) => o.summary && sameStory(o.summary, summary))) return;
     count.set(source.id, (count.get(source.id) ?? 0) + 1);
-    out.push({ ...item, title, sourceName: source.name, sourceLang: source.lang, summary });
+    out.push({ ...item, title, sourceName: source.name, sourceLang: source.lang, warning: source.warnings, summary });
   });
   return out.slice(0, NEWS_LIMIT);
 }

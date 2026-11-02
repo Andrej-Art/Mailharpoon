@@ -13,6 +13,8 @@ import { defang, readTrends, type TrendEntry } from "@/lib/trends/store";
 // New items are summarised once and cached; the page itself refreshes every 15 minutes.
 export const revalidate = 900;
 
+const TOP = 5;
+
 const cachedTrends = unstable_cache(async () => readTrends({ external: await externalCounts() }), ["trends-v2"], { revalidate: 600 });
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -38,6 +40,20 @@ export default async function News({ params }: { params: Promise<{ locale: strin
     ...(e.people > 0 ? [e.people === 1 ? n.trendPerson : fill(n.trendPeople, { n: e.people })] : []),
     ...Object.entries(e.reports ?? {}).map(([source, k]) => fill(k === 1 ? n.trendReport : n.trendReports, { n: k, source })),
   ];
+  // Domains are text, never links, so nobody opens them by accident.
+  const domainRow = (e: TrendEntry) => (
+    <li key={e.name} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 py-2">
+      <span className="font-mono break-all text-bad">
+        {defang(e.name)}
+        {e.brand && <span className="ml-2 font-sans text-xs text-dim">{e.brand}</span>}
+      </span>
+      <span className="flex flex-wrap gap-x-3 font-mono text-xs text-dim">
+        {evidence(e).map((x) => (
+          <span key={x}>{x}</span>
+        ))}
+      </span>
+    </li>
+  );
   const stamp = new Intl.DateTimeFormat(locale, { ...tz, day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date());
 
   return (
@@ -52,80 +68,74 @@ export default async function News({ params }: { params: Promise<{ locale: strin
           {trends && (
             <section className="panel mt-10 p-5" aria-labelledby="trends">
               <h2 id="trends" className="text-lg font-bold">{n.trendTitle}</h2>
-              <p className="mt-1 text-sm text-muted">{fill(n.trendLead, { n: trends.minPeople, days: trends.days })}</p>
-              {trends.domains.length === 0 && trends.brands.length === 0 ? (
+              <p className="mt-1 text-sm text-muted">{n.trendShort}</p>
+              {trends.domains.length === 0 ? (
                 <p className="mt-4 text-sm text-dim">{fill(n.trendEmpty, { n: trends.minPeople })}</p>
               ) : (
-                <>
-                  <div className="mt-4 grid gap-6 sm:grid-cols-2">
-                    {trends.domains.length > 0 && (
-                      <div>
-                        <h3 className="label">{n.trendDomains}</h3>
-                        <ol className="mt-2 space-y-2.5 text-sm">
-                          {trends.domains.map((e) => (
-                            <li key={e.name}>
-                              <span className="font-mono break-all text-bad">{defang(e.name)}</span>
-                              {e.brand && <span className="ml-2 text-xs text-dim">{e.brand}</span>}
-                              <span className="mt-0.5 flex flex-wrap gap-x-3 font-mono text-xs text-dim">
-                                {evidence(e).map((x) => (
-                                  <span key={x}>{x}</span>
-                                ))}
-                              </span>
-                            </li>
-                          ))}
-                        </ol>
-                      </div>
-                    )}
-                    {trends.brands.length > 0 && (
-                      <div>
-                        <h3 className="label">{n.trendBrands}</h3>
-                        <ol className="mt-2 space-y-1.5 text-sm">
-                          {trends.brands.map((e) => (
-                            <li key={e.name} className="flex items-baseline justify-between gap-3">
-                              <span className="font-bold">{e.name}</span>
-                              <span className="shrink-0 font-mono text-xs text-dim">{fill(n.trendPeople, { n: e.people })}</span>
-                            </li>
-                          ))}
-                        </ol>
-                      </div>
-                    )}
-                  </div>
-                  {trends.domains.length > 0 && <p className="mt-4 text-xs text-dim">{n.trendNote}</p>}
-                </>
+                <ol className="mt-4 divide-y divide-line text-sm">{trends.domains.slice(0, TOP).map(domainRow)}</ol>
               )}
+              <details className="group mt-3 text-sm">
+                <summary className="cursor-pointer text-muted underline decoration-harpoon/60 underline-offset-4 hover:text-fg">
+                  {trends.domains.length > TOP ? fill(n.trendMore, { n: trends.domains.length }) : n.trendHow}
+                </summary>
+                {trends.domains.length > TOP && <ol className="divide-y divide-line">{trends.domains.slice(TOP).map(domainRow)}</ol>}
+                {trends.brands.length > 0 && (
+                  <p className="mt-4">
+                    <span className="label mr-2">{n.trendBrands}</span>
+                    {trends.brands.map((e, i) => (
+                      <span key={e.name}>
+                        {i > 0 && ", "}
+                        <b>{e.name}</b> <span className="text-xs text-dim">({fill(n.trendPeople, { n: e.people })})</span>
+                      </span>
+                    ))}
+                  </p>
+                )}
+                <p className="mt-4 text-xs text-dim">{fill(n.trendLead, { n: trends.minPeople, days: trends.days })}</p>
+              </details>
             </section>
           )}
 
           {items.length === 0 ? (
             <p className="panel mt-10 p-5 text-muted">{n.empty}</p>
           ) : (
-            <ol className="mt-10 divide-y divide-line border-y border-line">
-              {items.map((item) => {
-                const s = item.summary;
-                const foreign = item.sourceLang !== locale;
-                return (
-                  <li key={item.id} className="py-6">
-                    <p className="flex flex-wrap items-center gap-2 text-xs text-dim">
-                      {s && <span className="tag text-harpoon">{n.topics[s.topic]}</span>}
-                      <time dateTime={item.published}>{day.format(new Date(item.published))}</time>
-                      <span>{item.sourceName}</span>
-                    </p>
-                    <h2 className="mt-2 text-lg font-bold leading-snug">{s ? (locale === "de" ? s.headline_de : s.headline_en) : item.title}</h2>
-                    {s && <p className="mt-2 text-muted">{locale === "de" ? s.summary_de : s.summary_en}</p>}
-                    <a
-                      href={item.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-3 inline-flex items-center gap-1 text-sm text-fg underline decoration-harpoon/60 underline-offset-4 hover:text-harpoon"
-                    >
-                      {fill(n.readMore, { source: item.sourceName })}
-                      {foreign && <span className="text-dim">({locale === "de" ? n.sourceEn : n.sourceDe})</span>}
-                      <ArrowUpRight className="size-3.5" aria-hidden />
-                    </a>
-                  </li>
-                );
-              })}
-            </ol>
+            ([
+              [n.groupWarnings, n.groupWarningsLead, items.filter((i) => i.warning)],
+              [n.groupNews, n.groupNewsLead, items.filter((i) => !i.warning)],
+            ] as const).map(([title, lead, list]) =>
+              list.length ? (
+                <section key={title} className="mt-12">
+                  <h2 className="text-2xl font-bold">{title}</h2>
+                  <p className="mt-1 text-sm text-muted">{lead}</p>
+                  <ol className="mt-4 divide-y divide-line border-y border-line">
+                    {list.map((item) => {
+                      const s = item.summary;
+                      const foreign = item.sourceLang !== locale;
+                      return (
+                        <li key={item.id} className="py-6">
+                          <p className="flex flex-wrap items-center gap-2 text-xs text-dim">
+                            {s && <span className="tag text-harpoon">{n.topics[s.topic]}</span>}
+                            <time dateTime={item.published}>{day.format(new Date(item.published))}</time>
+                            <span>{item.sourceName}</span>
+                          </p>
+                          <h3 className="mt-2 text-lg font-bold leading-snug">{s ? (locale === "de" ? s.headline_de : s.headline_en) : item.title}</h3>
+                          {s && <p className="mt-2 text-muted">{locale === "de" ? s.summary_de : s.summary_en}</p>}
+                          <a
+                            href={item.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-3 inline-flex items-center gap-1 text-sm text-fg underline decoration-harpoon/60 underline-offset-4 hover:text-harpoon"
+                          >
+                            {fill(n.readMore, { source: item.sourceName })}
+                            {foreign && <span className="text-dim">({locale === "de" ? n.sourceEn : n.sourceDe})</span>}
+                            <ArrowUpRight className="size-3.5" aria-hidden />
+                          </a>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                </section>
+              ) : null,
+            )
           )}
 
           {items.some((i) => i.summary) && <p className="mt-6 text-xs text-dim">{n.aiNote}</p>}
