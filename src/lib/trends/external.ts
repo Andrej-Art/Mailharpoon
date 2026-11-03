@@ -33,7 +33,7 @@ export function countDomains(links: string[]): Map<string, number> {
 }
 
 async function openPhish(): Promise<string[]> {
-  const res = await fetch(OPENPHISH_FEED, { signal: AbortSignal.timeout(5000), next: { revalidate: 1800 } });
+  const res = await fetch(OPENPHISH_FEED, { signal: AbortSignal.timeout(8000), next: { revalidate: 1800 } });
   if (!res.ok) return [];
   return (await res.text()).split("\n").map((l) => l.trim()).filter(Boolean);
 }
@@ -41,7 +41,7 @@ async function openPhish(): Promise<string[]> {
 async function urlhaus(): Promise<string[]> {
   const key = process.env.URLHAUS_AUTH_KEY;
   if (!key) return [];
-  const res = await fetch(URLHAUS_RECENT, { headers: { "Auth-Key": key }, signal: AbortSignal.timeout(8000), next: { revalidate: 1800 } });
+  const res = await fetch(URLHAUS_RECENT, { headers: { "Auth-Key": key }, signal: AbortSignal.timeout(12000), next: { revalidate: 1800 } });
   if (!res.ok) return [];
   const data = (await res.json()) as { urls?: { url: string; url_status: string }[] };
   return (data.urls ?? []).filter((u) => u.url_status === "online").map((u) => u.url);
@@ -49,6 +49,10 @@ async function urlhaus(): Promise<string[]> {
 
 /** Never throws: a failing service simply contributes nothing. */
 export async function externalCounts(): Promise<ExternalCounts> {
-  const [op, uh] = await Promise.all([openPhish().catch(() => []), urlhaus().catch(() => [])]);
+  const failed = (name: string) => (e: unknown) => {
+    console.error(`${name} feed failed`, e instanceof Error ? e.message : e);
+    return [];
+  };
+  const [op, uh] = await Promise.all([openPhish().catch(failed("OpenPhish")), urlhaus().catch(failed("URLhaus"))]);
   return { bySource: { OpenPhish: countDomains(op), URLhaus: countDomains(uh) } };
 }
