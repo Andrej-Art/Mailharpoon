@@ -17,7 +17,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ locale:
   const items = (await getNews()).map((item) => {
     const s = item.summary;
     const title = s ? (locale === "de" ? s.headline_de : s.headline_en) : item.title;
-    const text = s ? (locale === "de" ? s.summary_de : s.summary_en) : "";
+    // Every AI summary carries the label itself, since feed readers show items on their own.
+    const text = s ? `${locale === "de" ? s.summary_de : s.summary_en} (${n.aiLabel})` : "";
     return `    <item>
       <title>${esc(title)}</title>
       <link>${esc(item.link)}</link>
@@ -33,7 +34,7 @@ ${s ? `      <category>${esc(n.topics[s.topic])}</category>\n` : ""}      <descr
     <title>${esc(n.feedTitle)}</title>
     <link>${page}</link>
     <atom:link href="${page}/feed.xml" rel="self" type="application/rss+xml" />
-    <description>${esc(n.description)}</description>
+    <description>${esc(`${n.description} ${n.aiNote}`)}</description>
     <language>${locale}</language>
     <generator>${SITE_NAME}</generator>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>

@@ -53,7 +53,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
           }}
         />
       </head>
-      <body className="min-h-dvh overflow-x-hidden">
+      <body className="min-h-dvh overflow-x-clip">
         {children}
         <Notice n={getDict(locale).notice} locale={locale} />
         <div className="crt" aria-hidden />

@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, ArrowUpRight, Rss } from "lucide-react";
+import { ArrowRight, Rss } from "lucide-react";
+import { NewsFeed, type NewsCard } from "@/components/NewsFeed";
 import { ScrollList } from "@/components/ScrollList";
 import { SiteFooter, SiteNav } from "@/components/Site";
 import { Window } from "@/components/os/Window";
 import { fill, getDict, isLocale } from "@/i18n";
 import { getNews } from "@/lib/news/news";
+import { NEWS_SOURCES } from "@/lib/news/sources";
 import { abs, JsonLd, ogLocale, SITE_NAME } from "@/lib/seo";
 import { cachedTrends, trendEvidence } from "@/lib/trends/cached";
 import { defang, type TrendEntry } from "@/lib/trends/store";
@@ -39,7 +41,26 @@ export default async function News({ params }: { params: Promise<{ locale: strin
   const n = t.news;
   const [items, trends] = await Promise.all([getNews(), cachedTrends().catch(() => null)]);
   const tz = { timeZone: "Europe/Berlin" } as const;
-  const day = new Intl.DateTimeFormat(locale, { ...tz, day: "numeric", month: "short", year: "numeric" });
+  const month = new Intl.DateTimeFormat(locale, { ...tz, month: "short" });
+  const dayOf = new Intl.DateTimeFormat(locale, { ...tz, day: "numeric" });
+  const ymd = new Intl.DateTimeFormat("en-CA", tz);
+  const today = items.filter((i) => ymd.format(new Date(i.published)) === ymd.format(new Date())).length;
+  const cards: NewsCard[] = items.map((item) => {
+    const s = item.summary;
+    return {
+      id: item.id,
+      link: item.link,
+      headline: s ? (locale === "de" ? s.headline_de : s.headline_en) : item.title,
+      summary: s ? (locale === "de" ? s.summary_de : s.summary_en) : null,
+      topic: s?.topic ?? null,
+      source: item.sourceName,
+      foreign: item.sourceLang === locale ? null : locale === "de" ? n.sourceEn : n.sourceDe,
+      warning: item.warning,
+      published: item.published,
+      month: month.format(new Date(item.published)).replace(/\.$/, ""),
+      day: dayOf.format(new Date(item.published)).replace(/\.$/, ""),
+    };
+  });
   // Domains are text, never links, so nobody opens them by accident.
   const domainRow = (e: TrendEntry) => (
     <li key={e.name} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 py-2">
@@ -92,98 +113,93 @@ export default async function News({ params }: { params: Promise<{ locale: strin
         }}
       />
       <SiteNav t={t} locale={locale} path="/news" />
-      <main className="mx-auto max-w-4xl px-4 pt-10">
-        <Window as="article" title={t.os.windows.news}>
-          <p className="label flex flex-wrap items-center gap-x-4 gap-y-1">
-            <span>{fill(n.updated, { time: stamp })}</span>
-            <a href={`/${locale}/news/feed.xml`} className="inline-flex items-center gap-1 hover:text-harpoon">
-              <Rss className="size-3.5" aria-hidden /> {n.rss}
-            </a>
-          </p>
-          <h1 className="mt-3 text-[clamp(2rem,5vw,3.2rem)] leading-[1.08] font-bold tracking-tight">{n.title}</h1>
-          <p className="mt-6 text-lg text-muted">{n.lead}</p>
+      <main className="mx-auto max-w-6xl px-4 pt-10">
+        <Window as="article" title={t.os.windows.news} bodyClassName="p-0">
+          <div className="grid lg:grid-cols-[minmax(0,23rem)_minmax(0,1fr)]">
+            <aside className="space-y-8 border-line p-5 sm:p-8 lg:border-r">
+              <div>
+                <p className="label flex flex-wrap items-center gap-x-4 gap-y-1">
+                  <span className="flex items-center gap-2">
+                    <span className="size-2 animate-pulse bg-ok" aria-hidden />
+                    {fill(n.updated, { time: stamp })}
+                  </span>
+                </p>
+                <h1 className="mt-4 text-[clamp(2rem,4vw,2.6rem)] leading-[1.08] font-bold tracking-tight">{n.title}</h1>
+                <p className="mt-4 text-muted">{n.lead}</p>
+              </div>
 
-          {trends && (
-            <section className="panel mt-10 p-5" aria-labelledby="trends">
-              <h2 id="trends" className="text-lg font-bold">{n.trendTitle}</h2>
-              <p className="mt-1 text-sm text-muted">{n.trendShort}</p>
-              {trends.domains.length === 0 ? (
-                <p className="mt-4 text-sm text-dim">{fill(n.trendEmpty, { n: trends.minPeople })}</p>
-              ) : (
-                <ScrollList label={n.trendTitle} className="mt-4 max-h-[13.5rem] divide-y divide-line pr-2 text-sm">
-                  {trends.domains.map(domainRow)}
-                </ScrollList>
-              )}
-              <details className="group mt-4 text-sm">
-                <summary className="cursor-pointer text-muted underline decoration-harpoon/60 underline-offset-4 hover:text-fg">
-                  {n.trendHow}
-                </summary>
-                {trends.brands.length > 0 && (
-                  <p className="mt-4">
-                    <span className="label mr-2">{n.trendBrands}</span>
-                    {trends.brands.map((e, i) => (
-                      <span key={e.name}>
-                        {i > 0 && ", "}
-                        <b>{e.name}</b> <span className="text-xs text-dim">({fill(n.trendPeople, { n: e.people })})</span>
-                      </span>
-                    ))}
-                  </p>
+              <dl className="grid grid-cols-3 border border-line text-center">
+                {[
+                  [n.statToday, today],
+                  [n.statWarnings, items.filter((i) => i.warning).length],
+                  [n.statSources, NEWS_SOURCES.length],
+                ].map(([label, value], i) => (
+                  <div key={label} className={i > 0 ? "border-l border-line p-3" : "p-3"}>
+                    <dd className="font-mono text-2xl text-fg">{value}</dd>
+                    <dt className="label mt-1 text-[10px]">{label}</dt>
+                  </div>
+                ))}
+              </dl>
+
+              {/* The intro scrolls away; the tools stay in view next to the feed. */}
+              <div className="space-y-6 lg:sticky lg:top-20">
+                {trends && (
+                  <section className="panel p-4" aria-labelledby="trends">
+                    <h2 id="trends" className="flex items-center gap-2 font-bold">
+                      <span className="size-2 bg-bad" aria-hidden />
+                      {n.trendTitle}
+                    </h2>
+                    <p className="mt-1 text-xs text-muted">{n.trendShort}</p>
+                    {trends.domains.length === 0 ? (
+                      <p className="mt-3 text-sm text-dim">{fill(n.trendEmpty, { n: trends.minPeople })}</p>
+                    ) : (
+                      <ScrollList label={n.trendTitle} className="mt-3 max-h-[11rem] divide-y divide-line pr-2 text-[13px]">
+                        {trends.domains.map(domainRow)}
+                      </ScrollList>
+                    )}
+                    <details className="group mt-3 text-xs">
+                      <summary className="cursor-pointer text-muted underline decoration-harpoon/60 underline-offset-4 hover:text-fg">{n.trendHow}</summary>
+                      {trends.brands.length > 0 && (
+                        <p className="mt-3">
+                          <span className="label mr-2">{n.trendBrands}</span>
+                          {trends.brands.map((e, i) => (
+                            <span key={e.name}>
+                              {i > 0 && ", "}
+                              <b>{e.name}</b> <span className="text-dim">({fill(n.trendPeople, { n: e.people })})</span>
+                            </span>
+                          ))}
+                        </p>
+                      )}
+                      <p className="mt-3 text-dim">
+                        {fill(n.trendLead, {
+                          n: trends.minPeople,
+                          days: trends.days,
+                        })}
+                      </p>
+                    </details>
+                  </section>
                 )}
-                <p className="mt-4 text-xs text-dim">{fill(n.trendLead, { n: trends.minPeople, days: trends.days })}</p>
-              </details>
-            </section>
-          )}
 
-          {items.length === 0 ? (
-            <p className="panel mt-10 p-5 text-muted">{n.empty}</p>
-          ) : (
-            ([
-              [n.groupWarnings, n.groupWarningsLead, items.filter((i) => i.warning)],
-              [n.groupNews, n.groupNewsLead, items.filter((i) => !i.warning)],
-            ] as const).map(([title, lead, list]) =>
-              list.length ? (
-                <section key={title} className="mt-12">
-                  <h2 className="text-2xl font-bold">{title}</h2>
-                  <p className="mt-1 text-sm text-muted">{lead}</p>
-                  <ol className="mt-4 divide-y divide-line border-y border-line">
-                    {list.map((item) => {
-                      const s = item.summary;
-                      const foreign = item.sourceLang !== locale;
-                      return (
-                        <li key={item.id} className="py-6">
-                          <p className="flex flex-wrap items-center gap-2 text-xs text-dim">
-                            {s && <span className="tag text-harpoon">{n.topics[s.topic]}</span>}
-                            <time dateTime={item.published}>{day.format(new Date(item.published))}</time>
-                            <span>{item.sourceName}</span>
-                          </p>
-                          <h3 className="mt-2 text-lg font-bold leading-snug">{s ? (locale === "de" ? s.headline_de : s.headline_en) : item.title}</h3>
-                          {s && <p className="mt-2 text-muted">{locale === "de" ? s.summary_de : s.summary_en}</p>}
-                          <a
-                            href={item.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="mt-3 inline-flex items-center gap-1 text-sm text-fg underline decoration-harpoon/60 underline-offset-4 hover:text-harpoon"
-                          >
-                            {fill(n.readMore, { source: item.sourceName })}
-                            {foreign && <span className="text-dim">({locale === "de" ? n.sourceEn : n.sourceDe})</span>}
-                            <ArrowUpRight className="size-3.5" aria-hidden />
-                          </a>
-                        </li>
-                      );
-                    })}
-                  </ol>
-                </section>
-              ) : null,
-            )
-          )}
+                <div className="panel space-y-3 p-4">
+                  <p className="font-bold">{n.ctaTitle}</p>
+                  <Link href={`/${locale}#scanner`} className="btn btn-primary w-full">
+                    {n.cta} <ArrowRight className="size-4" />
+                  </Link>
+                </div>
 
-          {items.some((i) => i.summary) && <p className="mt-6 text-xs text-dim">{n.aiNote}</p>}
+                <div className="space-y-3">
+                  <p className="text-sm text-muted">{n.subscribeText}</p>
+                  <a href={`/${locale}/news/feed.xml`} className="btn w-full">
+                    <Rss className="size-4" aria-hidden /> {n.rss}
+                  </a>
+                </div>
+              </div>
+            </aside>
 
-          <div className="panel mt-10 flex flex-wrap items-center justify-between gap-4 p-5">
-            <p className="font-bold">{n.ctaTitle}</p>
-            <Link href={`/${locale}#scanner`} className="btn btn-primary">
-              {n.cta} <ArrowRight className="size-4" />
-            </Link>
+            <div className="border-t border-line p-5 sm:p-8 lg:border-t-0">
+              {cards.length === 0 ? <p className="panel p-5 text-muted">{n.empty}</p> : <NewsFeed items={cards} n={n} />}
+              {items.some((i) => i.summary) && <p className="mt-10 text-xs text-dim">{n.aiNote}</p>}
+            </div>
           </div>
         </Window>
       </main>
