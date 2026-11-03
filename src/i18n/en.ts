@@ -334,7 +334,6 @@ export const en = {
     trendReport: "Reported once",
     trendEmpty: "No data right now. A domain appears here once {n} different people checked it with Mailharpoon or a blocklist service reports it.",
     trendShort: "Dangerous domains currently reported or checked with Mailharpoon. They are deliberately not linked, please do not open them.",
-    trendMore: "Show all {n} and how it works",
     trendHow: "How is this list made?",
     groupWarnings: "Warnings",
     groupWarningsLead: "Current phishing and scam warnings from consumer protection services.",

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { ScrollList } from "@/components/ScrollList";
 import { SiteFooter, SiteNav } from "@/components/Site";
 import { Window } from "@/components/os/Window";
 import { fill, getDict, isLocale } from "@/i18n";
@@ -11,8 +12,6 @@ import { defang, type TrendEntry } from "@/lib/trends/store";
 
 // New items are summarised once and cached; the page itself refreshes every 15 minutes.
 export const revalidate = 900;
-
-const TOP = 5;
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -65,13 +64,14 @@ export default async function News({ params }: { params: Promise<{ locale: strin
               {trends.domains.length === 0 ? (
                 <p className="mt-4 text-sm text-dim">{fill(n.trendEmpty, { n: trends.minPeople })}</p>
               ) : (
-                <ol className="mt-4 divide-y divide-line text-sm">{trends.domains.slice(0, TOP).map(domainRow)}</ol>
+                <ScrollList label={n.trendTitle} className="mt-4 max-h-[13.5rem] divide-y divide-line pr-2 text-sm">
+                  {trends.domains.map(domainRow)}
+                </ScrollList>
               )}
-              <details className="group mt-3 text-sm">
+              <details className="group mt-4 text-sm">
                 <summary className="cursor-pointer text-muted underline decoration-harpoon/60 underline-offset-4 hover:text-fg">
-                  {trends.domains.length > TOP ? fill(n.trendMore, { n: trends.domains.length }) : n.trendHow}
+                  {n.trendHow}
                 </summary>
-                {trends.domains.length > TOP && <ol className="divide-y divide-line">{trends.domains.slice(TOP).map(domainRow)}</ol>}
                 {trends.brands.length > 0 && (
                   <p className="mt-4">
                     <span className="label mr-2">{n.trendBrands}</span>

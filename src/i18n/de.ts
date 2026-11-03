@@ -335,7 +335,6 @@ export const de: Dict = {
     trendReport: "Einmal gemeldet",
     trendEmpty: "Gerade liegen keine Daten vor. Eine Domain erscheint hier, sobald {n} verschiedene Personen sie mit Mailharpoon geprüft haben oder ein Sperrlistendienst sie meldet.",
     trendShort: "Gefährliche Domains, die gerade gemeldet oder mit Mailharpoon geprüft werden. Sie sind absichtlich nicht verlinkt, bitte öffnen Sie sie nicht.",
-    trendMore: "Alle {n} anzeigen und Erklärung",
     trendHow: "Wie entsteht diese Liste?",
     groupWarnings: "Warnungen",
     groupWarningsLead: "Aktuelle Phishing- und Betrugswarnungen von Verbraucherschutzstellen.",
