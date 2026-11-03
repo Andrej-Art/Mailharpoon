@@ -1,26 +1,34 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Rss } from "lucide-react";
 import { ScrollList } from "@/components/ScrollList";
 import { SiteFooter, SiteNav } from "@/components/Site";
 import { Window } from "@/components/os/Window";
 import { fill, getDict, isLocale } from "@/i18n";
 import { getNews } from "@/lib/news/news";
+import { abs, JsonLd, ogLocale, SITE_NAME } from "@/lib/seo";
 import { cachedTrends, trendEvidence } from "@/lib/trends/cached";
 import { defang, type TrendEntry } from "@/lib/trends/store";
 
-// New items are summarised once and cached; the page itself refreshes every 15 minutes.
+// New items are summarised once and cached; feeds and the page refresh every 15 minutes.
 export const revalidate = 900;
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
   const n = getDict(locale).news;
+  const url = `/${locale}/news`;
   return {
-    title: n.title,
+    title: n.metaTitle,
     description: n.description,
-    alternates: { canonical: `/${locale}/news`, languages: { de: "/de/news", en: "/en/news", "x-default": "/en/news" } },
+    alternates: {
+      canonical: url,
+      languages: { de: "/de/news", en: "/en/news", "x-default": "/en/news" },
+      types: { "application/rss+xml": [{ url: `${url}/feed.xml`, title: n.feedTitle }] },
+    },
+    openGraph: { siteName: SITE_NAME, title: n.metaTitle, description: n.description, locale: ogLocale[locale], type: "website", url },
+    twitter: { card: "summary_large_image", title: n.metaTitle, description: n.description },
   };
 }
 
@@ -50,10 +58,48 @@ export default async function News({ params }: { params: Promise<{ locale: strin
 
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "CollectionPage",
+              name: n.metaTitle,
+              description: n.description,
+              url: abs(`/${locale}/news`),
+              inLanguage: locale,
+              dateModified: new Date().toISOString(),
+              isPartOf: { "@type": "WebSite", name: SITE_NAME, url: abs(`/${locale}`) },
+              about: ["Phishing", "Cybersecurity", n.topics.scam, n.topics.fake_shop, n.topics.data_leak],
+              mainEntity: {
+                "@type": "ItemList",
+                itemListElement: items.map((item, i) => ({
+                  "@type": "ListItem",
+                  position: i + 1,
+                  url: item.link,
+                  name: item.summary ? (locale === "de" ? item.summary.headline_de : item.summary.headline_en) : item.title,
+                })),
+              },
+            },
+            {
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                { "@type": "ListItem", position: 1, name: SITE_NAME, item: abs(`/${locale}`) },
+                { "@type": "ListItem", position: 2, name: t.nav.news, item: abs(`/${locale}/news`) },
+              ],
+            },
+          ],
+        }}
+      />
       <SiteNav t={t} locale={locale} path="/news" />
       <main className="mx-auto max-w-4xl px-4 pt-10">
         <Window as="article" title={t.os.windows.news}>
-          <p className="label">{fill(n.updated, { time: stamp })}</p>
+          <p className="label flex flex-wrap items-center gap-x-4 gap-y-1">
+            <span>{fill(n.updated, { time: stamp })}</span>
+            <a href={`/${locale}/news/feed.xml`} className="inline-flex items-center gap-1 hover:text-harpoon">
+              <Rss className="size-3.5" aria-hidden /> {n.rss}
+            </a>
+          </p>
           <h1 className="mt-3 text-[clamp(2rem,5vw,3.2rem)] leading-[1.08] font-bold tracking-tight">{n.title}</h1>
           <p className="mt-6 text-lg text-muted">{n.lead}</p>
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseFeed, type FeedItem } from "../news/feeds";
+import { decode, parseFeed, type FeedItem } from "../news/feeds";
 import { pickCandidates, sameStory, shortTitle } from "../news/news";
 import { NEWS_SOURCES } from "../news/sources";
 import type { Summary } from "../news/summarize";
@@ -83,5 +83,16 @@ describe("shortTitle", () => {
   });
   it("shortens long text at a word boundary", () => {
     expect(shortTitle("wort ".repeat(40), 20)).toBe("wort wort wort wort …");
+  });
+});
+
+describe("decode", () => {
+  const latin1 = (s: string) => new Uint8Array([...s].map((c) => c.charCodeAt(0))).buffer;
+  it("uses the charset from the header", () => {
+    expect(decode(latin1("Lücke"), "application/rss+xml; charset=ISO-8859-1")).toBe("Lücke");
+  });
+  it("falls back to the XML declaration, then to UTF-8", () => {
+    expect(decode(latin1(`<?xml version="1.0" encoding="ISO-8859-1"?>möglich`), "text/xml")).toContain("möglich");
+    expect(decode(new TextEncoder().encode("Größe").buffer as ArrayBuffer, null)).toBe("Größe");
   });
 });

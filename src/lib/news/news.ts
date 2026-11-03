@@ -17,7 +17,10 @@ const MAX_AGE_DAYS = 14;
 // Claude reads the newest items of every source; general feeds need more, most of it is IT news.
 const CANDIDATES = { warnings: 6, general: 10 };
 const PER_SOURCE = 4;
-export const NEWS_LIMIT = 12;
+export const NEWS_LIMIT = 24;
+// New items are summarised for at most this long per render; the rest follow on the next one,
+// so a cold cache with many new items never runs into the function timeout.
+const SUMMARY_BUDGET_MS = 30_000;
 
 const byName = new Map(NEWS_SOURCES.map((s) => [s.id, s]));
 
@@ -85,7 +88,10 @@ export async function getNews(): Promise<NewsItem[]> {
   const feeds = await Promise.all(NEWS_SOURCES.map(fetchFeed));
   const candidates = pickCandidates(feeds.flat());
   const ai = Boolean(process.env.ANTHROPIC_API_KEY);
-  const summaries = ai ? await pool(candidates, 6, cachedSummary) : candidates.map(() => null);
+  const deadline = Date.now() + SUMMARY_BUDGET_MS;
+  const summaries = ai
+    ? await pool(candidates, 6, (item) => (Date.now() < deadline ? cachedSummary(item) : Promise.resolve(null)))
+    : candidates.map(() => null);
 
   const count = new Map<string, number>();
   const out: NewsItem[] = [];

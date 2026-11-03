@@ -58,15 +58,26 @@ export function parseFeed(xml: string, source: NewsSource): FeedItem[] {
   return items;
 }
 
+/** Some feeds (Golem) are still ISO-8859-1: the charset comes from the header or the XML declaration. */
+export function decode(buf: ArrayBuffer, contentType: string | null): string {
+  const head = new TextDecoder("latin1").decode(buf.slice(0, 200));
+  const charset = contentType?.match(/charset=["']?([\w-]+)/i)?.[1] ?? head.match(/encoding=["']([\w-]+)["']/i)?.[1] ?? "utf-8";
+  try {
+    return new TextDecoder(charset).decode(buf);
+  } catch {
+    return new TextDecoder().decode(buf);
+  }
+}
+
 export async function fetchFeed(source: NewsSource): Promise<FeedItem[]> {
   try {
     const res = await fetch(source.feed, {
       headers: { "user-agent": UA, accept: "application/rss+xml, application/atom+xml, application/xml, text/xml" },
       signal: AbortSignal.timeout(15_000),
-      next: { revalidate: 3600 },
+      next: { revalidate: 900 },
     });
     if (!res.ok) return [];
-    return parseFeed(await res.text(), source);
+    return parseFeed(decode(await res.arrayBuffer(), res.headers.get("content-type")), source);
   } catch {
     return [];
   }
