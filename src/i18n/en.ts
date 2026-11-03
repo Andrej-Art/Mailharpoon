@@ -56,6 +56,7 @@ export const en = {
     messageExamples: ["Parcel fee SMS", "\"Hi Mum\" message", "Harmless message"],
     messagePrivacy: "Messages are not stored. Before any AI analysis, phone numbers, email addresses, IBANs and card numbers are removed automatically.",
     chars: "characters",
+    clear: "Clear input",
   },
   how: {
     label: "HOW_IT_WORKS",

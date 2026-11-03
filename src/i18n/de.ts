@@ -57,6 +57,7 @@ export const de: Dict = {
     messageExamples: ["Paketgebühr-SMS", "„Hallo Mama“-Nachricht", "Harmlose Nachricht"],
     messagePrivacy: "Nachrichten werden nicht gespeichert. Vor einer KI-Analyse werden Telefonnummern, E-Mail-Adressen, IBANs und Kartennummern automatisch entfernt.",
     chars: "Zeichen",
+    clear: "Eingabe löschen",
   },
   how: {
     label: "ANLEITUNG",

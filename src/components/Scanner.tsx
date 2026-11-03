@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { Link2, Loader2, MessageSquareText, QrCode, Search } from "lucide-react";
+import { Link2, Loader2, MessageSquareText, QrCode, Search, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Fused } from "@/lib/analyzers/fusion";
@@ -223,6 +223,20 @@ export function Scanner({ t, locale }: { t: Dict; locale: Locale }) {
                 inputMode="url"
                 className="min-w-0 flex-1 bg-transparent py-4 font-mono text-[15px] text-fg caret-harpoon outline-none placeholder:text-dim"
               />
+              {url && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUrl("");
+                    document.getElementById("scan-url")?.focus();
+                  }}
+                  aria-label={t.hero.clear}
+                  title={t.hero.clear}
+                  className="-mr-2 shrink-0 p-2 text-dim transition-colors hover:text-fg focus-visible:text-fg"
+                >
+                  <X className="size-5" aria-hidden />
+                </button>
+              )}
             </div>
             <SubmitButton busy={busy} disabled={!url.trim()} t={t} />
           </div>
