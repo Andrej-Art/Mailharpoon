@@ -118,7 +118,7 @@ export default async function GuidePage({ params }: { params: Promise<{ locale: 
           </header>
 
           {/* Sections as numbered cards across the full width; a closing summary spans both columns */}
-          <div className="grid gap-px bg-line md:grid-cols-2">
+          <div className="grid gap-px bg-line md:grid-cols-2 [&>*]:min-w-0 [overflow-wrap:anywhere]">
             {sections.map((s, i) => (
               <section
                 key={s.id}
