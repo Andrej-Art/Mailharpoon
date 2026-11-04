@@ -355,16 +355,57 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             </FaqChat>
           </Window>
 
-          {/* ---------- Alert dialog CTA ---------- */}
-          <Window title={os.windows.alert} className="mx-auto max-w-2xl" bodyClassName="flex flex-col items-center gap-5 p-8 text-center sm:flex-row sm:text-left">
-            <Image src="/logo.png" alt="" width={512} height={438} className="w-40 shrink-0" />
-            <div className="flex-1">
-              <p className="text-2xl font-bold">{t.cta.title}</p>
-              <p className="mt-1 text-muted">{t.cta.sub}</p>
+          {/* ---------- Closing call to action: paste a link right here, it opens in the scanner above ---------- */}
+          <Window title={os.windows.alert} bodyClassName="relative overflow-hidden p-0">
+            <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_20%_50%,color-mix(in_srgb,var(--color-harpoon)_22%,transparent),transparent_60%)]" />
+            <div className="relative grid items-center gap-8 p-6 sm:p-10 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] lg:gap-14 lg:px-14 lg:py-12">
+              <div className="relative mx-auto w-48 sm:w-60 lg:w-full">
+                <div aria-hidden className="absolute inset-[12%] animate-pulse rounded-full bg-harpoon/25 blur-3xl" />
+                <Image src="/logo.png" alt="" width={512} height={438} className="relative w-full drop-shadow-[0_10px_30px_rgb(0_0_0/0.6)]" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-glow font-pixel text-[clamp(2rem,5.5vw,4rem)] leading-[1] text-fg">{t.cta.title}</p>
+                <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted">{t.cta.sub}</p>
+                {/* A plain form: works without JavaScript and hands the link to the scanner, which checks ?url= on load. */}
+                <form action={`/${locale}#scanner`} method="get" className="mt-7 flex max-w-3xl flex-col border border-line-strong bg-void focus-within:border-harpoon sm:flex-row">
+                  <label className="flex min-w-0 flex-1 items-center gap-3 px-4">
+                    <span className="font-mono text-harpoon" aria-hidden>
+                      &gt;
+                    </span>
+                    <input
+                      type="text"
+                      name="url"
+                      required
+                      inputMode="url"
+                      autoComplete="off"
+                      placeholder={t.cta.placeholder}
+                      aria-label={t.cta.placeholder}
+                      className="min-w-0 flex-1 bg-transparent py-4 font-mono text-[15px] text-fg outline-none placeholder:text-dim"
+                    />
+                  </label>
+                  <button type="submit" className="btn btn-primary shrink-0 justify-center max-sm:border-x-0 max-sm:border-b-0">
+                    {t.cta.button} <ArrowRight className="size-4" />
+                  </button>
+                </form>
+              </div>
             </div>
-            <Link href={`/${locale}#scanner`} className="btn btn-primary shrink-0">
-              {t.cta.button}
-            </Link>
+            <div className="relative overflow-hidden border-t border-line bg-panel-2 py-3" aria-hidden>
+              <div className="flex w-max animate-marquee gap-10 font-pixel text-[13px] whitespace-nowrap text-muted motion-reduce:animate-none">
+                {[0, 1].map((copy) =>
+                  t.cta.facts.map((f) => (
+                    <span key={`${copy}${f}`} className="flex items-center gap-10">
+                      {fill(f, { pct: share(counts.flagged, counts.phishing) })}
+                      <span className="text-harpoon">✦</span>
+                    </span>
+                  )),
+                )}
+              </div>
+            </div>
+            <ul className="sr-only">
+              {t.cta.facts.map((f) => (
+                <li key={f}>{fill(f, { pct: share(counts.flagged, counts.phishing) })}</li>
+              ))}
+            </ul>
           </Window>
         </div>
       </main>

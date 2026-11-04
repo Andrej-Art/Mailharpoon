@@ -212,7 +212,13 @@ export const de: Dict = {
     minutes: "Min. Lesezeit",
     related: "Jetzt Link prüfen",
   },
-  cta: { title: "Im Zweifel prüfen.", sub: "Die Prüfung dauert wenige Sekunden und ist kostenlos.", button: "Jetzt Link prüfen" },
+  cta: {
+    title: "Im Zweifel prüfen.",
+    sub: "Fügen Sie den verdächtigen Link hier ein. Die Prüfung dauert wenige Sekunden und ist kostenlos.",
+    button: "Jetzt Link prüfen",
+    placeholder: "Verdächtigen Link einfügen …",
+    facts: ["Kostenlos", "Ohne Anmeldung", "Links werden nicht gespeichert", "{pct} der neuen Betrugsseiten erkannt", "8 Prüfschichten", "Erste Einschätzung in ~3 Sekunden", "Open Source"],
+  },
   footer: {
     tagline: "Kostenloser Link-Checker mit nachvollziehbaren Ergebnissen.",
     disclaimer: "Mailharpoon liefert eine Risikoeinschätzung und keine Garantie. Wenden Sie sich im Zweifel über einen Ihnen bekannten Kontaktweg an den Absender.",

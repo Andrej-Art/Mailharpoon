@@ -211,7 +211,13 @@ export const en = {
     minutes: "min read",
     related: "Check a link now",
   },
-  cta: { title: "When in doubt, check it.", sub: "The check takes a few seconds and is free of charge.", button: "Check a link now" },
+  cta: {
+    title: "When in doubt, check it.",
+    sub: "Paste the suspicious link here. The check takes a few seconds and is free of charge.",
+    button: "Check a link now",
+    placeholder: "Paste a suspicious link …",
+    facts: ["Free", "No sign-up", "Links are not stored", "{pct} of new scam sites caught", "8 layers of checks", "First verdict in ~3 seconds", "Open source"],
+  },
   footer: {
     tagline: "A free link checker with transparent results.",
     disclaimer: "Mailharpoon provides a risk assessment, not a guarantee. If in doubt, contact the sender through a channel you already know.",
