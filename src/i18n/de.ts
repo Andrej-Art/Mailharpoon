@@ -123,6 +123,21 @@ export const de: Dict = {
       ["Anmeldung ohne Anlass", "Eine Paketbenachrichtigung oder ein freigegebenes Dokument erfordert niemals Ihr Passwort."],
       ["Kurzlinks und QR-Codes", "Sie verbergen das tatsächliche Ziel. Mailharpoon verfolgt alle Weiterleitungen für Sie."],
     ],
+    demo: {
+      label: "Beispiel",
+      url: { address: "login.paypal.com.sicher-check.net", real: "sicher-check.net", real_label: "Hier landen Sie wirklich", disguise: "nur Tarnung", rule: "Entscheidend ist der Teil direkt vor der Endung." },
+      look: { fake: "Fälschung", real: "Original", notes: ["eine 1 statt eines l", "r und n statt m", "kyrillisches а, sieht genauso aus"] },
+      sms: {
+        sender: "Kundenservice",
+        text: "Ihr Konto wird in 24 Stunden gesperrt. Bestätigen Sie jetzt Ihre Daten:",
+        hot: ["24 Stunden", "gesperrt", "jetzt"],
+        link: "konto-pruefung.info",
+        timer: "Bis zur Sperrung",
+        note: "Der Zeitdruck soll Sie vom Nachdenken abhalten.",
+      },
+      login: { title: "Ihr Paket konnte nicht zugestellt werden", fields: ["Sendungsnummer", "E-Mail-Adresse", "Passwort"], button: "Zustellung planen", note: "Für ein Paket? Niemals ein Passwort." },
+      redirect: { hops: ["bit.ly/3kF9x", "t.co/x7Qp2", "track-paket.info/r"], final: "dhl-zoll-gebuehr.top", note: "das echte Ziel", follow: "Mailharpoon verfolgt jede Weiterleitung bis zum Ende." },
+    },
   },
   help: {
     label: "NOTFALLPLAN",
@@ -136,6 +151,15 @@ export const de: Dict = {
       ["Vorfall melden", "Leiten Sie die Nachricht an Ihre IT-Abteilung weiter oder melden Sie sie in Ihrem E-Mail-Programm als Phishing. Die Verbraucherzentrale nimmt Phishing-Mails zudem für ihr Phishing-Radar entgegen."],
     ],
     more: "Zum ausführlichen Ratgeber",
+    plan: {
+      ask: "Was ist passiert?",
+      choices: ["Nur geklickt", "Passwort eingegeben", "Bankdaten eingegeben", "Datei geladen"],
+      closeTab: ["Seite schließen", "Haben Sie nichts eingegeben, ist in aller Regel nichts passiert. Schließen Sie den Tab und löschen Sie die Nachricht."],
+      status: "Ihr Schutz",
+      from: "gefährdet",
+      to: "abgesichert",
+      done: "Erledigt. Damit haben Sie das Richtige getan.",
+    },
   },
   faq: {
     label: "FAQ",

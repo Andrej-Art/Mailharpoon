@@ -122,6 +122,21 @@ export const en = {
       ["Unexpected login requests", "A delivery notice or a shared document never requires your password."],
       ["Short links and QR codes", "They conceal the actual destination. Mailharpoon follows every redirect for you."],
     ],
+    demo: {
+      label: "Example",
+      url: { address: "login.paypal.com.secure-check.net", real: "secure-check.net", real_label: "Where you really land", disguise: "just a disguise", rule: "What counts is the part right before the ending." },
+      look: { fake: "Fake", real: "Original", notes: ["a 1 instead of an l", "r and n instead of m", "Cyrillic а, looks identical"] },
+      sms: {
+        sender: "Customer service",
+        text: "Your account will be suspended in 24 hours. Confirm your details now:",
+        hot: ["24 hours", "suspended", "now"],
+        link: "account-check.info",
+        timer: "Until suspension",
+        note: "The time pressure is meant to stop you from thinking.",
+      },
+      login: { title: "Your parcel could not be delivered", fields: ["Tracking number", "Email address", "Password"], button: "Schedule delivery", note: "For a parcel? Never a password." },
+      redirect: { hops: ["bit.ly/3kF9x", "t.co/x7Qp2", "track-parcel.info/r"], final: "dhl-customs-fee.top", note: "the real destination", follow: "Mailharpoon follows every redirect to the end." },
+    },
   },
   help: {
     label: "INCIDENT_RESPONSE",
@@ -135,6 +150,15 @@ export const en = {
       ["Report the incident", "Forward the message to your IT department or report it as phishing in your email client. This also helps protect others."],
     ],
     more: "Read the full guide",
+    plan: {
+      ask: "What happened?",
+      choices: ["Just clicked", "Entered a password", "Entered bank details", "Downloaded a file"],
+      closeTab: ["Close the page", "If you entered nothing, nothing has usually happened. Close the tab and delete the message."],
+      status: "Your protection",
+      from: "at risk",
+      to: "secured",
+      done: "Done. You did the right thing.",
+    },
   },
   faq: {
     label: "FAQ",

@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, Eye, Fingerprint, Globe, KeyRound, Link2, Radar, Server, Sparkles } from "lucide-react";
+import { RescuePlan, SpotDemo } from "@/components/HomeDemos";
 import { Scanner } from "@/components/Scanner";
 import { SiteFooter, SiteNav } from "@/components/Site";
 import { DesktopIcons, type DesktopItem } from "@/components/os/DesktopIcons";
@@ -358,42 +359,22 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             </div>
           </Window>
 
-          {/* ---------- Spot phishing + incident response ---------- */}
-          <div className="grid gap-8 sm:gap-14 lg:grid-cols-2">
-            <Window id="learn" title={os.windows.learn}>
+          {/* ---------- Spot phishing + incident response, each with a small animated example ---------- */}
+          <Window id="learn" title={os.windows.learn}>
+            <SpotDemo t={t.learn}>
               <H2>{t.learn.title}</H2>
-              <ol className="mt-6 space-y-5">
-                {t.learn.items.map(([title, body], i) => (
-                  <li key={title} className="grid grid-cols-[auto_1fr] gap-4">
-                    <span className="font-vt text-2xl leading-none text-harpoon">{String(i + 1).padStart(2, "0")}</span>
-                    <div>
-                      <h3 className="text-[16px] font-semibold">{title}</h3>
-                      <p className="mt-1 text-base leading-relaxed text-muted">{body}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </Window>
+            </SpotDemo>
+          </Window>
 
-            <Window id="help" title={os.windows.help}>
+          <Window id="help" title={os.windows.help}>
+            <RescuePlan t={t.help}>
               <H2>{t.help.title}</H2>
               <p className="mt-3 text-muted">{t.help.lead}</p>
-              <ol className="mt-6 space-y-5">
-                {t.help.steps.map(([title, body], i) => (
-                  <li key={title} className="grid grid-cols-[auto_1fr] gap-4">
-                    <span className="font-vt text-2xl leading-none text-bad">{String(i + 1).padStart(2, "0")}</span>
-                    <div>
-                      <h3 className="text-[16px] font-semibold">{title}</h3>
-                      <p className="mt-1 text-base leading-relaxed text-muted">{body}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-              <Link href={guidePath(locale, clicked)} className="btn mt-8">
+              <Link href={guidePath(locale, clicked)} className="btn mt-6">
                 {t.help.more} <ArrowRight className="size-4" />
               </Link>
-            </Window>
-          </div>
+            </RescuePlan>
+          </Window>
 
           {/* ---------- Guides ---------- */}
           <Window id="guides" title={os.windows.guides}>

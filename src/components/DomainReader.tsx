@@ -90,7 +90,7 @@ export function DomainReader({ readings, t }: { readings: DomainReading[]; t: Te
       <div className="relative overflow-hidden px-4 py-6 sm:px-5">
         {step < typed && !still && <span className="pointer-events-none absolute inset-y-0 left-0 w-full animate-[scan_1.6s_linear_infinite] bg-gradient-to-b from-transparent via-harpoon/10 to-transparent" aria-hidden />}
         <p className="font-mono text-[clamp(1rem,5vw,1.6rem)] leading-tight break-all" aria-label={r.host}>
-          {[...r.host].map((c, i) => {
+          {[...r.host].slice(0, Math.min(step, typed)).map((c, i) => {
             const kind = lit.get(i);
             return (
               <span
@@ -98,7 +98,6 @@ export function DomainReader({ readings, t }: { readings: DomainReading[]; t: Te
                 aria-hidden
                 className={clsx(
                   "transition-colors duration-300",
-                  i >= step && "opacity-0",
                   !kind && "text-fg",
                   kind && RISKY.has(kind) && (kind === "random" ? "text-bad underline decoration-wavy decoration-bad/70 underline-offset-4" : "bg-bad/20 text-bad"),
                   kind && !RISKY.has(kind) && (kind === "natural" ? "text-ok underline decoration-ok/60 underline-offset-4" : "bg-ok/15 text-ok"),
