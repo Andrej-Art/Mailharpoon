@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, Eye, Fingerprint, Globe, KeyRound, Link2, Radar, Server, Sparkles } from "lucide-react";
-import { HowDemo, RescuePlan, SpotDemo } from "@/components/HomeDemos";
+import { ArrowRight } from "lucide-react";
+import { ChecksDemo, HowDemo, RescuePlan, SpotDemo } from "@/components/HomeDemos";
 import { Scanner } from "@/components/Scanner";
 import { SiteFooter, SiteNav } from "@/components/Site";
 import { DesktopIcons, type DesktopItem } from "@/components/os/DesktopIcons";
@@ -18,17 +18,6 @@ import { defang } from "@/lib/trends/store";
 
 // Matches the trends cache, so the list in the side window stays current.
 export const revalidate = 600;
-
-const LAYERS = [
-  ["intel", Radar],
-  ["reputation", Globe],
-  ["lexical", Link2],
-  ["brand", Fingerprint],
-  ["page", KeyRound],
-  ["network", Server],
-  ["visual", Eye],
-  ["ai", Sparkles],
-] as const;
 
 function H2({ children, id }: { children: React.ReactNode; id?: string }) {
   return (
@@ -101,18 +90,6 @@ function TestPanel({
 }
 
 /** Example text in which the part in [brackets] is the warning sign, underlined like a spelling mistake. */
-function Highlight({ text }: { text: string }) {
-  return text.split(/\[(.*?)\]/).map((part, i) =>
-    i % 2 ? (
-      <mark key={i} className="bg-transparent text-bad underline decoration-bad decoration-wavy underline-offset-4">
-        {part}
-      </mark>
-    ) : (
-      part
-    ),
-  );
-}
-
 /** The wordmark as a pixel logotype with stripes in the logo's colours. */
 function PixelWordmark({ tagline }: { tagline: string }) {
   return (
@@ -264,28 +241,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
           {/* ---------- Checks ---------- */}
           <Window title={os.windows.layers}>
-            <div className="grid gap-4 lg:grid-cols-2 lg:items-end">
+            <ChecksDemo t={t.layers}>
               <H2>{t.layers.title}</H2>
-              <p className="max-w-xl text-muted lg:justify-self-end">{t.layers.lead}</p>
-            </div>
-            <ul className="mt-8 grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
-              {LAYERS.map(([key, Icon], i) => (
-                <li key={key} className="group flex flex-col bg-panel p-5 transition-colors hover:bg-panel-2">
-                  <div className="flex items-center justify-between">
-                    <span className="grid size-10 place-items-center border border-chrome text-harpoon group-hover:bg-harpoon group-hover:text-void">
-                      <Icon className="size-[18px]" />
-                    </span>
-                    <span className="font-vt text-xl text-dim">0{i + 1}</span>
-                  </div>
-                  <h3 className="mt-5 text-[17px] font-semibold">{t.layers.items[key].title}</h3>
-                  <p className="mt-1.5 mb-5 text-base leading-relaxed text-muted">{t.layers.items[key].text}</p>
-                  <p className="mt-auto border border-line bg-void/40 px-3 py-2 font-mono text-[12px] text-muted">
-                    <span className="mb-1 block font-pixel text-[10px] uppercase text-dim">{t.layers.example}</span>
-                    <Highlight text={t.layers.items[key].example} />
-                  </p>
-                </li>
-              ))}
-            </ul>
+              <p className="mt-4 text-muted">{t.layers.lead}</p>
+            </ChecksDemo>
             <Link href={`/${locale}/methodology`} className="mt-6 inline-flex items-center gap-2 font-mono text-[13px] text-muted hover:text-harpoon">
               {t.layers.link} <ArrowRight className="size-4" />
             </Link>

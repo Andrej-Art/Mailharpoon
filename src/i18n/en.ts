@@ -91,6 +91,17 @@ export const en = {
     lead: "A fake page rarely gives itself away in just one place. That is why Mailharpoon looks at every link from eight angles. With a little practice, you can spot many of these warning signs yourself.",
     example: "Example",
     link: "Technical details",
+    pick: "View check {v}",
+    demo: {
+      intel: { lists: ["OpenPhish", "URLhaus", "Quad9", "Google Safe Browsing"], hit: "Match · reported 2 hours ago", none: "no entry", note: "One match is enough for a clear verdict." },
+      reputation: { real: "mybank.com", realAge: "since 1995", fake: "mybank-account24.net", fakeAge: "for 3 days", note: "The younger the domain, the higher the risk." },
+      lexical: { domain: "secure-login-customer-4821.top", parts: [["secure", "lure word"], ["login", "lure word"], ["4821", "string of digits"], [".top", "frequently abused ending"]], note: "Many parts, no clear name: typical of fakes." },
+      brand: { fake: "paypaI.com", real: "paypal.com", reveal: "Capital I instead of lowercase l", note: "Barely distinguishable in many fonts, unambiguous to us." },
+      page: { title: "Confirm payment", fields: ["Card number", "Expiry date", "PIN"], note: "Asks for card details and PIN: a strong warning sign." },
+      network: { rows: [["Connection", "encrypted", "ok"], ["Certificate", "since yesterday", "bad"], ["Mail server", "none set up", "bad"]], note: "The padlock alone proves nothing." },
+      visual: { real: "mybank.com", fake: "mybank-account24.net", brand: "MyBank", same: "Same look", other: "different address", note: "A familiar logo on a foreign address: very likely a fake." },
+      ai: { text: "Your account will be restricted. Final deadline: today, 6 pm. Confirm your identity or fees will apply.", hot: ["restricted", "today, 6 pm", "or fees will apply"], verdict: "AI: time pressure and threat detected" },
+    },
     items: {
       intel: { title: "Already reported as a scam", text: "Security services add new scam sites to warning lists every day. If the link is on one of them, we know straight away.", example: "Reported [2 hours] ago" },
       reputation: { title: "The age of the website", text: "Scam sites get blocked quickly, so most are only a few days old. Your bank's website, on the other hand, has been around for years.", example: "Online for [3 days]" },

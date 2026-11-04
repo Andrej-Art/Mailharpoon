@@ -92,6 +92,17 @@ export const de: Dict = {
     lead: "Eine gefälschte Seite verrät sich selten an nur einer Stelle. Darum sieht sich Mailharpoon jeden Link von acht Seiten an. Viele dieser Warnzeichen können Sie mit etwas Übung auch selbst entdecken.",
     example: "Beispiel",
     link: "Technische Details",
+    pick: "Prüfung {v} ansehen",
+    demo: {
+      intel: { lists: ["OpenPhish", "URLhaus", "Quad9", "Google Safe Browsing"], hit: "Treffer · gemeldet vor 2 Stunden", none: "kein Eintrag", note: "Ein Treffer genügt für ein klares Urteil." },
+      reputation: { real: "sparkasse.de", realAge: "seit 1995", fake: "spk-konto24.net", fakeAge: "seit 3 Tagen", note: "Je jünger die Domain, desto größer das Risiko." },
+      lexical: { domain: "sicher-login-kunde-4821.top", parts: [["sicher", "Lockwort"], ["login", "Lockwort"], ["4821", "Zahlenfolge"], [".top", "oft missbrauchte Endung"]], note: "Viele Teile, kein klarer Name: typisch für Fälschungen." },
+      brand: { fake: "paypaI.com", real: "paypal.com", reveal: "Großes I statt kleinem l", note: "In vielen Schriften kaum zu unterscheiden, für uns eindeutig." },
+      page: { title: "Zahlung bestätigen", fields: ["Kartennummer", "Ablaufdatum", "PIN"], note: "Verlangt Kartendaten und PIN: ein starkes Warnzeichen." },
+      network: { rows: [["Verbindung", "verschlüsselt", "ok"], ["Zertifikat", "seit gestern", "bad"], ["E-Mail-Server", "keiner eingerichtet", "bad"]], note: "Das Schloss allein beweist nichts." },
+      visual: { real: "sparkasse.de", fake: "spk-konto24.net", brand: "Sparkasse", same: "Gleiches Aussehen", other: "andere Adresse", note: "Bekanntes Logo auf fremder Adresse: mit hoher Wahrscheinlichkeit gefälscht." },
+      ai: { text: "Ihr Konto wird eingeschränkt. Letzte Frist: heute, 18 Uhr. Bestätigen Sie Ihre Identität, sonst entstehen Gebühren.", hot: ["eingeschränkt", "heute, 18 Uhr", "sonst entstehen Gebühren"], verdict: "KI: Zeitdruck und Drohung erkannt" },
+    },
     items: {
       intel: { title: "Schon als Betrug gemeldet", text: "Sicherheitsdienste sammeln jeden Tag neue Betrugsseiten in Warnlisten. Steht der Link dort, wissen wir es sofort.", example: "Gemeldet vor [2 Stunden]" },
       reputation: { title: "Das Alter der Website", text: "Betrugsseiten werden schnell gesperrt und sind deshalb meist nur wenige Tage alt. Die Seite Ihrer Bank gibt es dagegen seit Jahren.", example: "Online seit [3 Tagen]" },

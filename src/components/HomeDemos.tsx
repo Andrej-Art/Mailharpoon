@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { ArrowDown, Check, ClipboardCheck, Copy, Lock, Search } from "lucide-react";
+import { ArrowDown, Check, ClipboardCheck, Copy, Eye, Fingerprint, Globe, KeyRound, Link2, Lock, Radar, Search, Server, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { Dict } from "@/i18n/en";
 
@@ -455,6 +455,254 @@ export function HowDemo({ t, children }: { t: How; children?: ReactNode }) {
           </li>
         ))}
       </ol>
+    </div>
+  );
+}
+
+type Layers = Dict["layers"];
+const CHECKS = [
+  ["intel", Radar],
+  ["reputation", Globe],
+  ["lexical", Link2],
+  ["brand", Fingerprint],
+  ["page", KeyRound],
+  ["network", Server],
+  ["visual", Eye],
+  ["ai", Sparkles],
+] as const;
+const CHECK_BEATS = [4, 2, 4, 2, 3, 3, 3, 3];
+
+function Browser({ address, tone, children }: { address: string; tone: "ok" | "bad"; children: ReactNode }) {
+  return (
+    <div className="border border-line-strong bg-panel">
+      <p className={clsx("flex items-center gap-1.5 border-b border-line px-2 py-1.5 font-mono text-[10px] transition-colors duration-500", tone === "ok" ? "text-ok" : "text-bad")}>
+        <Lock className="size-3 shrink-0" aria-hidden />
+        <span className="truncate">{address}</span>
+      </p>
+      <div className="p-3">{children}</div>
+    </div>
+  );
+}
+
+function CheckScene({ k, beat, d }: { k: (typeof CHECKS)[number][0]; beat: number; d: Layers["demo"] }) {
+  switch (k) {
+    case "intel":
+      return (
+        <div className="w-full">
+          <ul className="space-y-1.5 font-mono text-[12px]">
+            {d.intel.lists.map((l, j) => {
+              const done = beat > j;
+              const hit = j === 0;
+              return (
+                <li key={l} className={clsx("flex items-center justify-between gap-3 border px-3 py-2 transition-colors duration-300", done && hit ? "border-bad bg-bad/10" : "border-line")}>
+                  <span className={done ? "text-fg" : "text-dim"}>{l}</span>
+                  <span className={clsx("text-right", !done && "animate-pulse text-dim", done && (hit ? "text-bad" : "text-dim"))}>{done ? (hit ? d.intel.hit : d.intel.none) : "···"}</span>
+                </li>
+              );
+            })}
+          </ul>
+          <Note on={beat >= 4}>{d.intel.note}</Note>
+        </div>
+      );
+    case "reputation":
+      return (
+        <div className="w-full space-y-5 font-mono text-[12px]">
+          {[
+            [d.reputation.real, d.reputation.realAge, 1, "bg-ok", "text-ok"],
+            [d.reputation.fake, d.reputation.fakeAge, 0.02, "bg-bad", "text-bad"],
+          ].map(([name, age, w, bar, text]) => (
+            <div key={name as string}>
+              <p className="flex justify-between gap-3">
+                <span className="text-fg">{name}</span>
+                <span className={clsx("transition-opacity duration-500", beat >= 1 ? "opacity-100" : "opacity-0", text as string)}>{age}</span>
+              </p>
+              <div className="mt-1.5 h-3 bg-line">
+                <div className={clsx("h-full transition-[width] duration-[1200ms] ease-out", bar as string)} style={{ width: beat >= 1 ? `${Math.max((w as number) * 100, 1.5)}%` : "0%" }} />
+              </div>
+            </div>
+          ))}
+          <Note on={beat >= 2}>{d.reputation.note}</Note>
+        </div>
+      );
+    case "lexical": {
+      const lit = d.lexical.parts.slice(0, beat);
+      return (
+        <div className="w-full">
+          <p className="font-mono text-[clamp(1rem,3.6vw,1.35rem)] break-all">{hot(d.lexical.domain, d.lexical.parts.map(([part]) => part), beat)}</p>
+          <ul className="mt-4 flex flex-wrap gap-1.5">
+            {lit.map(([part, why]) => (
+              <li key={part} className="animate-[rise_.35s_ease-out] border border-bad/50 px-2 py-1 font-mono text-[11px] text-bad">
+                {part} · {why}
+              </li>
+            ))}
+          </ul>
+          <Note on={beat >= 4}>{d.lexical.note}</Note>
+        </div>
+      );
+    }
+    case "brand":
+      return (
+        <div className="w-full text-center">
+          <p className="font-mono text-[clamp(1.3rem,5vw,2rem)]">
+            paypa<span className={clsx("inline-block transition-all duration-700", beat >= 1 && "scale-150 bg-bad/20 px-1 text-bad")} style={beat >= 1 ? { fontFamily: "Georgia, serif" } : undefined}>I</span>.com
+          </p>
+          <p className="mt-2 font-mono text-[clamp(1.3rem,5vw,2rem)] text-muted">
+            paypa<span className={clsx("inline-block transition-all duration-700", beat >= 1 && "scale-150 bg-ok/15 px-1 text-ok")} style={beat >= 1 ? { fontFamily: "Georgia, serif" } : undefined}>l</span>.com
+          </p>
+          <p className={clsx("mt-4 font-mono text-[12px] text-bad transition-opacity duration-500", beat >= 1 ? "opacity-100" : "opacity-0")}>{d.brand.reveal}</p>
+          <Note on={beat >= 2}>{d.brand.note}</Note>
+        </div>
+      );
+    case "page":
+      return (
+        <div className="relative mx-auto w-full max-w-xs overflow-hidden border border-line-strong bg-panel p-4">
+          {beat < 3 && <span className="pointer-events-none absolute inset-x-0 top-0 h-full animate-[scan_1.6s_linear_infinite] bg-gradient-to-b from-transparent via-harpoon/15 to-transparent" aria-hidden />}
+          <p className="text-sm font-semibold">{d.page.title}</p>
+          <div className="mt-3 space-y-2">
+            {d.page.fields.map((f, j) => {
+              const flag = j !== 1 && beat >= (j === 0 ? 1 : 2);
+              return (
+                <div key={f} className={clsx("border px-3 py-2 font-mono text-[12px] transition-all duration-500", flag ? "border-bad bg-bad/10 text-bad" : "border-line text-dim")}>
+                  {f}
+                </div>
+              );
+            })}
+          </div>
+          <Note on={beat >= 3}>{d.page.note}</Note>
+        </div>
+      );
+    case "network":
+      return (
+        <div className="w-full">
+          <ul className="space-y-1.5 font-mono text-[12px]">
+            {d.network.rows.map(([label, value, tone], j) => (
+              <li
+                key={label}
+                className={clsx(
+                  "flex items-center justify-between gap-3 border px-3 py-2.5 transition-all duration-500",
+                  beat >= j ? "opacity-100" : "translate-y-1 opacity-0",
+                  tone === "ok" ? "border-ok/40" : "border-bad/50 bg-bad/5",
+                )}
+              >
+                <span className="text-muted">{label}</span>
+                <span className={tone === "ok" ? "text-ok" : "text-bad"}>
+                  {tone === "ok" && <Lock className="mr-1.5 inline size-3.5" aria-hidden />}
+                  {value}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <Note on={beat >= 3}>{d.network.note}</Note>
+        </div>
+      );
+    case "visual":
+      return (
+        <div className="w-full">
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              [d.visual.real, "ok"],
+              [d.visual.fake, beat >= 2 ? "bad" : "ok"],
+            ].map(([address, tone]) => (
+              <Browser key={address} address={address} tone={tone as "ok" | "bad"}>
+                <span className="flex items-center gap-1.5">
+                  <span className="grid size-5 place-items-center bg-bad font-bold text-[11px] text-white">{d.visual.brand[0]}</span>
+                  <span className="truncate text-[12px] font-semibold">{d.visual.brand}</span>
+                </span>
+                <span className="mt-2 block h-1.5 w-3/4 bg-line" />
+                <span className="mt-1.5 block h-1.5 w-1/2 bg-line" />
+                <span className="mt-2 block h-4 w-full border border-line" />
+              </Browser>
+            ))}
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-3 font-mono text-[11px]">
+            <span className={clsx("text-center text-muted transition-opacity duration-500", beat >= 1 ? "opacity-100" : "opacity-0")}>= {d.visual.same}</span>
+            <span className={clsx("text-center text-bad transition-opacity duration-500", beat >= 2 ? "opacity-100" : "opacity-0")}>≠ {d.visual.other}</span>
+          </div>
+          <Note on={beat >= 3}>{d.visual.note}</Note>
+        </div>
+      );
+    case "ai":
+      return (
+        <div className="w-full">
+          <p className="border-l-2 border-line-strong pl-4 text-[15px] leading-relaxed text-muted">{hot(d.ai.text, d.ai.hot, beat)}</p>
+          <p className={clsx("mt-5 inline-flex items-center gap-2 border border-violet/60 bg-violet/10 px-3 py-2 font-mono text-[12px] text-violet transition-all duration-500", beat >= 3 ? "opacity-100" : "translate-y-1 opacity-0")}>
+            <Sparkles className="size-3.5" aria-hidden /> {d.ai.verdict}
+          </p>
+        </div>
+      );
+  }
+}
+
+/** The eight checks as a control panel: pick one and its example plays out on the right. */
+export function ChecksDemo({ t, children }: { t: Layers; children?: ReactNode }) {
+  const { ref, visible, still } = useStage();
+  const { scene, beat, pick, paused } = useScenes(CHECKS.length, (s) => CHECK_BEATS[s], 800, visible, still);
+  const [key] = CHECKS[scene];
+  return (
+    <div ref={ref} className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-x-8 [&>*]:min-w-0">
+      <div>
+        {children}
+        <ul className="mt-6 grid grid-cols-4 gap-1.5">
+          {CHECKS.map(([k, Icon], i) => (
+            <li key={k}>
+              <button
+                type="button"
+                onClick={() => pick(i)}
+                aria-pressed={i === scene}
+                aria-label={t.pick.replace("{v}", t.items[k].title)}
+                className={clsx(
+                  "focus-ring group relative flex h-full w-full flex-col items-start gap-2 overflow-hidden border p-2.5 text-left transition-colors sm:p-3",
+                  i === scene ? "border-harpoon bg-panel-2" : "border-line hover:border-line-strong",
+                )}
+              >
+                <span className="flex w-full items-center justify-between">
+                  <span className={clsx("grid size-8 place-items-center border transition-colors", i === scene ? "border-harpoon bg-harpoon text-void" : "border-chrome text-harpoon")}>
+                    <Icon className="size-4" aria-hidden />
+                  </span>
+                  <span className="font-vt text-lg text-dim">0{i + 1}</span>
+                </span>
+                <span className="hidden text-[13px] leading-snug font-semibold sm:block">{t.items[k].title}</span>
+                {i === scene && !paused && !still && (
+                  <span
+                    key={`${scene}-${visible}`}
+                    className="absolute bottom-0 left-0 h-0.5 bg-harpoon"
+                    style={{ animation: visible ? `grow ${(CHECK_BEATS[i] + 4) * 0.8}s linear forwards` : "none" }}
+                    aria-hidden
+                  />
+                )}
+              </button>
+            </li>
+          ))}
+        </ul>
+        {/* Every description stays in the page for readers without the animation; only the chosen one is shown. */}
+        {CHECKS.map(([k], i) => (
+          <div key={k} hidden={i !== scene} className="mt-5 max-lg:hidden">
+            <h3 className="text-[17px] font-semibold">
+              <span className="mr-2 font-vt text-xl text-harpoon">0{i + 1}</span>
+              {t.items[k].title}
+            </h3>
+            <p className="mt-1.5 leading-relaxed text-muted">{t.items[k].text}</p>
+          </div>
+        ))}
+      </div>
+      <div>
+        <div className="flex min-h-80 flex-col border border-line-strong bg-void shadow-[4px_4px_0_0_rgb(0_0_0/0.5)]">
+          <p className="flex justify-between border-b border-line px-4 py-2.5 font-pixel text-[11px] text-dim uppercase">
+            <span>{t.example}</span>
+            <span>0{scene + 1} / 08</span>
+          </p>
+          <div key={scene} className="flex flex-1 animate-[rise_.35s_ease-out] items-center p-5 sm:p-7" aria-hidden>
+            <CheckScene k={key} beat={beat} d={t.demo} />
+          </div>
+        </div>
+        <div className="mt-4 lg:hidden">
+          <h3 className="text-[17px] font-semibold">
+            <span className="mr-2 font-vt text-xl text-harpoon">0{scene + 1}</span>
+            {t.items[key].title}
+          </h3>
+          <p className="mt-1.5 leading-relaxed text-muted">{t.items[key].text}</p>
+        </div>
+      </div>
     </div>
   );
 }
