@@ -36,6 +36,19 @@ function H2({ children, id }: { children: React.ReactNode; id?: string }) {
   );
 }
 
+/** Example text in which the part in [brackets] is the warning sign, underlined like a spelling mistake. */
+function Highlight({ text }: { text: string }) {
+  return text.split(/\[(.*?)\]/).map((part, i) =>
+    i % 2 ? (
+      <mark key={i} className="bg-transparent text-bad underline decoration-bad decoration-wavy underline-offset-4">
+        {part}
+      </mark>
+    ) : (
+      part
+    ),
+  );
+}
+
 /** The wordmark as a pixel logotype with stripes in the logo's colours. */
 function PixelWordmark({ tagline }: { tagline: string }) {
   return (
@@ -92,7 +105,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               inLanguage: locale,
               isAccessibleForFree: true,
               offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
-              featureList: [t.hero.tabs.url, t.hero.tabs.message, t.hero.tabs.qr, ...Object.values(t.layers.items).map((x) => x[0])],
+              featureList: [t.hero.tabs.url, t.hero.tabs.message, t.hero.tabs.qr, ...Object.values(t.layers.items).map((x) => x.title)],
             },
             { "@type": "Organization", name: SITE_NAME, url: abs("/"), logo: abs("/mark.svg"), sameAs: [REPO_URL] },
             {
@@ -193,19 +206,25 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             </div>
             <ul className="mt-8 grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
               {LAYERS.map(([key, Icon], i) => (
-                <li key={key} className="group bg-panel p-5 transition-colors hover:bg-panel-2">
+                <li key={key} className="group flex flex-col bg-panel p-5 transition-colors hover:bg-panel-2">
                   <div className="flex items-center justify-between">
                     <span className="grid size-10 place-items-center border border-chrome text-harpoon group-hover:bg-harpoon group-hover:text-void">
                       <Icon className="size-[18px]" />
                     </span>
                     <span className="font-vt text-xl text-dim">0{i + 1}</span>
                   </div>
-                  <h3 className="mt-5 text-[17px] font-semibold">{t.layers.items[key][0]}</h3>
-                  <p className="mt-1.5 text-base leading-relaxed text-muted">{t.layers.items[key][1]}</p>
-                  <p className="mt-3 font-mono text-[11px] text-dim">{t.layers.items[key][2]}</p>
+                  <h3 className="mt-5 text-[17px] font-semibold">{t.layers.items[key].title}</h3>
+                  <p className="mt-1.5 mb-5 text-base leading-relaxed text-muted">{t.layers.items[key].text}</p>
+                  <p className="mt-auto border border-line bg-void/40 px-3 py-2 font-mono text-[12px] text-muted">
+                    <span className="mb-1 block font-pixel text-[10px] uppercase text-dim">{t.layers.example}</span>
+                    <Highlight text={t.layers.items[key].example} />
+                  </p>
                 </li>
               ))}
             </ul>
+            <Link href={`/${locale}/methodology`} className="mt-6 inline-flex items-center gap-2 font-mono text-[13px] text-muted hover:text-harpoon">
+              {t.layers.link} <ArrowRight className="size-4" />
+            </Link>
           </Window>
 
           {/* ---------- Stats ---------- */}

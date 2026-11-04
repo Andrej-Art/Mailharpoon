@@ -1,4 +1,6 @@
 // The latest weekly evaluation (scripts/eval-weekly.mts), shown on the home and methodology pages.
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import latest from "../../ml/eval-history/latest.json";
 
 export interface EvalMetric {
@@ -7,7 +9,8 @@ export interface EvalMetric {
   fpr: number;
 }
 
-export const latestEval = latest as { date: string; sample: { phishing: number; legitimate: number }; metrics: EvalMetric[] };
+/** `candidate` holds the scores of a fusion rule tested next to the live one, present from November 2026 on. */
+export const latestEval = latest as { date: string; sample: { phishing: number; legitimate: number }; metrics: EvalMetric[]; candidate?: EvalMetric[] };
 
 // The two verdict boundaries of the fusion: suspicious from 35, dangerous from 70.
 const at = (threshold: number) => latestEval.metrics.find((m) => m.threshold === threshold)!;
@@ -26,4 +29,13 @@ export function evalCounts() {
     falseAlarms,
     falseSuspicious: count(at(35).fpr, legitimate) - falseAlarms,
   };
+}
+
+/** Every stored weekly evaluation, oldest first, read at build time for the methodology page. */
+export function evalHistory(): { date: string; metrics: EvalMetric[] }[] {
+  const dir = join(process.cwd(), "ml", "eval-history");
+  return readdirSync(dir)
+    .filter((f) => /^\d{4}-\d{2}-\d{2}\.json$/.test(f))
+    .sort()
+    .map((f) => JSON.parse(readFileSync(join(dir, f), "utf8")));
 }
