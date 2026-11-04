@@ -439,7 +439,7 @@ export function HowDemo({ t, children }: { t: How; children?: ReactNode }) {
               className={clsx("focus-ring relative grid w-full grid-cols-[auto_1fr] gap-4 overflow-hidden border px-4 py-4 text-left transition-colors", i === scene ? "border-line-strong bg-panel-2" : "border-transparent hover:border-line")}
             >
               <span className={clsx("font-vt text-3xl leading-none", i === scene ? "text-harpoon" : "text-dim")}>0{i + 1}_</span>
-              <span>
+              <span className="min-w-0 [overflow-wrap:anywhere] [hyphens:auto]">
                 <span className="block text-lg font-semibold">{title}</span>
                 <span className="mt-1 block leading-relaxed text-muted">{body}</span>
               </span>
