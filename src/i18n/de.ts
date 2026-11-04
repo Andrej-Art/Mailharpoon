@@ -47,6 +47,7 @@ export const de: Dict = {
     privacy: "Geprüfte Links werden nicht gespeichert. Ist ein Link gefährlich, zählen wir anonym nur seine Domain für die Liste aktueller Warnungen. Die Zielseite wird ausschließlich auf unserem Server geöffnet, niemals auf Ihrem Gerät.",
     examples: ["Gefälschtes PayPal", "Doppelgänger-Domain", "Wikipedia"],
     tabs: { url: "Link prüfen", message: "Nachricht prüfen", qr: "QR-Code" },
+    tabsShort: { url: "Link", message: "Nachricht", qr: "QR-Code" },
     qrPick: "Foto eines QR-Codes auswählen oder aufnehmen",
     qrHint: "Zum Beispiel von einem Brief, Strafzettel, Parkautomaten oder Werbeplakat. Sie können das Bild auch hierher ziehen.",
     qrNone: "In diesem Bild wurde kein QR-Code gefunden. Versuchen Sie ein schärferes Foto, auf dem der Code vollständig zu sehen ist.",
@@ -377,8 +378,8 @@ export const de: Dict = {
     label: "METHODIK",
     lead: "Mailharpoon verlässt sich nie auf ein einzelnes Signal. Acht unabhängige Prüfschichten und ein eigenes, auf über 300.000 Domains trainiertes Modell bewerten jeden Link. Wie das funktioniert und wie gut es funktioniert, legen wir hier offen.",
     log: {
-      caught: "{caught} von {phishing} neuen Phishing-Links erkannt",
-      falseAlarms: "{n} von {legitimate} echten Websites nicht als gefährlich eingestuft",
+      caught: "{pct} der neuen Phishing-Links erkannt",
+      falseAlarms: "{pct} der echten Websites ohne rote Warnung",
       train: "{n} Domains im Training",
       kb: "{n} Organisationen in der Markenbasis",
       layers: "8 Prüfschichten",

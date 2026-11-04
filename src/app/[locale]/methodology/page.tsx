@@ -124,8 +124,8 @@ export default async function Methodology({ params }: { params: Promise<{ locale
   const history = [{ date: card.live_eval.date, metrics: card.live_eval.rows }, ...evalHistory()];
 
   const log = [
-    [fill(m.log.caught, { caught: Math.round(at(70).recall * phishing), phishing }), fill(m.log.week, { date: date(latestEval.date, "short") })],
-    [fill(m.log.falseAlarms, { n: legitimate - Math.round(at(70).fpr * legitimate), legitimate }), fill(m.log.week, { date: date(latestEval.date, "short") })],
+    [fill(m.log.caught, { pct: pct(at(70).recall) }), fill(m.log.week, { date: date(latestEval.date, "short") })],
+    [fill(m.log.falseAlarms, { pct: pct(1 - at(70).fpr) }), fill(m.log.week, { date: date(latestEval.date, "short") })],
     [fill(m.log.train, { n: train }), m.log.model],
     [fill(m.log.kb, { n: kbCount }), "Wikidata"],
     [m.log.layers, m.log.perLink],
@@ -146,10 +146,10 @@ export default async function Methodology({ params }: { params: Promise<{ locale
             <div className={`relative border-t border-line p-5 sm:p-8 lg:border-t-0 lg:border-l ${HALFTONE} bg-panel-2`}>
               <ol className="relative space-y-2.5">
                 {log.map(([text, meta], i) => (
-                  <li key={text} className="flex items-center gap-3 border border-line-strong bg-panel/95 px-4 py-3 shadow-[3px_3px_0_0_rgb(0_0_0/0.5)]">
+                  <li key={text} className="flex flex-wrap items-center gap-x-3 gap-y-1 border border-line-strong bg-panel/95 px-4 py-3 shadow-[3px_3px_0_0_rgb(0_0_0/0.5)]">
                     <span className={i < 2 ? "size-2 shrink-0 bg-ok" : "size-2 shrink-0 bg-harpoon"} aria-hidden />
-                    <span className="min-w-0 flex-1 font-mono text-[12px] tracking-wide text-fg uppercase">{text}</span>
-                    <span className="shrink-0 font-mono text-[11px] text-dim">{meta}</span>
+                    <span className="min-w-0 flex-1 basis-48 font-mono text-[12px] tracking-wide text-fg uppercase">{text}</span>
+                    <span className="shrink-0 font-mono text-[11px] text-dim max-sm:basis-full max-sm:pl-5">{meta}</span>
                   </li>
                 ))}
               </ol>
@@ -184,7 +184,7 @@ export default async function Methodology({ params }: { params: Promise<{ locale
 
         {/* ---------- Layers: sticky heading, cards stacking on scroll (on phones each card slides over the last, leaving a sliver) ---------- */}
         <Window title={m.layersLabel}>
-          <div className="grid gap-10 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
+          <div className="grid gap-10 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] [&>*]:min-w-0">
             <div className="h-fit lg:sticky lg:top-20">
               <Kicker icon={Layers}>{m.layersLabel}</Kicker>
               <H2>{m.layersTitle}</H2>
@@ -317,7 +317,7 @@ verdict = dangerous  if p ≥ .70
 
         {/* ---------- Model ---------- */}
         <Window title={m.modelLabel} bodyClassName="p-0">
-          <div className="grid lg:grid-cols-2">
+          <div className="grid lg:grid-cols-2 [&>*]:min-w-0">
             <div className="p-5 sm:p-10">
               <Kicker icon={BrainCircuit}>{m.modelLabel}</Kicker>
               <H2>{m.modelTitle}</H2>
@@ -388,32 +388,39 @@ verdict = dangerous  if p ≥ .70
             })}
           </ol>
 
-          <div className="mt-12 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+          <div className="mt-12 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] [&>*]:min-w-0">
             <div>
               <h3 className="text-xl font-bold">{m.historyTitle}</h3>
               <p className="mt-3 leading-relaxed text-muted">{fill(m.historyLead, { phishing, legitimate })}</p>
               <div className="mt-6 overflow-x-auto">
-                <table className="w-full border border-line text-left font-mono text-sm">
+                <table className="w-full border border-line text-left font-mono text-xs [hyphens:auto] sm:text-sm">
                   <caption className="mb-2 text-left font-mono text-[11px] text-dim">{date(latestEval.date)}</caption>
                   <thead className="bg-panel-2 text-[11px] text-muted uppercase">
                     <tr>
-                      <th className="p-3 font-normal">{m.threshold}</th>
-                      <th className="p-3 font-normal">{m.recall}</th>
-                      <th className="p-3 font-normal">{m.fpr}</th>
-                      {candidate && <th className="p-3 font-normal text-violet">{m.candidate}</th>}
+                      <th className="p-2 align-bottom font-normal sm:p-3">{m.threshold}</th>
+                      <th className="p-2 align-bottom font-normal sm:p-3">{m.recall}</th>
+                      <th className="p-2 align-bottom font-normal sm:p-3">{m.fpr}</th>
+                      {candidate && <th className="hidden p-2 align-bottom font-normal text-violet sm:table-cell sm:p-3">{m.candidate}</th>}
                     </tr>
                   </thead>
                   <tbody>
                     {latestEval.metrics.map((r, i) => (
                       <tr key={r.threshold} className="border-t border-line">
-                        <td className="p-3 text-harpoon">
-                          {r.threshold} <span className="text-dim">{m.thresholdNames[r.threshold]}</span>
+                        <td className="p-2 text-harpoon sm:p-3">
+                          {r.threshold} <span className="block text-dim sm:inline">{m.thresholdNames[r.threshold]}</span>
                         </td>
-                        <td className="p-3">{pct(r.recall)}</td>
-                        <td className="p-3">{pct(r.fpr)}</td>
+                        {/* On phones the candidate figures sit under the live ones instead of in a fourth column. */}
+                        <td className="p-2 whitespace-nowrap sm:p-3">
+                          {pct(r.recall)}
+                          {candidate && <span className="block text-violet sm:hidden">{pct(candidate[i].recall)}</span>}
+                        </td>
+                        <td className="p-2 whitespace-nowrap sm:p-3">
+                          {pct(r.fpr)}
+                          {candidate && <span className="block text-violet sm:hidden">{pct(candidate[i].fpr)}</span>}
+                        </td>
                         {candidate && (
-                          <td className="p-3 text-violet">
-                            {pct(candidate[i].recall)} / {pct(candidate[i].fpr)}
+                          <td className="hidden p-2 text-violet sm:table-cell sm:p-3">
+                            <span className="whitespace-nowrap">{pct(candidate[i].recall)} /</span> <span className="whitespace-nowrap">{pct(candidate[i].fpr)}</span>
                           </td>
                         )}
                       </tr>
@@ -421,7 +428,12 @@ verdict = dangerous  if p ≥ .70
                   </tbody>
                 </table>
               </div>
-              {candidate && <p className="mt-3 text-sm leading-relaxed text-muted">{m.candidateNote}</p>}
+              {candidate && (
+                <p className="mt-3 text-sm leading-relaxed text-muted">
+                  <span className="mr-2 font-mono text-[12px] text-violet sm:hidden">■ {m.candidate}</span>
+                  {m.candidateNote}
+                </p>
+              )}
             </div>
             <figure className={`flex flex-col border border-line p-5 ${HALFTONE} bg-panel-2`}>
               <div className="flex flex-1 flex-col border border-line-strong bg-panel/95 p-5">
@@ -433,7 +445,7 @@ verdict = dangerous  if p ≥ .70
                     <span className="size-2.5 bg-amber" aria-hidden /> {m.historyFalse}
                   </span>
                 </figcaption>
-                <ol className="mt-4 flex min-h-56 flex-1 items-end gap-6 border-b border-line-strong">
+                <ol className="mt-4 flex min-h-56 flex-1 items-end gap-3 border-b border-line-strong sm:gap-6">
                   {history.map((run) => {
                     const r = run.metrics.find((x) => x.threshold === 70)!;
                     return (
@@ -453,7 +465,7 @@ verdict = dangerous  if p ≥ .70
                     );
                   })}
                 </ol>
-                <ol className="mt-2 flex gap-6">
+                <ol className="mt-2 flex gap-3 sm:gap-6">
                   {history.map((run) => (
                     <li key={run.date} className="flex-1 text-center font-mono text-[11px] text-dim">
                       {date(run.date, "short")}

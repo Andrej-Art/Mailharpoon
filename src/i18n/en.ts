@@ -46,6 +46,7 @@ export const en = {
     privacy: "Checked links are not stored. If a link is dangerous, we anonymously count only its domain for the list of current warnings. The destination is opened exclusively on our server, never on your device.",
     examples: ["Fake PayPal", "Lookalike domain", "Wikipedia"],
     tabs: { url: "Check a link", message: "Check a message", qr: "QR code" },
+    tabsShort: { url: "Link", message: "Message", qr: "QR code" },
     qrPick: "Choose or take a photo of a QR code",
     qrHint: "For example from a letter, parking ticket, parking meter or poster. You can also drag the image here.",
     qrNone: "No QR code was found in this image. Try a sharper photo that shows the whole code.",
@@ -376,8 +377,8 @@ export const en = {
     label: "METHODOLOGY",
     lead: "Mailharpoon never relies on a single signal. Eight independent layers of checks and our own model, trained on more than 300,000 domains, assess every link. Here we show how it works and how well it works.",
     log: {
-      caught: "{caught} of {phishing} new phishing links caught",
-      falseAlarms: "{n} of {legitimate} real websites not rated dangerous",
+      caught: "{pct} of new phishing links caught",
+      falseAlarms: "{pct} of real websites without a red warning",
       train: "{n} domains in training",
       kb: "{n} organisations in the brand base",
       layers: "8 layers of checks",

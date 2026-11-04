@@ -184,12 +184,13 @@ export function Scanner({ t, locale }: { t: Dict; locale: Locale }) {
             aria-selected={mode === m}
             onClick={() => setMode(m)}
             className={clsx(
-              "focus-ring flex items-center gap-2 border border-b-0 px-4 py-2 font-pixel text-[13px] tracking-wide transition-colors",
+              "focus-ring flex items-center gap-1.5 border border-b-0 px-2.5 py-2 font-pixel text-[12px] tracking-wide whitespace-nowrap transition-colors sm:gap-2 sm:px-4 sm:text-[13px]",
               mode === m ? "border-line-strong bg-void text-harpoon" : "border-transparent text-dim hover:text-fg",
             )}
           >
             {m === "url" ? <Link2 className="size-3.5" /> : m === "message" ? <MessageSquareText className="size-3.5" /> : <QrCode className="size-3.5" />}
-            {t.hero.tabs[m]}
+            <span className="sm:hidden">{t.hero.tabsShort[m]}</span>
+            <span className="max-sm:hidden">{t.hero.tabs[m]}</span>
           </button>
         ))}
       </div>
