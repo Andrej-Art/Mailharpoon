@@ -211,6 +211,8 @@ export const de: Dict = {
     updated: "Aktualisiert am",
     minutes: "Min. Lesezeit",
     related: "Jetzt Link prüfen",
+    toc: "Inhalt",
+    more: "Weitere Ratgeber",
   },
   cta: {
     title: "Im Zweifel prüfen.",

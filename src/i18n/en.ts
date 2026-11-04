@@ -210,6 +210,8 @@ export const en = {
     updated: "Updated on",
     minutes: "min read",
     related: "Check a link now",
+    toc: "Contents",
+    more: "More guides",
   },
   cta: {
     title: "When in doubt, check it.",
