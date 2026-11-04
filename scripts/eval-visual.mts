@@ -5,8 +5,9 @@
 // Sets: fresh OpenPhish URLs, random legitimate domains (Tranco rank 300k+), and genuine
 // login pages of well-known brands, the hardest case for a brand-mismatch check.
 // Usage: npx tsx scripts/eval-visual.mts <tranco-top-1m.csv> [perSet]
-import { readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { parse } from "tldts";
+import { stripUrl } from "../src/lib/eval-record";
 import { runScan, type Report } from "../src/lib/scan";
 
 const [trancoFile, sizeArg] = process.argv.slice(2);
@@ -97,5 +98,8 @@ for (const set of ["phish", "legit", "brand-login"]) {
   lines.push(`Brand check ${set}: official ${c("official")}, mismatch ${c("mismatch")}, unverified ${c("unverified")}, no brand ${c("no_brand")}`);
 }
 console.log(lines.join("\n"));
-writeFileSync("ml/eval-visual.json", JSON.stringify({ date: new Date().toISOString().slice(0, 10), rows }, null, 2) + "\n");
+// Stored in the private data repository; phishing links still lose query strings, addresses and tokens before they are stored.
+const stored = rows.map((r) => (r.set === "brand-login" ? r : { ...r, url: stripUrl(r.url) }));
+mkdirSync("data", { recursive: true });
+writeFileSync("data/eval-visual.json", JSON.stringify({ date: new Date().toISOString().slice(0, 10), rows: stored }, null, 2) + "\n");
 process.exit(0);

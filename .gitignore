@@ -58,3 +58,6 @@ next-env.d.ts
 # ML artefacts
 ml/data/
 *.joblib
+
+# Checkout of the private data repository (per-link eval results, feed archive)
+/data/

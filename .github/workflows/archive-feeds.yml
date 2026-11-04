@@ -1,0 +1,43 @@
+name: Archive phishing feed
+
+# Keeps a daily, time-ordered copy of the public OpenPhish feed for training and drift measurement.
+# The archive is written to the private data repository only, never to this public one.
+on:
+  schedule:
+    - cron: "30 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check out private data repository
+        uses: actions/checkout@v4
+        with:
+          repository: Andrej-Art/mailharpoon-data
+          token: ${{ secrets.DATA_REPO_TOKEN }}
+          path: data
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx tsx scripts/archive-feeds.mts
+
+      - name: Store archive (private)
+        working-directory: data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add feeds || exit 0
+          git diff --cached --quiet || git commit -m "Feed archive $(date -u +%Y-%m-%d)"
+          git push

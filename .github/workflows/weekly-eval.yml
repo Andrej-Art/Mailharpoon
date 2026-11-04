@@ -1,6 +1,7 @@
 name: Weekly evaluation
 
-# Measures zero-day detection on fresh phishing every Monday and keeps the history in the repo.
+# Measures zero-day detection on fresh phishing every Monday. The aggregate figures are committed
+# here (the website reads them); the per-link rows go to the private data repository only.
 on:
   schedule:
     - cron: "0 5 * * 1"
@@ -12,9 +13,16 @@ permissions:
 jobs:
   evaluate:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+
+      - name: Check out private data repository
+        uses: actions/checkout@v4
+        with:
+          repository: Andrej-Art/mailharpoon-data
+          token: ${{ secrets.DATA_REPO_TOKEN }}
+          path: data
 
       - uses: actions/setup-node@v4
         with:
@@ -29,13 +37,23 @@ jobs:
           unzip -o -q tranco.zip
 
       - name: Run evaluation
-        run: npx tsx scripts/eval-weekly.mts top-1m.csv 40
+        run: npx tsx scripts/eval-weekly.mts top-1m.csv 100
 
-      - name: Store result
+      - name: Store per-link rows (private)
+        if: always()
+        working-directory: data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add eval-rows || exit 0
+          git diff --cached --quiet || git commit -m "Weekly evaluation $(date -u +%Y-%m-%d)"
+          git push
+
+      - name: Store aggregate result (public)
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add ml/eval-history/*.json || exit 0
+          git add ml/eval-history || exit 0
           git diff --cached --quiet || git commit -m "Weekly evaluation $(date -u +%Y-%m-%d)"
           git push || true
