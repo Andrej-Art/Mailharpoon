@@ -59,7 +59,7 @@ export function evalRow(set: EvalRow["set"], url: string, layers: LayerResult[],
     set,
     url: stripUrl(url),
     score: live.score,
-    candidate: fuse(layers, { requireConfirmation: true }).score,
+    candidate: fuse(layers, { candidate: true }).score,
     ok: layers.filter((l) => l.status === "ok").map((l) => l.layer),
     signals: layers.flatMap((l) => l.signals).map(({ id, layer, weight, override }) => ({ id, layer, weight, ...(override ? { override } : {}) })),
   };

@@ -31,7 +31,8 @@ function layersOf(r: EvalRow): LayerResult[] {
 
 const RULES: Record<string, (r: EvalRow) => number> = {
   live: (r) => fuse(layersOf(r)).score,
-  confirmation: (r) => fuse(layersOf(r), { requireConfirmation: true }).score,
+  candidate: (r) => fuse(layersOf(r), { candidate: true }).score,
+  "confirmation (rejected)": (r) => fuse(layersOf(r), { requireConfirmation: true }).score,
 };
 
 const pct = (x: number) => `${Math.round(x * 1000) / 10}%`;
@@ -61,7 +62,7 @@ const top = (r: EvalRow) =>
 
 const list = (title: string, xs: typeof rows) => {
   console.log(`\n### ${title} (${xs.length})`);
-  for (const r of xs) console.log(`- ${r.week} ${r.url} live ${RULES.live(r)}, candidate ${RULES.confirmation(r)}: ${top(r)}`);
+  for (const r of xs) console.log(`- ${r.week} ${r.url} live ${RULES.live(r)}, candidate ${RULES.candidate(r)}: ${top(r)}`);
 };
 list("False alarms, legitimate scored 35 or more", legit.filter((r) => RULES.live(r) >= 35).sort((a, b) => RULES.live(b) - RULES.live(a)));
 list("Misses, phishing scored below 70", phish.filter((r) => RULES.live(r) < 70).sort((a, b) => RULES.live(a) - RULES.live(b)));

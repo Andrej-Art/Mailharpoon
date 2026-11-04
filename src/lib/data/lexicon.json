@@ -191,6 +191,9 @@
   "/cgi-bin/"
  ],
  "user_content_hosts": [
+  "backblazeb2.com",
+  "contaboserver.net",
+  "mybluehost.me",
   "sites.google.com",
   "docs.google.com",
   "drive.google.com",

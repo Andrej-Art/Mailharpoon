@@ -4,6 +4,7 @@
 import lexicon from "@/lib/data/lexicon.json";
 import { kbBrandAt } from "./brand-kb";
 import { BRANDS } from "./lexical-features";
+import { isUserContentHost } from "./reputation";
 import { signal, type LayerResult, type Signal } from "./types";
 import type { ParsedTarget } from "./url";
 
@@ -176,7 +177,8 @@ export function analyzeBrand(t: ParsedTarget): LayerResult<BrandData> {
   const sc = scripts(t.unicodeHost);
   if (sc.size > 1) signals.push(signal("brand", "mixed_script", 2.5, { scripts: [...sc].join(" + ") }));
 
-  if (officialBrand) signals.push({ ...signal("brand", "official_brand_domain", -2.5, { brand: officialBrand }) });
+  // sites.google.com belongs to Google, the page on it does not: user content never earns the brand's credit.
+  if (officialBrand && !isUserContentHost(t)) signals.push({ ...signal("brand", "official_brand_domain", -2.5, { brand: officialBrand }) });
 
   return {
     layer: "brand",

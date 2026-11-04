@@ -142,7 +142,8 @@ export async function analyzeReputation(t: ParsedTarget): Promise<LayerResult<Re
       data.rdapStatus = r.status ?? [];
       const registrar = r.entities?.find((e) => e.roles?.includes("registrar"));
       data.registrar = registrar?.vcardArray?.[1]?.find((v) => v[0] === "fn")?.[3] ?? null;
-      if (reg) {
+      // On a user-content platform the registration belongs to the platform, not to the page on it.
+      if (reg && !userContent) {
         const age = Math.floor((Date.now() - Date.parse(reg)) / DAY);
         data.ageDays = age;
         if (age < 7) s.push(signal(R, "domain_age", 2.6, { days: age }));

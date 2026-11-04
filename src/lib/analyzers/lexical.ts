@@ -29,7 +29,9 @@ export function analyzeLexical(t: ParsedTarget): LayerResult<LexicalData> {
     s.push(signal(L, "userinfo_at", 2.5));
   if (t.port && ![80, 443].includes(t.port)) s.push(signal(L, "nonstandard_port", 0.8, { port: t.port }));
   if (t.scheme === "http") s.push(signal(L, "no_https", 0.4));
-  if (t.hostname.startsWith("xn--") || t.hostname.includes(".xn--")) s.push(signal(L, "punycode", 1.0, { unicode: t.unicodeHost }));
+  // Under a native-script TLD (.рф, .中国) punycode is simply how every address is written.
+  if ((t.hostname.startsWith("xn--") || t.hostname.includes(".xn--")) && !t.suffix.startsWith("xn--"))
+    s.push(signal(L, "punycode", 1.0, { unicode: t.unicodeHost }));
 
   const isShortener = SHORTENERS.has(t.registrable) || SHORTENERS.has(t.hostname);
   if (isShortener) s.push(signal(L, "shortener", 0.6, { domain: t.registrable }));

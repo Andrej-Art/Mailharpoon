@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { AiVerdict } from "@/lib/analyzers/ai";
 import { confirmed, fuse } from "@/lib/analyzers/fusion";
+import { analyzeBrand } from "@/lib/analyzers/brand";
+import { analyzeLexical } from "@/lib/analyzers/lexical";
 import { INJECTION_RE } from "@/lib/analyzers/page";
+import { parseTarget } from "@/lib/analyzers/url";
 import { signal, type LayerResult, type Signal } from "@/lib/analyzers/types";
 import { analyzeVisual } from "@/lib/analyzers/visual";
 import { evalRow, stripUrl } from "@/lib/eval-record";
@@ -32,7 +35,7 @@ describe("stored evaluation links", () => {
   });
 });
 
-describe("dangerous only with evidence (candidate rule)", () => {
+describe("dangerous only with evidence (rejected rule)", () => {
   // A brand-new shop on a cheap TLD with an odd name: many weak hints, no harmful request.
   const weak = [signal("reputation", "domain_age", 2.6), signal("reputation", "fresh_certificate", 1.2), signal("lexical", "ml_domain", 2.0), signal("network", "no_mail_records", 0.15)];
 
@@ -105,5 +108,39 @@ describe("Wilson interval", () => {
   it("stays inside 0..1 at the edges", () => {
     expect(wilson(0, 40).low).toBe(0);
     expect(wilson(40, 40).high).toBe(1);
+  });
+});
+
+describe("old-domain body brand (candidate rule)", () => {
+  const login = (age: Signal) => layer([signal("page", "brand_login_mismatch", 1.4), signal("page", "password_field", 0.8), age]);
+
+  it("softens a body-only brand next to a login on an old domain", () => {
+    const old = login(signal("reputation", "domain_age_old", -1.0));
+    expect(fuse(old, { candidate: true }).score).toBeLessThan(fuse(old).score);
+  });
+
+  it("keeps full weight on young domains and for title brands", () => {
+    const young = login(signal("reputation", "domain_age", 1.9));
+    expect(fuse(young, { candidate: true }).score).toBe(fuse(young).score);
+    const title = layer([signal("page", "brand_login_mismatch", 3.0), signal("reputation", "domain_age_old", -1.0)]);
+    expect(fuse(title, { candidate: true }).score).toBe(fuse(title).score);
+  });
+});
+
+describe("pages on user-content platforms", () => {
+  it("earn no official-brand credit from the platform", () => {
+    const ids = analyzeBrand(parseTarget("https://sites.google.com/view/konto-check/home")).signals.map((s) => s.id);
+    expect(ids).not.toContain("official_brand_domain");
+    expect(analyzeBrand(parseTarget("https://accounts.google.com/")).signals.map((s) => s.id)).toContain("official_brand_domain");
+  });
+});
+
+describe("punycode", () => {
+  it("is normal under a native-script TLD", () => {
+    expect(analyzeLexical(parseTarget("https://xn--90aihhdxna0a.xn--p1ai/")).signals.map((s) => s.id)).not.toContain("punycode");
+  });
+
+  it("still counts under a Latin TLD", () => {
+    expect(analyzeLexical(parseTarget("https://xn--pypal-4ve.com/")).signals.map((s) => s.id)).toContain("punycode");
   });
 });

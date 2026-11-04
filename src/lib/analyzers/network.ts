@@ -2,6 +2,7 @@
 import dns from "node:dns/promises";
 import tls from "node:tls";
 import { getJson, isPublicIp, resolvePublic } from "@/lib/net/safe-fetch";
+import { isUserContentHost } from "./reputation";
 import { signal, type LayerResult, type Signal } from "./types";
 import type { ParsedTarget } from "./url";
 
@@ -132,7 +133,8 @@ export async function analyzeNetwork(t: ParsedTarget): Promise<LayerResult<Netwo
   else s.push(signal(N, "tls_valid", -0.2, { issuer: tlsInfo.issuer ?? "?" }));
 
   // Legit organisations almost always publish mail-authentication records for their main domain.
-  if (zone && !t.isPrivateSuffix) {
+  // On user-content platforms these records are the platform's, so they say nothing about the page.
+  if (zone && !t.isPrivateSuffix && !isUserContentHost(t)) {
     if (data.mx && data.spf && data.dmarc) s.push(signal(N, "mail_auth_complete", -0.4));
     else if (!data.mx && !data.spf) s.push(signal(N, "no_mail_records", 0.15));
   }
