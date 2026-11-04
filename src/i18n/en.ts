@@ -191,7 +191,7 @@ export const en = {
   faq: {
     label: "FAQ",
     title: "Frequently asked questions",
-    chat: { assistant: "Mailharpoon", online: "answers instantly", search: "Search questions, e.g. “text message” …", none: "No matching question. Just check your link above.", more: "Others also ask", you: "You" },
+    chat: { assistant: "Mailharpoon", online: "answers instantly", search: "Search questions, e.g. “text message” …", none: "No matching question. Feel free to write to us:", more: "Others also ask", you: "You", contactTitle: "Your question is not listed?", contactText: "Write to us and we will answer personally:" },
     items: [
       ["How can I tell whether a link is safe?", "Paste the link into Mailharpoon. We check whether it appears on known threat lists, how old the domain is, whether it imitates a well-known brand and what data the page requests. Within seconds you receive a clear assessment without having to open the link yourself."],
       ["Is it safe to check a link here?", "Yes. The destination is loaded on our server rather than on your device, so it cannot harm you. Checked links are not stored. For dangerous links we anonymously count only the domain, without your IP address, to warn about scam sites that are currently circulating."],

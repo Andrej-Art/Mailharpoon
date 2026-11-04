@@ -2,10 +2,12 @@
 
 import clsx from "clsx";
 import Image from "next/image";
-import { CornerDownLeft, Search } from "lucide-react";
+import { CornerDownLeft, Mail, Search } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
-type Texts = { assistant: string; online: string; search: string; none: string; more: string; you: string };
+type Texts = { assistant: string; online: string; search: string; none: string; more: string; you: string; contactTitle: string; contactText: string };
+
+const CONTACT = ["mailharpoon", "gmail.com"].join("@");
 
 const WORD_MS = 28;
 const TYPING_MS = 700;
@@ -132,6 +134,18 @@ export function FaqChat({ items, t, children }: { items: [string, string][]; t: 
             </div>
           </div>
         </div>
+
+        <a href={`mailto:${CONTACT}`} className="group flex items-center gap-3 border-t border-line px-4 py-3.5 hover:bg-panel-2 sm:px-5">
+          <span className="grid size-9 shrink-0 place-items-center border border-chrome text-harpoon group-hover:bg-harpoon group-hover:text-void">
+            <Mail className="size-4" aria-hidden />
+          </span>
+          <span className="min-w-0 leading-snug">
+            <span className="block text-sm font-semibold">{t.contactTitle}</span>
+            <span className="block text-[13px] text-muted">
+              {t.contactText} <span className="font-mono break-all text-harpoon group-hover:underline">{CONTACT}</span>
+            </span>
+          </span>
+        </a>
       </div>
 
       <div className="max-lg:order-3 lg:col-start-1">
@@ -156,7 +170,14 @@ export function FaqChat({ items, t, children }: { items: [string, string][]; t: 
             </li>
           ))}
         </ol>
-        {!shown.length && <p className="px-4 py-3 font-mono text-[13px] text-dim">{t.none}</p>}
+        {!shown.length && (
+          <p className="px-4 py-3 font-mono text-[13px] text-dim">
+            {t.none}{" "}
+            <a href={`mailto:${CONTACT}`} className="text-harpoon hover:underline">
+              {CONTACT}
+            </a>
+          </p>
+        )}
       </div>
     </div>
   );
