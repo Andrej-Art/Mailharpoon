@@ -166,7 +166,7 @@ export default async function Methodology({ params }: { params: Promise<{ locale
           </div>
         </Window>
 
-        {/* ---------- Layers: sticky heading, cards stacking on scroll ---------- */}
+        {/* ---------- Layers: sticky heading, cards stacking on scroll (on phones each card slides over the last, leaving a sliver) ---------- */}
         <Window title={m.layersLabel}>
           <div className="grid gap-10 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
             <div className="h-fit lg:sticky lg:top-20">
@@ -178,7 +178,11 @@ export default async function Methodology({ params }: { params: Promise<{ locale
               {LAYERS.map(([key, Icon], i) => {
                 const layer = m.layers[key];
                 return (
-                  <li key={key} className="border border-line-strong bg-panel-2 lg:sticky" style={{ top: `calc(5rem + ${i * 2.6}rem)` }}>
+                  <li
+                    key={key}
+                    className="sticky top-[calc(3rem+var(--i)*0.75rem)] border border-line-strong bg-panel-2 max-lg:shadow-[0_-10px_24px_rgb(0_0_0/0.45)] lg:top-[calc(5rem+var(--i)*2.6rem)]"
+                    style={{ "--i": i } as React.CSSProperties}
+                  >
                     {/* Tab strip: every card shows all eight, with its own one lit, so the stack reads like a file folder. */}
                     <div className="grid h-[2.6rem] grid-cols-8 border-b border-line-strong bg-panel" aria-hidden>
                       {LAYERS.map(([k], j) => (
@@ -209,8 +213,8 @@ export default async function Methodology({ params }: { params: Promise<{ locale
                           ))}
                         </p>
                       </div>
-                      <div className={`relative flex flex-col justify-end border border-line p-3 ${HALFTONE} min-h-44`}>
-                        <span className="absolute top-3 left-3 grid size-11 place-items-center border border-harpoon bg-panel text-harpoon shadow-[3px_3px_0_0_rgb(0_0_0/0.5)]">
+                      <div className={`relative flex flex-col justify-end border border-line p-3 ${HALFTONE} md:min-h-44`}>
+                        <span className="absolute top-3 left-3 hidden size-11 place-items-center md:grid border border-harpoon bg-panel text-harpoon shadow-[3px_3px_0_0_rgb(0_0_0/0.5)]">
                           <Icon className="size-5" aria-hidden />
                         </span>
                         <dl className="border border-line-strong bg-panel/95 p-3 font-mono text-[11px]">
