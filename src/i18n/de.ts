@@ -87,14 +87,29 @@ export const de: Dict = {
   },
   stats: {
     label: "MESSWERTE",
-    title: "Getestet an echtem Phishing",
-    lead: "Jede Woche testet Mailharpoon automatisch {phishing} brandneue Phishing-Links und {legitimate} wenig bekannte echte Websites. Sperrlisten und KI sind dabei abgeschaltet, gemessen wird also nur, was die eigene Analyse erkennt. Im echten Einsatz kommen beide hinzu. Letzte Messung am {date}.",
-    items: [
-      { value: "{caught} von {phishing}", label: "brandneuen Phishing-Links als gefährlich erkannt, obwohl sie auf keiner Sperrliste standen", note: "{n} weitere als verdächtig markiert" },
-      { value: "{falseAlarms} von {legitimate}", label: "echten Websites fälschlich als gefährlich eingestuft", note: "{n} weitere als verdächtig markiert" },
-      { value: "81 %", label: "der Phishing- und Betrugsnachrichten in einem öffentlichen Testdatensatz erkannt" },
-      { value: "~3 s", label: "bis zur ersten Einschätzung, der vollständige Bericht folgt nach etwa 20 Sekunden" },
+    title: "Jede Woche neu getestet",
+    lead: "Jede Woche prüfen wir Mailharpoon an den neuesten Betrugsseiten, die gerade erst aufgetaucht sind, und an harmlosen Websites. Mit den Ergebnissen verbessern wir die Erkennung laufend. Warnlisten und KI sind beim Test ausgeschaltet, es zählt nur die eigene Analyse. Im Alltag arbeiten beide zusätzlich mit und machen den Schutz noch stärker.",
+    phish: {
+      kicker: "Test 1: Betrug erkennen",
+      title: "Neue Betrugsseiten",
+      label: "der neuen Betrugsseiten wurden erkannt und hätten eine Warnung ausgelöst",
+      legend: ["Als gefährlich gewarnt", "Als verdächtig gewarnt", "Nicht erkannt"],
+    },
+    legit: {
+      kicker: "Test 2: Keine falschen Warnungen",
+      title: "Harmlose Websites",
+      label: "der harmlosen Websites bekamen keine rote Warnung",
+      legend: ["Als unbedenklich eingestuft", "Vorsichtshalber als verdächtig markiert", "Zu Unrecht als gefährlich gewarnt"],
+    },
+    cell: "Jedes Kästchen steht für 1 % der getesteten Seiten.",
+    range: "Der wahre Wert liegt sehr wahrscheinlich zwischen {low} und {high}.",
+    date: "Test vom {date}",
+    more: [
+      { value: "81 %", label: "der Betrugsmails und -SMS in einem öffentlichen Testdatensatz erkannt" },
+      { value: "~3 s", label: "bis zur ersten Einschätzung. Der ausführliche Bericht ist nach etwa 20 Sekunden fertig." },
     ],
+    ctaTitle: "Nichts geschönt",
+    ctaText: "Wie wir testen, wo Mailharpoon Fehler macht und was wir daraus verbessern, zeigen wir offen auf der Methodik-Seite.",
     link: "Zur Methodik",
   },
   learn: {

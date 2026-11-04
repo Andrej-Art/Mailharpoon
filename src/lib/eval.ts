@@ -15,19 +15,25 @@ export const latestEval = latest as { date: string; sample: { phishing: number; 
 // The two verdict boundaries of the fusion: suspicious from 35, dangerous from 70.
 const at = (threshold: number) => latestEval.metrics.find((m) => m.threshold === threshold)!;
 
-/** Counts out of the sample per verdict: how many phishing links and legitimate sites were rated dangerous, and how many more suspicious. */
+/** Counts out of the sample per verdict, for both sets: phishing caught, flagged or missed; real sites safe, flagged or wrongly rated dangerous. */
 export function evalCounts() {
   const { phishing, legitimate } = latestEval.sample;
   const count = (rate: number, n: number) => Math.round(rate * n);
   const caught = count(at(70).recall, phishing);
+  const flagged = count(at(35).recall, phishing);
   const falseAlarms = count(at(70).fpr, legitimate);
+  const falseFlagged = count(at(35).fpr, legitimate);
   return {
     phishing,
     legitimate,
     caught,
-    caughtSuspicious: count(at(35).recall, phishing) - caught,
+    flagged,
+    caughtSuspicious: flagged - caught,
+    missed: phishing - flagged,
     falseAlarms,
-    falseSuspicious: count(at(35).fpr, legitimate) - falseAlarms,
+    falseSuspicious: falseFlagged - falseAlarms,
+    legitSafe: legitimate - falseFlagged,
+    notDangerous: legitimate - falseAlarms,
   };
 }
 

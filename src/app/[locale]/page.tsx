@@ -10,6 +10,7 @@ import { GUIDES, guidePath } from "@/content/guides";
 import { fill, getDict, isLocale } from "@/i18n";
 import { abs, JsonLd, REPO_URL, SITE_NAME } from "@/lib/seo";
 import { evalCounts, latestEval } from "@/lib/eval";
+import { wilson } from "@/lib/eval-stats";
 import { getThreatStats } from "@/lib/threat-stats";
 import { cachedTrends, trendEvidence } from "@/lib/trends/cached";
 import { defang } from "@/lib/trends/store";
@@ -33,6 +34,68 @@ function H2({ children, id }: { children: React.ReactNode; id?: string }) {
     <h2 id={id} className="text-[clamp(1.6rem,3.4vw,2.4rem)] leading-[1.15] font-bold tracking-tight">
       {children}
     </h2>
+  );
+}
+
+/** One half of the weekly test: a 10 × 10 grid with one square per link, coloured by verdict. */
+function TestPanel({
+  kicker,
+  title,
+  cell,
+  date,
+  value,
+  label,
+  range,
+  total,
+  locale,
+  parts,
+}: {
+  kicker: string;
+  title: string;
+  cell: string;
+  date: string;
+  value: string;
+  label: string;
+  range: string;
+  total: number;
+  locale: string;
+  parts: [number, string, string][];
+}) {
+  const percent = new Intl.NumberFormat(locale, { style: "percent" });
+  // One square per percent, whatever the sample size; rounding leftovers go to the largest part.
+  const pcts = parts.map(([n]) => Math.round((n / Math.max(total, 1)) * 100));
+  pcts[pcts.indexOf(Math.max(...pcts))] += 100 - pcts.reduce((a, b) => a + b, 0);
+  const cells = parts.flatMap(([, cls], i) => Array.from({ length: Math.max(pcts[i], 0) }, () => cls));
+  return (
+    <div className="bg-void p-5 sm:p-6">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <p className="font-pixel text-[12px] tracking-wide text-harpoon uppercase">{kicker}</p>
+        <span className="font-mono text-[11px] text-dim">{date}</span>
+      </div>
+      <h3 className="mt-2 text-xl font-bold">{title}</h3>
+      <p className="mt-1 text-sm text-muted">{cell}</p>
+      <div className="mt-5 grid items-center gap-6 sm:grid-cols-[minmax(0,13rem)_minmax(0,1fr)]">
+        <div className="grid w-full max-w-52 grid-cols-10 gap-[3px]" role="img" aria-label={parts.map(([, , name], i) => `${name}: ${percent.format(pcts[i] / 100)}`).join(", ")}>
+          {cells.map((cls, i) => (
+            <span key={i} className={`aspect-square ${cls}`} />
+          ))}
+        </div>
+        <div>
+          <p className="phosphor font-vt text-6xl leading-none">{value}</p>
+          <p className="mt-2 text-[15px] leading-snug text-fg">{label}</p>
+          <p className="mt-1 text-[12px] leading-snug text-dim">{range}</p>
+          <ul className="mt-4 space-y-1.5">
+            {parts.map(([, cls, name], i) => (
+              <li key={name} className="flex items-center gap-2 font-mono text-[12px] text-muted">
+                <span className={`size-2.5 ${cls}`} aria-hidden />
+                <span className="flex-1">{name}</span>
+                <span className="text-fg">{percent.format(pcts[i] / 100)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -77,6 +140,13 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const counts = evalCounts();
   const evalDate = new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(latestEval.date));
   const evalVars = { ...counts, date: evalDate };
+  // The 95 % Wilson range in whole percent, so the weekly sample is not shown as more precise than it is.
+  const percent = new Intl.NumberFormat(locale, { style: "percent" });
+  const share = (k: number, n: number) => percent.format(n ? k / n : 0);
+  const range = (k: number, n: number) => {
+    const w = wilson(k, n);
+    return fill(t.stats.range, { low: percent.format(w.low), high: percent.format(w.high) });
+  };
 
   const icons: DesktopItem[] = [
     { icon: "link", label: os.icons.link, href: "#scanner", mode: "url" },
@@ -229,27 +299,63 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
           {/* ---------- Stats ---------- */}
           <Window title={os.windows.stats}>
-            <div className="flex flex-wrap items-end justify-between gap-6">
-              <div>
-                <H2>{t.stats.title}</H2>
-                <p className="mt-2 max-w-3xl text-muted">{fill(t.stats.lead, evalVars)}</p>
-              </div>
-              <Link href={`/${locale}/methodology`} className="btn">
-                {t.stats.link} <ArrowRight className="size-4" />
-              </Link>
+            <div className="grid gap-4 lg:grid-cols-2 lg:items-end">
+              <H2>{t.stats.title}</H2>
+              <p className="max-w-xl text-muted lg:justify-self-end">{fill(t.stats.lead, evalVars)}</p>
             </div>
-            <ul className="mt-8 grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
-              {t.stats.items.map(({ value, label, note }, i) => {
-                const more = [counts.caughtSuspicious, counts.falseSuspicious][i];
-                return (
-                  <li key={label} className="bg-void p-6">
-                    <p className="phosphor font-vt text-6xl leading-none">{fill(value, evalVars)}</p>
-                    <p className="mt-3 text-sm leading-snug text-muted">{label}</p>
-                    {note && more > 0 && <p className="mt-2 font-mono text-xs text-dim">{fill(note, { n: more })}</p>}
-                  </li>
-                );
-              })}
-            </ul>
+            <div className="mt-8 grid gap-px border border-line bg-line lg:grid-cols-2">
+              <TestPanel
+                kicker={t.stats.phish.kicker}
+                title={fill(t.stats.phish.title, evalVars)}
+                cell={t.stats.cell}
+                date={fill(t.stats.date, evalVars)}
+                value={share(counts.flagged, counts.phishing)}
+                label={t.stats.phish.label}
+                range={range(counts.flagged, counts.phishing)}
+                total={counts.phishing}
+                locale={locale}
+                parts={[
+                  [counts.caught, "bg-bad", t.stats.phish.legend[0]],
+                  [counts.caughtSuspicious, "bg-warn", t.stats.phish.legend[1]],
+                  [counts.missed, "border border-line-strong", t.stats.phish.legend[2]],
+                ]}
+              />
+              <TestPanel
+                kicker={t.stats.legit.kicker}
+                title={fill(t.stats.legit.title, evalVars)}
+                cell={t.stats.cell}
+                date={fill(t.stats.date, evalVars)}
+                value={share(counts.notDangerous, counts.legitimate)}
+                label={t.stats.legit.label}
+                range={range(counts.notDangerous, counts.legitimate)}
+                total={counts.legitimate}
+                locale={locale}
+                parts={[
+                  [counts.legitSafe, "bg-ok", t.stats.legit.legend[0]],
+                  [counts.falseSuspicious, "bg-warn", t.stats.legit.legend[1]],
+                  [counts.falseAlarms, "bg-bad", t.stats.legit.legend[2]],
+                ]}
+              />
+            </div>
+            <div className="grid gap-px border-x border-b border-line bg-line sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.3fr]">
+              {t.stats.more.map(({ value, label }) => (
+                <div key={label} className="bg-void p-6">
+                  <p className="phosphor font-vt text-5xl leading-none">{value}</p>
+                  <p className="mt-3 text-sm leading-snug text-muted">{label}</p>
+                </div>
+              ))}
+              <div className="flex flex-col justify-between gap-5 bg-panel-2 p-6 sm:col-span-2 lg:col-span-1">
+                <div>
+                  <p className="flex items-center gap-2 font-semibold">
+                    <span className="size-2.5 bg-harpoon" aria-hidden /> {t.stats.ctaTitle}
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted">{t.stats.ctaText}</p>
+                </div>
+                <Link href={`/${locale}/methodology`} className="btn btn-primary self-start">
+                  {t.stats.link} <ArrowRight className="size-4" />
+                </Link>
+              </div>
+            </div>
           </Window>
 
           {/* ---------- Spot phishing + incident response ---------- */}

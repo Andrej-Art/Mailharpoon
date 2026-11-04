@@ -86,15 +86,30 @@ export const en = {
   },
   stats: {
     label: "MEASUREMENTS",
-    title: "Tested against real phishing",
-    lead: "Every week Mailharpoon automatically tests {phishing} brand-new phishing links and {legitimate} little-known real websites. Threat lists and AI are switched off, so this measures only what its own analysis detects. In real use both are added. Last measured on {date}.",
-    items: [
-      { value: "{caught} of {phishing}", label: "brand-new phishing links rated dangerous, although they were on no blocklist", note: "{n} more flagged as suspicious" },
-      { value: "{falseAlarms} of {legitimate}", label: "real websites incorrectly rated dangerous", note: "{n} more flagged as suspicious" },
-      { value: "81%", label: "of phishing and scam messages detected in a public test dataset" },
-      { value: "~3 s", label: "to a first assessment, with the full report after about 20 seconds" },
+    title: "Tested again every week",
+    lead: "Every week we test Mailharpoon against the newest scam pages, ones that have only just appeared, and against harmless websites. We use the results to keep improving the detection. Warning lists and AI are switched off for the test, only Mailharpoon's own analysis counts. In everyday use, both work on top and make the protection even stronger.",
+    phish: {
+      kicker: "Test 1: Catch scams",
+      title: "New scam pages",
+      label: "of the new scam pages were caught and would have triggered a warning",
+      legend: ["Warned as dangerous", "Warned as suspicious", "Not caught"],
+    },
+    legit: {
+      kicker: "Test 2: No false warnings",
+      title: "Harmless websites",
+      label: "of the harmless websites got no red warning",
+      legend: ["Rated safe", "Marked suspicious to be careful", "Wrongly warned as dangerous"],
+    },
+    cell: "Each square stands for 1% of the tested pages.",
+    range: "The true value is very likely between {low} and {high}.",
+    date: "Test of {date}",
+    more: [
+      { value: "81%", label: "of scam emails and texts caught in a public test dataset" },
+      { value: "~3 s", label: "to the first assessment. The detailed report is ready after about 20 seconds." },
     ],
-    link: "View methodology",
+    ctaTitle: "Nothing glossed over",
+    ctaText: "How we test, where Mailharpoon makes mistakes and what we improve as a result: it is all on the methodology page.",
+    link: "See the methodology",
   },
   learn: {
     label: "SPOT_PHISHING",
