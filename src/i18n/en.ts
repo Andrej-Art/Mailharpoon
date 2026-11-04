@@ -7,7 +7,7 @@ export const en = {
       "Check links, emails and text messages for phishing and scams within seconds. Mailharpoon explains every result in plain words. Free and without registration.",
     ogTitle: "Is this link or message a scam? Check it in seconds.",
   },
-  nav: { menu: "Menu", lightMode: "Switch to light mode", darkMode: "Switch to dark mode", scanner: "Link checker", news: "News", how: "How it works", learn: "Spot phishing", help: "Incident response", guides: "Guides", faq: "FAQ", methodology: "Methodology", github: "GitHub", scan: "Check a link", home: "Home" },
+  nav: { menu: "Menu", lightMode: "Switch to light mode", darkMode: "Switch to dark mode", scanner: "Link checker", news: "News", how: "How it works", learn: "Spot phishing", help: "Incident response", guides: "Guides", faq: "FAQ", methodology: "Methodology", github: "GitHub", scan: "Check a link", home: "Home", pages: "More pages" },
   status: { online: "Online", layers: "40+ checks active", feeds: "Current threat data" },
   os: {
     tagline: "Link & scam checker",

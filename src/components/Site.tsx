@@ -31,18 +31,28 @@ export function SectionLabel({ name, n }: { name: string; n: number }) {
   );
 }
 
+/** Menu entries in two groups: sections of the home page in the order they appear there, then pages of their own. */
+function navGroups(t: Dict, locale: Locale) {
+  const home: [string, string][] = [
+    [`/${locale}#scanner`, t.nav.scanner],
+    [`/${locale}#how`, t.nav.how],
+    [`/${locale}#help`, t.nav.help],
+    [`/${locale}#guides`, t.nav.guides],
+    [`/${locale}#faq`, t.nav.faq],
+  ];
+  const pages: [string, string][] = [
+    [`/${locale}/news`, t.nav.news],
+    [`/${locale}/methodology`, t.nav.methodology],
+  ];
+  return { home, pages };
+}
+
 /** Top menu bar, as on a classic desktop OS. */
 export function SiteNav({ t, locale, path = "" }: { t: Dict; locale: Locale; path?: string }) {
   const other = locale === "de" ? "en" : "de";
-  const links: [string, string][] = [
-    [`/${locale}#scanner`, t.nav.scanner],
-    [`/${locale}/news`, t.nav.news],
-    [`/${locale}#how`, t.nav.how],
-    [`/${locale}#guides`, t.nav.guides],
-    [`/${locale}#help`, t.nav.help],
-    [`/${locale}#faq`, t.nav.faq],
-    [`/${locale}/methodology`, t.nav.methodology],
-  ];
+  const { home, pages } = navGroups(t, locale);
+  const current = (href: string) => href === `/${locale}${path}`;
+  const item = "focus-ring px-2 py-1 hover:bg-harpoon hover:text-void";
   return (
     <header className="sticky top-0 z-50 border-b border-chrome bg-void/95 backdrop-blur-sm">
       <nav className="mx-auto flex h-9 max-w-[1400px] items-center justify-between gap-3 px-3 font-pixel text-[13px] sm:px-4">
@@ -51,32 +61,55 @@ export function SiteNav({ t, locale, path = "" }: { t: Dict; locale: Locale; pat
             <Mark size={18} className="text-fg" />
             <span className="font-semibold">Mailharpoon</span>
           </Link>
-          <span className="mx-1 hidden h-4 w-px bg-line-strong md:block" />
-          <div className="hidden items-center md:flex">
-            {links.map(([href, label]) => (
-              <Link key={href} href={href} className="focus-ring px-2 py-1 hover:bg-harpoon hover:text-void">
+          <span className="mx-1 hidden h-4 w-px bg-line-strong lg:block" />
+          <div className="hidden items-center lg:flex">
+            {home.map(([href, label]) => (
+              <Link key={href} href={href} className={item}>
                 {label}
               </Link>
             ))}
-            <a href={REPO} target="_blank" rel="noreferrer" className="focus-ring px-2 py-1 hover:bg-harpoon hover:text-void">
-              {t.nav.github}
+            <span className="mx-2 h-4 w-px bg-line-strong" aria-hidden />
+            {pages.map(([href, label]) => (
+              <Link
+                key={href}
+                href={href}
+                aria-current={current(href) ? "page" : undefined}
+                className={`${item} ${current(href) ? "text-harpoon underline decoration-2 underline-offset-[6px]" : ""}`}
+              >
+                {label}
+              </Link>
+            ))}
+            <a href={REPO} target="_blank" rel="noreferrer" className={`${item} text-muted`}>
+              {t.nav.github} ↗
             </a>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-3 text-muted">
-          {/* Phones: the menu items collapse into a classic drop-down menu */}
-          <details className="group relative md:hidden">
+          {/* Phones and tablets: the menu items collapse into a classic drop-down menu */}
+          <details className="group relative lg:hidden">
             <summary className="focus-ring cursor-pointer list-none border border-line-strong px-2 py-0.5 text-fg group-open:bg-harpoon group-open:text-void">
               {t.nav.menu}
             </summary>
-            <div className="win absolute right-0 mt-2 w-56 py-1">
-              {links.map(([href, label]) => (
+            <div className="win absolute right-0 mt-2 w-60 py-1">
+              <p className="px-4 pt-2 pb-1 text-[11px] text-dim uppercase">{t.nav.home}</p>
+              {home.map(([href, label]) => (
                 <Link key={href} href={href} className="block px-4 py-2.5 text-fg hover:bg-harpoon hover:text-void">
                   {label}
                 </Link>
               ))}
-              <a href={REPO} target="_blank" rel="noreferrer" className="block px-4 py-2.5 text-fg hover:bg-harpoon hover:text-void">
-                {t.nav.github}
+              <p className="mt-1 border-t border-line px-4 pt-3 pb-1 text-[11px] text-dim uppercase">{t.nav.pages}</p>
+              {pages.map(([href, label]) => (
+                <Link
+                  key={href}
+                  href={href}
+                  aria-current={current(href) ? "page" : undefined}
+                  className={`block px-4 py-2.5 hover:bg-harpoon hover:text-void ${current(href) ? "text-harpoon" : "text-fg"}`}
+                >
+                  {label}
+                </Link>
+              ))}
+              <a href={REPO} target="_blank" rel="noreferrer" className="block px-4 py-2.5 text-muted hover:bg-harpoon hover:text-void">
+                {t.nav.github} ↗
               </a>
             </div>
           </details>
@@ -112,12 +145,13 @@ export function SiteFooter({ t, locale }: { t: Dict; locale: Locale }) {
           <p className="mt-3 max-w-sm text-xs text-dim">{t.footer.disclaimer}</p>
         </div>
         <ul className="space-y-1.5 font-pixel text-[13px] text-muted">
-          <li><Link className="hover:text-harpoon" href={`/${locale}#scanner`}>{t.nav.scanner}</Link></li>
-          <li><Link className="hover:text-harpoon" href={`/${locale}/news`}>{t.nav.news}</Link></li>
-          <li><Link className="hover:text-harpoon" href={`/${locale}#guides`}>{t.nav.guides}</Link></li>
-          <li><Link className="hover:text-harpoon" href={`/${locale}#help`}>{t.nav.help}</Link></li>
-          <li><Link className="hover:text-harpoon" href={`/${locale}#faq`}>{t.nav.faq}</Link></li>
-          <li><Link className="hover:text-harpoon" href={`/${locale}/methodology`}>{t.nav.methodology}</Link></li>
+          {[...navGroups(t, locale).home, ...navGroups(t, locale).pages].map(([href, label]) => (
+            <li key={href}>
+              <Link className="hover:text-harpoon" href={href}>
+                {label}
+              </Link>
+            </li>
+          ))}
         </ul>
         <ul className="space-y-1.5 font-pixel text-[13px] text-muted">
           <li><a className="hover:text-harpoon" href={REPO} target="_blank" rel="noreferrer">GitHub ↗</a></li>

@@ -8,7 +8,7 @@ export const de: Dict = {
       "Prüfen Sie Links, E-Mails und SMS in wenigen Sekunden auf Phishing und Betrug. Mailharpoon erklärt jedes Ergebnis verständlich. Kostenlos und ohne Anmeldung.",
     ogTitle: "Link oder Nachricht verdächtig? In Sekunden prüfen.",
   },
-  nav: { menu: "Menü", lightMode: "Zum hellen Modus wechseln", darkMode: "Zum dunklen Modus wechseln", scanner: "Link-Checker", news: "Aktuelles", how: "Anleitung", learn: "Phishing erkennen", help: "Notfallplan", guides: "Ratgeber", faq: "FAQ", methodology: "Methodik", github: "GitHub", scan: "Link prüfen", home: "Startseite" },
+  nav: { menu: "Menü", lightMode: "Zum hellen Modus wechseln", darkMode: "Zum dunklen Modus wechseln", scanner: "Link-Checker", news: "Aktuelles", how: "Anleitung", learn: "Phishing erkennen", help: "Notfallplan", guides: "Ratgeber", faq: "FAQ", methodology: "Methodik", github: "GitHub", scan: "Link prüfen", home: "Startseite", pages: "Weitere Seiten" },
   status: { online: "Online", layers: "Über 40 Prüfungen aktiv", feeds: "Aktuelle Bedrohungsdaten" },
   os: {
     tagline: "Link- und Betrugs-Checker",
