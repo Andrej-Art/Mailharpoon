@@ -91,6 +91,7 @@
 
 @keyframes blink { 50% { opacity: 0; } }
 @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes neon-slide { from { background-position: 0% 0; } to { background-position: 200% 0; } }
 @keyframes grow { from { width: 0; } to { width: 100%; } }
 @keyframes scan { from { transform: translateY(-100%); } to { transform: translateY(100%); } }
 @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
@@ -171,6 +172,30 @@ body {
     outline: 2px dashed var(--color-harpoon);
     outline-offset: 3px;
   }
+  /* ---------- Header: neon links with a gradient underline that grows on hover ---------- */
+  .navlink { @apply relative px-2 py-1 transition-colors; }
+  .navlink::after {
+    content: "";
+    @apply absolute right-2 bottom-0 left-2 h-0.5 origin-left scale-x-0 transition-transform duration-300;
+    background: linear-gradient(90deg, #ff2e97, #9d5cff, #33e6ef);
+    box-shadow: 0 0 8px rgb(255 46 151 / 0.7);
+  }
+  .navlink:hover { @apply text-harpoon; text-shadow: 0 0 10px rgb(255 46 151 / 0.6); }
+  .navlink:hover::after,
+  .navlink[aria-current="page"]::after { @apply scale-x-100; }
+  .navlink[aria-current="page"] { @apply text-harpoon; }
+  .neon-bar {
+    background: linear-gradient(90deg, #ff2e97, #d94bd8, #9d5cff, #33e6ef, #9d5cff, #ff2e97);
+    background-size: 200% 100%;
+    animation: neon-slide 8s linear infinite;
+  }
+  .brand-gradient {
+    background: linear-gradient(90deg, #ff2e97, #9d5cff 55%, #33e6ef);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  @media (prefers-reduced-motion: reduce) { .neon-bar { animation: none; } }
   .tag { @apply inline-flex items-center gap-1.5 border border-line px-2 py-0.5 font-mono text-[11px] text-muted; }
   .pixelated { image-rendering: pixelated; }
   .grid-bg {

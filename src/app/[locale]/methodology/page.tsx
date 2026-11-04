@@ -196,7 +196,7 @@ export default async function Methodology({ params }: { params: Promise<{ locale
                 return (
                   <li
                     key={key}
-                    className="sticky top-[calc(3rem+var(--i)*0.75rem)] border border-line-strong bg-panel-2 max-lg:shadow-[0_-10px_24px_rgb(0_0_0/0.45)] lg:top-[calc(5rem+var(--i)*2.6rem)]"
+                    className="sticky top-[calc(3.25rem+var(--i)*0.75rem)] border border-line-strong bg-panel-2 max-lg:shadow-[0_-10px_24px_rgb(0_0_0/0.45)] lg:top-[calc(5rem+var(--i)*2.6rem)]"
                     style={{ "--i": i } as React.CSSProperties}
                   >
                     {/* Tab strip: every card shows all eight, with its own one lit, so the stack reads like a file folder. */}

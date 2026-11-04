@@ -52,29 +52,29 @@ export function SiteNav({ t, locale, path = "" }: { t: Dict; locale: Locale; pat
   const other = locale === "de" ? "en" : "de";
   const { home, pages } = navGroups(t, locale);
   const current = (href: string) => href === `/${locale}${path}`;
-  const item = "focus-ring px-2 py-1 hover:bg-harpoon hover:text-void";
+  const item = "focus-ring navlink";
   return (
-    <header className="sticky top-0 z-50 border-b border-chrome bg-void/95 backdrop-blur-sm">
-      <nav className="mx-auto flex h-9 max-w-[1400px] items-center justify-between gap-3 px-3 font-pixel text-[13px] sm:px-4">
+    <header className="sticky top-0 z-50 bg-void/90 backdrop-blur-md">
+      <nav className="mx-auto flex h-11 max-w-[1400px] items-center justify-between gap-3 px-3 font-pixel text-[13px] sm:px-4">
         <div className="flex min-w-0 items-center gap-1">
-          <Link href={`/${locale}`} className="focus-ring flex shrink-0 items-center gap-2 px-1.5 py-1 hover:bg-harpoon hover:text-void">
-            <Mark size={18} className="text-fg" />
-            <span className="font-semibold">Mailharpoon</span>
+          <Link href={`/${locale}`} className="focus-ring group flex shrink-0 items-center gap-2 px-1.5 py-1">
+            <Mark size={22} className="text-fg transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110" />
+            <span className="brand-gradient text-[15px] font-semibold drop-shadow-[0_0_10px_rgb(255_46_151/0.35)]">Mailharpoon</span>
           </Link>
-          <span className="mx-1 hidden h-4 w-px bg-line-strong lg:block" />
+          <span className="mx-1 hidden h-4 w-px bg-gradient-to-b from-harpoon to-violet lg:block" />
           <div className="hidden items-center lg:flex">
             {home.map(([href, label]) => (
               <Link key={href} href={href} className={item}>
                 {label}
               </Link>
             ))}
-            <span className="mx-2 h-4 w-px bg-line-strong" aria-hidden />
+            <span className="mx-2 h-4 w-px bg-gradient-to-b from-harpoon to-violet" aria-hidden />
             {pages.map(([href, label]) => (
               <Link
                 key={href}
                 href={href}
                 aria-current={current(href) ? "page" : undefined}
-                className={`${item} ${current(href) ? "text-harpoon underline decoration-2 underline-offset-[6px]" : ""}`}
+                className={item}
               >
                 {label}
               </Link>
@@ -113,9 +113,13 @@ export function SiteNav({ t, locale, path = "" }: { t: Dict; locale: Locale; pat
               </a>
             </div>
           </details>
-          <span className="hidden sm:inline">
+          <span className="hidden items-center gap-1.5 xl:flex">
+            <span className="size-1.5 animate-pulse rounded-full bg-ok shadow-[0_0_6px_var(--color-ok)]" aria-hidden />
             <Clock locale={locale} />
           </span>
+          <Link href={`/${locale}#scanner`} className="focus-ring hidden border border-harpoon bg-harpoon px-3 py-1 text-void shadow-[0_0_14px_rgb(255_46_151/0.45)] transition-shadow hover:shadow-[0_0_22px_rgb(255_46_151/0.8)] sm:inline-block">
+            {t.nav.scan}
+          </Link>
           <ThemeToggle labels={{ light: t.nav.lightMode, dark: t.nav.darkMode }} />
           <Link
             href={`/${other}${path}`}
@@ -127,6 +131,8 @@ export function SiteNav({ t, locale, path = "" }: { t: Dict; locale: Locale; pat
           </Link>
         </div>
       </nav>
+      {/* The logo's stripe colours as a slowly moving neon line under the bar */}
+      <div className="neon-bar h-0.5 opacity-90" aria-hidden />
     </header>
   );
 }

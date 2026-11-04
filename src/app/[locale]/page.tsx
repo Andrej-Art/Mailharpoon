@@ -168,7 +168,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       <main>
         {/* ---------- Desktop ---------- */}
-        <section id="scanner" className="relative scroll-mt-10 overflow-x-clip">
+        <section id="scanner" className="relative scroll-mt-12 overflow-x-clip">
           <div className="glow pointer-events-none absolute -top-40 left-1/3 size-[760px]" />
           <div className="relative mx-auto grid max-w-[1400px] gap-8 px-3 pt-5 pb-10 sm:px-4 sm:pt-8 lg:grid-cols-[260px_minmax(0,1fr)_96px] lg:gap-10 lg:pt-10 lg:pb-14">
             {/* Left: system widget */}
