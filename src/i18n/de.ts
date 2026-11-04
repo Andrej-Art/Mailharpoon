@@ -217,7 +217,6 @@ export const de: Dict = {
     sub: "Fügen Sie den verdächtigen Link hier ein. Die Prüfung dauert wenige Sekunden und ist kostenlos.",
     button: "Jetzt Link prüfen",
     placeholder: "Verdächtigen Link einfügen …",
-    facts: ["Kostenlos", "Ohne Anmeldung", "Links werden nicht gespeichert", "{pct} der neuen Betrugsseiten erkannt", "8 Prüfschichten", "Erste Einschätzung in ~3 Sekunden", "Open Source"],
   },
   footer: {
     tagline: "Kostenloser Link-Checker mit nachvollziehbaren Ergebnissen.",

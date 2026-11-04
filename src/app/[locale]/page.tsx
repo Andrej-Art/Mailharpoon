@@ -389,23 +389,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 </form>
               </div>
             </div>
-            <div className="relative overflow-hidden border-t border-line bg-panel-2 py-3" aria-hidden>
-              <div className="flex w-max animate-marquee gap-10 font-pixel text-[13px] whitespace-nowrap text-muted motion-reduce:animate-none">
-                {[0, 1].map((copy) =>
-                  t.cta.facts.map((f) => (
-                    <span key={`${copy}${f}`} className="flex items-center gap-10">
-                      {fill(f, { pct: share(counts.flagged, counts.phishing) })}
-                      <span className="text-harpoon">✦</span>
-                    </span>
-                  )),
-                )}
-              </div>
-            </div>
-            <ul className="sr-only">
-              {t.cta.facts.map((f) => (
-                <li key={f}>{fill(f, { pct: share(counts.flagged, counts.phishing) })}</li>
-              ))}
-            </ul>
           </Window>
         </div>
       </main>

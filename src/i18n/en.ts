@@ -216,7 +216,6 @@ export const en = {
     sub: "Paste the suspicious link here. The check takes a few seconds and is free of charge.",
     button: "Check a link now",
     placeholder: "Paste a suspicious link …",
-    facts: ["Free", "No sign-up", "Links are not stored", "{pct} of new scam sites caught", "8 layers of checks", "First verdict in ~3 seconds", "Open source"],
   },
   footer: {
     tagline: "A free link checker with transparent results.",
