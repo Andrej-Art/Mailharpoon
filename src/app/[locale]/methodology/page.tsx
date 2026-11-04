@@ -28,6 +28,8 @@ import { signal } from "@/lib/analyzers/types";
 import { wilson } from "@/lib/eval-stats";
 import { SiteFooter, SiteNav } from "@/components/Site";
 import { Window } from "@/components/os/Window";
+import { DomainReader, GrowBar } from "@/components/DomainReader";
+import { readDomain } from "@/lib/domain-reading";
 import { fill, getDict, isLocale } from "@/i18n";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -50,6 +52,9 @@ const SOURCES = [
   ["arXiv 2026", "Hasan & BusiReddyGari: Benchmarking LLMs for zero- and few-shot phishing URL detection", "https://arxiv.org/abs/2602.02641"],
   ["Unicode UTS #39", "Unicode security mechanisms: confusable characters", "https://www.unicode.org/reports/tr39/"],
 ] as const;
+
+// Example names for the animated model reader: a brand clone, a random string, a well-known site and a small local business.
+const READINGS = ["paypal-konto-verifizierung.top", "xk7q2vbn9.top", "wikipedia.org", "baeckerei-mueller.de"].map(readDomain);
 
 // The fusion worked example: a 12-day-old domain asking for a password over valid TLS.
 const EXAMPLE = [
@@ -333,33 +338,25 @@ verdict = dangerous  if p ≥ .70
               </ul>
             </div>
             <div className={`flex flex-col justify-center gap-5 border-t border-line p-5 sm:p-10 lg:border-t-0 lg:border-l ${HALFTONE} bg-panel-2`}>
-              <div className="border border-line-strong bg-panel/95 p-5 shadow-[4px_4px_0_0_rgb(0_0_0/0.5)]">
+              <DomainReader readings={READINGS} t={m.reader} />
+              <div className="border border-line-strong bg-panel/95 p-5">
                 {[
-                  [m.modelBars.fresh, card.openphish_fresh_recall, pct(card.openphish_fresh_recall)],
-                  [m.modelBars.auc, card.test.roc_auc, card.test.roc_auc.toFixed(3)],
-                ].map(([label, value, shown]) => (
-                  <div key={label as string} className="mb-5 last:mb-0">
-                    <div className="flex justify-between gap-4 text-sm">
-                      <span className="text-muted">{label}</span>
-                      <span className="font-mono text-fg">{shown}</span>
+                  [m.modelBars.fresh, fill(m.modelBars.freshNote, { n: card.openphish_fresh_n }), card.openphish_fresh_recall],
+                  [m.modelBars.auc, m.modelBars.aucNote, card.test.roc_auc],
+                ].map(([label, note, value]) => (
+                  <div key={label as string} className="mb-6 last:mb-0">
+                    <p className="flex items-baseline gap-3">
+                      <span className="shrink-0 font-vt text-4xl whitespace-nowrap text-fg tabular-nums">{pct(value as number)}</span>
+                      <span className="text-sm text-fg">{label}</span>
+                    </p>
+                    <div className="mt-2">
+                      <GrowBar value={value as number} />
                     </div>
-                    <div className="mt-2 h-2 bg-line">
-                      <div className="h-full bg-harpoon" style={{ width: `${(value as number) * 100}%` }} />
-                    </div>
+                    <p className="mt-2 text-[13px] leading-relaxed text-muted">{note}</p>
                   </div>
                 ))}
                 <p className="mt-5 border-t border-line pt-4 font-mono text-[11px] text-dim">
                   {fill(m.modelLine, { trees: card.iterations, features: card.features.length, n: train })}
-                </p>
-              </div>
-              <div className="border border-line-strong bg-panel/95 p-5">
-                <p className="label">{m.featuresLabel}</p>
-                <p className="mt-3 flex flex-wrap gap-1.5">
-                  {card.features.map((f) => (
-                    <code key={f} className="tag bg-panel">
-                      {f}
-                    </code>
-                  ))}
                 </p>
               </div>
             </div>

@@ -5,9 +5,9 @@ import brands from "@/lib/data/brands.json";
 import lexicon from "@/lib/data/lexicon.json";
 
 export const BRANDS = brands as Record<string, string[]>;
-const KEYWORDS = lexicon.suspicious_keywords.filter((k) => k.length >= 4 && /^[\x00-\x7f]*$/.test(k));
+export const KEYWORDS = lexicon.suspicious_keywords.filter((k) => k.length >= 4 && /^[\x00-\x7f]*$/.test(k));
 const FREE_HOSTING = lexicon.free_hosting_suffixes;
-const BRAND_NAMES = Object.keys(BRANDS).filter((b) => b.length >= 4);
+export const BRAND_NAMES = Object.keys(BRANDS).filter((b) => b.length >= 4);
 const VOWELS = new Set("aeiou");
 const NGRAM_N = 3;
 
