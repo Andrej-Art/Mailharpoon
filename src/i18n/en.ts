@@ -451,8 +451,18 @@ export const en = {
     fusionLabel: "SCORING",
     fusionTitle: "From signal to verdict",
     fusion:
-      "Every signal carries a weight that speaks for or against the link. The total per layer is capped, so no single check decides alone. A sigmoid function turns the overall sum into a risk score between 0 and 100. The weights are grounded in the research literature and checked against fresh phishing every week. Unlike a black box, every verdict can be traced back to its reasons.",
+      "Every signal carries a weight that speaks for or against the link. The total per layer is capped, so no single check decides alone. At the end, the overall sum is converted into a risk score between 0 and 100. The weights are grounded in the research literature and checked against fresh phishing every week. Unlike a black box, every verdict can be traced back to its reasons.",
     bands: { safe: "Safe", suspicious: "Suspicious", dangerous: "Dangerous" },
+    fusionExample: {
+      title: "Worked example",
+      start: "Starting point, most links are harmless",
+      young: "Domain only 12 days old",
+      login: "Page asks for a password",
+      tls: "Valid certificate",
+      sum: "Total",
+      result: "Risk score",
+      formula: "The formula for specialists",
+    },
     modelLabel: "OWN MODEL",
     modelTitle: "A model that can read domains",
     model: [

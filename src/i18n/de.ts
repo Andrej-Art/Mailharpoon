@@ -452,8 +452,18 @@ export const de: Dict = {
     fusionLabel: "BEWERTUNG",
     fusionTitle: "Vom Signal zum Urteil",
     fusion:
-      "Jedes Signal bringt ein Gewicht mit, das für oder gegen den Link spricht. Pro Schicht ist die Summe begrenzt, damit keine einzelne Prüfung allein entscheidet. Eine Sigmoid-Funktion macht aus der Gesamtsumme einen Risikowert zwischen 0 und 100. Die Gewichte stützen sich auf die Fachliteratur und werden jede Woche an frischem Phishing überprüft. Anders als bei einer Blackbox lässt sich so jedes Urteil auf seine Gründe zurückführen.",
+      "Jedes Signal bringt ein Gewicht mit, das für oder gegen den Link spricht. Pro Schicht ist die Summe begrenzt, damit keine einzelne Prüfung allein entscheidet. Am Ende wird die Gesamtsumme in einen Risikowert zwischen 0 und 100 umgerechnet. Die Gewichte stützen sich auf die Fachliteratur und werden jede Woche an frischem Phishing überprüft. Anders als bei einer Blackbox lässt sich so jedes Urteil auf seine Gründe zurückführen.",
     bands: { safe: "Unbedenklich", suspicious: "Verdächtig", dangerous: "Gefährlich" },
+    fusionExample: {
+      title: "Rechenbeispiel",
+      start: "Ausgangswert, die meisten Links sind harmlos",
+      young: "Domain erst 12 Tage alt",
+      login: "Seite fragt nach einem Passwort",
+      tls: "Gültiges Zertifikat",
+      sum: "Summe",
+      result: "Risikowert",
+      formula: "Die Formel für Fachleute",
+    },
     modelLabel: "EIGENES MODELL",
     modelTitle: "Ein Modell, das Domains lesen kann",
     model: [

@@ -23,6 +23,8 @@ import {
 import card from "../../../../ml/model-card.json";
 import kb from "@/lib/data/brand-kb.json";
 import { evalHistory, latestEval } from "@/lib/eval";
+import { PRIOR, fuse } from "@/lib/analyzers/fusion";
+import { signal } from "@/lib/analyzers/types";
 import { wilson } from "@/lib/eval-stats";
 import { SiteFooter, SiteNav } from "@/components/Site";
 import { Window } from "@/components/os/Window";
@@ -48,6 +50,15 @@ const SOURCES = [
   ["arXiv 2026", "Hasan & BusiReddyGari: Benchmarking LLMs for zero- and few-shot phishing URL detection", "https://arxiv.org/abs/2602.02641"],
   ["Unicode UTS #39", "Unicode security mechanisms: confusable characters", "https://www.unicode.org/reports/tr39/"],
 ] as const;
+
+// The fusion worked example: a 12-day-old domain asking for a password over valid TLS.
+const EXAMPLE = [
+  ["young", "reputation", 1.9],
+  ["login", "page", 0.8],
+  ["tls", "network", -0.2],
+] as const;
+const example = fuse(EXAMPLE.map(([id, layer, w]) => ({ layer, status: "ok", ms: 0, signals: [signal(layer, id, w)] })));
+const signed = (x: number) => `${x > 0 ? "+" : x < 0 ? "−" : ""}${Math.abs(x).toFixed(1)}`;
 
 const LAYERS = [
   ["intel", Radar],
@@ -237,30 +248,64 @@ export default async function Methodology({ params }: { params: Promise<{ locale
 
         {/* ---------- Fusion ---------- */}
         <Window title={m.fusionLabel}>
-          <div className="grid gap-10 lg:grid-cols-2">
+          <div className="grid gap-10 lg:grid-cols-2 [&>*]:min-w-0">
             <div>
               <Kicker icon={Scale}>{m.fusionLabel}</Kicker>
               <H2>{m.fusionTitle}</H2>
               <p className="mt-4 leading-relaxed text-muted">{m.fusion}</p>
             </div>
             <div className="space-y-5 self-end">
-              <pre className="overflow-x-auto border border-line bg-void p-5 font-mono text-[13px] leading-relaxed text-fg">
-                {`logit   = prior + Σ_layer clamp(Σ weights, −4, 4.5)
-p       = 1 / (1 + e^(−logit))      // list hit ⇒ p ≥ 0.98
-verdict = dangerous if p ≥ .70, suspicious if p ≥ .35`}
-              </pre>
+              {/* A worked example, scored by the live fusion code so the numbers can never drift from it. */}
+              <div className="border border-line bg-void p-4 font-mono text-[13px] sm:p-5">
+                <p className="mb-3 font-pixel text-[10px] text-dim uppercase">{m.fusionExample.title}</p>
+                <dl>
+                  {[[m.fusionExample.start, PRIOR] as const, ...EXAMPLE.map(([k, , w]) => [m.fusionExample[k], w] as const)].map(([label, w]) => (
+                    <div key={label} className="flex justify-between gap-4 border-b border-line py-1.5">
+                      <dt className="text-muted">{label}</dt>
+                      <dd className={w > 0 ? "text-bad" : "text-ok"}>{signed(w)}</dd>
+                    </div>
+                  ))}
+                  <div className="flex justify-between gap-4 pt-2 text-fg">
+                    <dt>{m.fusionExample.sum}</dt>
+                    <dd>{signed(example.logit)}</dd>
+                  </div>
+                  <div className="flex justify-between gap-4 pt-1 text-fg">
+                    <dt>{m.fusionExample.result}</dt>
+                    <dd className="font-bold text-bad">
+                      {example.score} · {m.bands[example.verdict]}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
               <div>
-                <div className="grid h-3 grid-cols-[35fr_35fr_30fr] border border-line-strong">
+                <div className="relative grid h-3 grid-cols-[35fr_35fr_30fr] border border-line-strong">
                   <span className="bg-ok/70" />
                   <span className="border-x border-void bg-warn/80" />
                   <span className="bg-bad/80" />
+                  <span className="absolute -top-1.5 -bottom-1.5 w-0.5 bg-fg" style={{ left: `${example.score}%` }} aria-hidden />
                 </div>
-                <div className="mt-2 grid grid-cols-[35fr_35fr_30fr] font-mono text-[11px] text-muted">
-                  <span>0 · {m.bands.safe}</span>
-                  <span>35 · {m.bands.suspicious}</span>
-                  <span>70 · {m.bands.dangerous}</span>
+                <div className="mt-2 grid grid-cols-[35fr_35fr_30fr] gap-1 font-mono text-[11px] text-muted">
+                  <span className="flex flex-col sm:block">
+                    <span className="text-fg">0</span> <span className="max-sm:hidden">·</span> {m.bands.safe}
+                  </span>
+                  <span className="flex flex-col sm:block">
+                    <span className="text-fg">35</span> <span className="max-sm:hidden">·</span> {m.bands.suspicious}
+                  </span>
+                  <span className="flex flex-col sm:block">
+                    <span className="text-fg">70</span> <span className="max-sm:hidden">·</span> {m.bands.dangerous}
+                  </span>
                 </div>
               </div>
+              <details className="group border border-line">
+                <summary className="cursor-pointer px-4 py-2.5 font-mono text-[12px] text-muted hover:text-fg">{m.fusionExample.formula}</summary>
+                <pre className="overflow-x-auto border-t border-line bg-void p-4 font-mono text-[12px] leading-relaxed text-fg">
+                  {`logit   = prior + Σ_layer clamp(Σ weights, −4, 4.5)
+p       = 1 / (1 + e^(−logit))
+          // list hit ⇒ p ≥ 0.98
+verdict = dangerous  if p ≥ .70
+          suspicious if p ≥ .35`}
+                </pre>
+              </details>
             </div>
           </div>
         </Window>

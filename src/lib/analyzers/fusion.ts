@@ -16,7 +16,7 @@ export interface Fused {
 }
 
 // An unknown site with no evidence either way should land clearly in "safe" (~25).
-const PRIOR = -1.0;
+export const PRIOR = -1.0;
 
 // Rejected rule, kept so the report can show why: "dangerous" needs at least one piece of hard evidence, many
 // weak hints together reach "suspicious" at most. Weak hints (a young domain, a cheap TLD, an odd
