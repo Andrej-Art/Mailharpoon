@@ -59,7 +59,7 @@ export const CHECK_GROUPS: { layer: Layer; checks: CheckDef[] }[] = [
       { id: "copied", signals: ["external_resources", "dead_links", "no_navigation", "favicon_hotlink"] },
       { id: "obfuscation", signals: ["hidden_iframe", "tech_obfuscated_js", "tech_doc_write_b64", "tech_large_base64_blob"] },
       { id: "exfil", signals: ["tech_telegram_exfil", "tech_discord_webhook", "tech_aitm_proxy"] },
-      { id: "antiScanner", signals: ["tech_right_click_block", "tech_devtools_block", "tech_anti_bot_cloak", "fake_browser_check"] },
+      { id: "antiScanner", signals: ["tech_right_click_block", "tech_devtools_block", "tech_anti_bot_cloak", "fake_browser_check", "prompt_injection"] },
       { id: "clipboard", signals: ["tech_clipboard_hijack"] },
       { id: "redirects", signals: ["cross_domain_redirect", "redirect_chain", "meta_refresh_external", "js_redirect_stub"] },
       { id: "hostWarning", signals: ["host_phishing_warning"] },

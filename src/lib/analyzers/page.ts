@@ -254,8 +254,16 @@ export function inspectHtml(html: string, finalUrl: string, t: ParsedTarget, bas
   else if (GATE_RE.test(visibleText) && !/challenges\.cloudflare\.com|_cf_chl_opt|cf-chl|ddos-guard|sucuri/i.test(html))
     s.push(signal(P, "fake_browser_check", hasPassword ? 1.6 : 0.8));
 
+  // Text that addresses an AI scanner instead of the visitor, often hidden in comments or invisible
+  // elements. Genuine pages have no reason to instruct a classifier; phishing kits started doing it
+  // to talk LLM-based detectors into "safe" (Koide et al., 2026).
+  if (INJECTION_RE.test(html)) s.push(signal(P, "prompt_injection", 1.5));
+
   return s;
 }
+
+export const INJECTION_RE =
+  /ignore (all |any )?(previous|prior|above|earlier) (instructions|prompts)|(classify|mark|rate|label|report) (this|the) (page|site|website|url|link) as (safe|legitimate|benign|harmless)|(you are|as) an? (ai|llm|language model|security (scanner|classifier))[^.]{0,80}(must|should) (answer|respond|classify|return)|<\/?(system|assistant)_?(prompt)?>/i;
 
 export const GATE_RE =
   /verifying (your|the) browser|checking (your browser|if the site connection is secure)|browser verification|human verification|security check in progress|(überprüf|prüf)\w* (ihren |deinen )?browser/i;

@@ -71,6 +71,7 @@ export const signalsDE: Record<string, string> = {
   js_redirect_stub: "Die Seite ist nahezu leer und dient nur der Weiterleitung.",
   content_rich: "Reguläre Website mit umfangreichem Inhalt und Navigation, ohne Abfrage persönlicher Daten.",
   host_phishing_warning: "Der Hosting-Anbieter {provider} hat diese Seite bereits als mutmaßliches Phishing gekennzeichnet.",
+  prompt_injection: "Die Seite enthält versteckte Anweisungen an KI-Scanner, etwa die Aufforderung, sie als sicher einzustufen. Echte Websites tun so etwas nicht.",
   fake_browser_check: "Die Seite zeigt eine angebliche Browserprüfung. Damit verbergen Betrugsseiten ihren eigentlichen Inhalt vor Sicherheitsscannern.",
   js_built_login: "Das Anmeldeformular entsteht erst im Browser und fehlt im Quelltext. So entgehen Betrugsseiten einfachen Scannern.",
   js_redirect: "Im Browser leitet die Seite per Skript auf {domain} weiter.",

@@ -71,6 +71,7 @@ export const signalsEN: Record<string, string> = {
   js_redirect_stub: "The page is almost empty and serves only as a redirect.",
   content_rich: "A regular website with extensive content and navigation that does not request personal data.",
   host_phishing_warning: "The hosting provider {provider} has already flagged this site as suspected phishing.",
+  prompt_injection: "The page contains hidden instructions aimed at AI scanners, such as a request to rate it as safe. Genuine websites have no reason to do this.",
   fake_browser_check: "The page shows a supposed browser check. Scam sites use this to hide their real content from security scanners.",
   js_built_login: "The login form only appears in the browser and is missing from the source code, a way to slip past simple scanners.",
   js_redirect: "In the browser, a script sends the visitor on to {domain}.",

@@ -20,6 +20,11 @@ export interface VisualData {
   asks: string[];
 }
 
+// Site builders and hosts appear on countless genuine small sites ("Powered by Wix", a Shopify
+// checkout). KnowPhish (USENIX Security 2024) traced a large share of a comparable detector's false
+// alarms to such platform brands, so they never count as an impersonated brand here.
+const PLATFORMS = /^(wix|squarespace|wordpress|shopify|jimdo|webflow|weebly|godaddy|ionos|strato|hostinger|one\.com|hostpoint|all-inkl)(\.com)?$/i;
+
 const SENSITIVE = new Set(["password", "payment_card", "bank_details", "one_time_code", "crypto_wallet"]);
 // Parcel and toll scams start with name and address and ask for the card on the next page.
 const PERSONAL = "personal_data";
@@ -40,6 +45,10 @@ export function analyzeVisual(ai: AiVerdict, finalUrl: string, ms = 0): LayerRes
   const data: VisualData = { brand, domain, outcome: "no_brand", known: [], asks };
   const signals: Signal[] = [];
   if (!brand) return { layer: V, status: "ok", ms, signals, data };
+  if (PLATFORMS.test(brand)) {
+    data.outcome = "unverified";
+    return { layer: V, status: "ok", ms, signals, data };
+  }
 
   const known = new Set<string>([...kbDomainsFor(brand), ...brandsIn(brand).flatMap((b) => BRANDS[b] ?? [])]);
   data.known = [...known].slice(0, 8);
