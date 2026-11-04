@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, Eye, Fingerprint, Globe, KeyRound, Link2, Radar, Server, Sparkles } from "lucide-react";
-import { RescuePlan, SpotDemo } from "@/components/HomeDemos";
+import { HowDemo, RescuePlan, SpotDemo } from "@/components/HomeDemos";
 import { Scanner } from "@/components/Scanner";
 import { SiteFooter, SiteNav } from "@/components/Site";
 import { DesktopIcons, type DesktopItem } from "@/components/os/DesktopIcons";
@@ -257,16 +257,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <div className="mx-auto max-w-[1400px] space-y-8 px-3 pt-10 sm:space-y-14 sm:px-4 sm:pt-16">
           {/* ---------- How it works ---------- */}
           <Window id="how" title={os.windows.how}>
-            <H2>{t.how.title}</H2>
-            <ol className="mt-8 grid gap-6 md:grid-cols-3">
-              {t.how.steps.map(([title, body], i) => (
-                <li key={title} className="border border-line p-5">
-                  <span className="font-vt text-3xl text-harpoon">0{i + 1}_</span>
-                  <h3 className="mt-3 text-lg font-semibold">{title}</h3>
-                  <p className="mt-2 leading-relaxed text-muted">{body}</p>
-                </li>
-              ))}
-            </ol>
+            <HowDemo t={t.how}>
+              <H2>{t.how.title}</H2>
+            </HowDemo>
           </Window>
 
           {/* ---------- Checks ---------- */}

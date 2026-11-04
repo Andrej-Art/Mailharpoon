@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { ArrowDown, Check, Lock } from "lucide-react";
+import { ArrowDown, Check, ClipboardCheck, Copy, Lock, Search } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { Dict } from "@/i18n/en";
 
@@ -323,6 +323,138 @@ export function RescuePlan({ t, children }: { t: Help; children?: ReactNode }) {
         ))}
         <p className={clsx("border-t border-line px-4 py-3 font-mono text-[12px] text-ok transition-opacity duration-500 sm:px-5", beat >= plan.steps.length ? "opacity-100" : "opacity-0")}>{t.plan.done}</p>
       </div>
+    </div>
+  );
+}
+
+type How = Dict["how"];
+const HOW_BEATS = [3, 6, 4];
+// Which of the eight checks raise a flag in the example: age, address, brand and page.
+const HOW_FLAGS = [false, true, true, true, true, false, false, false];
+
+function HowScene({ i, beat, d }: { i: number; beat: number; d: How["demo"] }) {
+  if (i === 0) {
+    return (
+      <div className="mx-auto w-full max-w-xs">
+        <p className="text-center font-mono text-[11px] text-dim">{d.sender}</p>
+        <div className="relative mt-2 rounded-2xl rounded-bl-sm bg-panel-2 px-4 py-3 text-[15px] leading-relaxed">
+          {d.sms}{" "}
+          <span className={clsx("relative break-all text-harpoon underline transition-colors duration-300", beat >= 1 && "bg-harpoon/25")}>
+            {d.link}
+            {beat === 1 && <span className="absolute top-1/2 left-1/2 size-10 -translate-1/2 animate-ping rounded-full bg-fg/30" aria-hidden />}
+          </span>
+        </div>
+        <div className={clsx("mt-2 ml-auto w-44 border border-line-strong bg-panel font-mono text-[12px] shadow-[3px_3px_0_0_rgb(0_0_0/0.5)] transition-all duration-300", beat >= 2 ? "opacity-100" : "pointer-events-none -translate-y-1 opacity-0")}>
+          <p className="px-3 py-2 text-dim">{d.open}</p>
+          <p className={clsx("flex items-center gap-2 border-t border-line px-3 py-2", beat >= 2 && "bg-harpoon text-void")}>
+            <Copy className="size-3.5" aria-hidden /> {d.copy}
+          </p>
+        </div>
+        <p className={clsx("mt-4 flex items-center justify-center gap-2 font-mono text-[12px] text-ok transition-opacity duration-500", beat >= 3 ? "opacity-100" : "opacity-0")}>
+          <ClipboardCheck className="size-4" aria-hidden /> {d.copied}
+        </p>
+      </div>
+    );
+  }
+  if (i === 1) {
+    return (
+      <div className="w-full">
+        <div className="flex border border-line-strong">
+          <p className="min-w-0 flex-1 truncate px-3 py-2.5 font-mono text-[13px]">
+            {beat >= 1 ? <span className="text-fg">{d.link}</span> : <span className="text-dim">{d.placeholder}</span>}
+          </p>
+          <span className={clsx("flex items-center gap-1.5 px-3 font-pixel text-[12px] transition-colors", beat >= 2 ? "bg-harpoon text-void" : "bg-harpoon/30 text-fg")}>
+            <Search className="size-3.5" aria-hidden /> {d.check}
+          </span>
+        </div>
+        <ul className="mt-5 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+          {d.layers.map((l, k) => {
+            const on = beat >= 3 + Math.floor(k / 2);
+            return (
+              <li
+                key={l}
+                className={clsx(
+                  "flex items-center gap-2 border px-2.5 py-2 font-mono text-[11px] transition-all duration-300",
+                  !on && "border-line text-dim",
+                  on && (HOW_FLAGS[k] ? "border-bad/60 bg-bad/10 text-bad" : "border-ok/40 text-ok"),
+                )}
+              >
+                <span className={clsx("size-1.5 shrink-0", on ? (HOW_FLAGS[k] ? "bg-bad" : "bg-ok") : "animate-pulse bg-dim")} aria-hidden />
+                {l}
+              </li>
+            );
+          })}
+        </ul>
+        <p className={clsx("mt-4 font-mono text-[11px] text-dim transition-opacity", beat >= 2 && beat < 6 ? "opacity-100" : "opacity-0")}>{d.scanning}</p>
+      </div>
+    );
+  }
+  return (
+    <div className="w-full border border-bad/60 bg-bad/5 p-4">
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="font-pixel text-[13px] text-bad uppercase">{d.verdict}</span>
+        <span className="font-vt text-3xl text-bad tabular-nums">{beat >= 1 ? d.score : "··"}</span>
+      </div>
+      <div className="mt-2 h-2 bg-line">
+        <div className="h-full bg-bad transition-[width] duration-1000 ease-out" style={{ width: beat >= 1 ? `${d.score}%` : "0%" }} />
+      </div>
+      <ul className="mt-4 space-y-1.5">
+        {d.reasons.map((r, k) => (
+          <li key={r} className={clsx("flex gap-2 text-sm text-muted transition-all duration-500", beat >= 2 ? "opacity-100" : "translate-y-1 opacity-0")} style={{ transitionDelay: `${k * 150}ms` }}>
+            <span className="mt-1.5 size-2 shrink-0 bg-bad" aria-hidden />
+            {r}
+          </li>
+        ))}
+      </ul>
+      <p className={clsx("mt-4 border-t border-line pt-3 text-sm font-semibold text-fg transition-opacity duration-500", beat >= 3 ? "opacity-100" : "opacity-0")}>→ {d.advice}</p>
+    </div>
+  );
+}
+
+/** The three steps of a check played as one short film: copy from a message, paste and scan, read the verdict. */
+export function HowDemo({ t, children }: { t: How; children?: ReactNode }) {
+  const { ref, visible, still } = useStage();
+  const { scene, beat, pick, paused } = useScenes(t.steps.length, (s) => HOW_BEATS[s], 850, visible, still);
+  return (
+    <div ref={ref} className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:grid-rows-[auto_1fr] lg:gap-x-8 [&>*]:min-w-0">
+      <div className="lg:col-start-1">{children}</div>
+      <div className="relative flex min-h-80 flex-col border border-line-strong bg-void shadow-[4px_4px_0_0_rgb(0_0_0/0.5)] max-lg:order-2 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start">
+        <p className="flex justify-between border-b border-line px-4 py-2.5 font-pixel text-[11px] text-dim uppercase">
+          <span>{t.demo.label}</span>
+          <span>
+            0{scene + 1} / 0{t.steps.length}
+          </span>
+        </p>
+        <div key={scene} className="flex flex-1 animate-[rise_.35s_ease-out] items-center p-5 sm:p-7" aria-hidden>
+          <HowScene i={scene} beat={beat} d={t.demo} />
+        </div>
+      </div>
+      <ol className="space-y-1.5 max-lg:order-3 lg:col-start-1">
+        {t.steps.map(([title, body], i) => (
+          <li key={title}>
+            <button
+              type="button"
+              onClick={() => pick(i)}
+              aria-pressed={i === scene}
+              className={clsx("focus-ring relative grid w-full grid-cols-[auto_1fr] gap-4 overflow-hidden border px-4 py-4 text-left transition-colors", i === scene ? "border-line-strong bg-panel-2" : "border-transparent hover:border-line")}
+            >
+              <span className={clsx("font-vt text-3xl leading-none", i === scene ? "text-harpoon" : "text-dim")}>0{i + 1}_</span>
+              <span>
+                <span className="block text-lg font-semibold">{title}</span>
+                <span className="mt-1 block leading-relaxed text-muted">{body}</span>
+              </span>
+              {i === scene && !paused && !still && (
+                <span
+                  key={`${scene}-${visible}`}
+                  className="absolute bottom-0 left-0 h-0.5 bg-harpoon"
+                  style={{ animation: visible ? `grow ${(HOW_BEATS[i] + 4) * 0.85}s linear forwards` : "none" }}
+                  aria-hidden
+                />
+              )}
+            </button>
+          </li>
+        ))}
+      </ol>
     </div>
   );
 }
