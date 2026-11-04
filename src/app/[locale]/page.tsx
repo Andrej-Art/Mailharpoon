@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
+import { FaqChat } from "@/components/FaqChat";
 import { ChecksDemo, HowDemo, RescuePlan, SpotDemo } from "@/components/HomeDemos";
 import { Scanner } from "@/components/Scanner";
 import { SiteFooter, SiteNav } from "@/components/Site";
@@ -348,20 +349,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </Window>
 
           {/* ---------- FAQ ---------- */}
-          <Window id="faq" title={os.windows.faq} className="mx-auto max-w-4xl">
-            <H2>{t.faq.title}</H2>
-            <div className="mt-6 border border-line">
-              {t.faq.items.map(([q, a]) => (
-                <details key={q} className="group border-b border-line last:border-0">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-6 p-5 hover:bg-panel-2">
-                    <h3 className="text-[16px] font-semibold">{q}</h3>
-                    <span className="font-vt text-2xl text-harpoon group-open:hidden">+</span>
-                    <span className="hidden font-vt text-2xl text-harpoon group-open:inline">-</span>
-                  </summary>
-                  <p className="px-5 pb-5 leading-relaxed text-muted">{a}</p>
-                </details>
-              ))}
-            </div>
+          <Window id="faq" title={os.windows.faq}>
+            <FaqChat items={t.faq.items as [string, string][]} t={t.faq.chat}>
+              <H2>{t.faq.title}</H2>
+            </FaqChat>
           </Window>
 
           {/* ---------- Alert dialog CTA ---------- */}

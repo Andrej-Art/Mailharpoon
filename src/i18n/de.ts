@@ -192,6 +192,7 @@ export const de: Dict = {
   faq: {
     label: "FAQ",
     title: "Häufig gestellte Fragen",
+    chat: { assistant: "Mailharpoon", online: "antwortet sofort", search: "Frage suchen, zum Beispiel „SMS“ …", none: "Keine passende Frage gefunden. Prüfen Sie Ihren Link einfach direkt oben.", more: "Das fragen andere auch", you: "Sie" },
     items: [
       ["Wie erkenne ich, ob ein Link sicher ist?", "Fügen Sie den Link in Mailharpoon ein. Wir prüfen, ob er auf bekannten Betrugslisten steht, wie alt die Domain ist, ob sie eine bekannte Marke nachahmt und welche Daten die Seite abfragt. Nach wenigen Sekunden erhalten Sie eine eindeutige Einschätzung, ohne den Link selbst öffnen zu müssen."],
       ["Ist die Prüfung eines Links hier sicher?", "Ja. Die Zielseite wird auf unserem Server geladen und nicht auf Ihrem Gerät, sodass Ihnen von ihr keine Gefahr ausgeht. Geprüfte Links werden nicht gespeichert. Von gefährlichen Links zählen wir anonym nur die Domain, ohne Ihre IP-Adresse, um vor aktuell kursierenden Betrugsseiten zu warnen."],
