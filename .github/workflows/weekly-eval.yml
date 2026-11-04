@@ -47,7 +47,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add eval-rows || exit 0
           git diff --cached --quiet || git commit -m "Weekly evaluation $(date -u +%Y-%m-%d)"
-          git push
+          # Both workflows write to the data repository; take in a push that landed meanwhile.
+          git pull --rebase -q && git push
 
       - name: Store aggregate result (public)
         if: always()
