@@ -138,7 +138,7 @@ export const en = {
       { value: "81%", label: "of scam emails and texts caught in a public test dataset" },
       { value: "~3 s", label: "to the first assessment. The detailed report is ready after about 20 seconds." },
     ],
-    ctaTitle: "Nothing glossed over",
+    ctaTitle: "How we test",
     ctaText: "How we test, where Mailharpoon makes mistakes and what we improve as a result: it is all on the methodology page.",
     link: "See the methodology",
   },
@@ -449,7 +449,7 @@ export const en = {
       week: "Week of {date}",
     },
     resultsLabel: "RESULTS",
-    resultsTitle: "Measured against phishing nobody knows yet",
+    resultsTitle: "Tested on brand-new scam sites",
     resultsLead: "These figures come from the latest weekly test. Blocklists and AI were switched off for it. In real use, both work on top.",
     results: {
       dangerous: "of new phishing links rated “Dangerous”",
@@ -458,7 +458,7 @@ export const en = {
       model: "caught by the domain model alone on fresh phishing",
     },
     layersLabel: "LAYERS",
-    layersTitle: "Eight layers, one verdict",
+    layersTitle: "The eight checks in detail",
     layersLead: "Each layer looks for a different trace. Only together do they form a rating, and no single layer can tip it on its own. That keeps Mailharpoon accurate even when scammers change one trick.",
     example: "Example",
     layers: {
@@ -512,7 +512,7 @@ export const en = {
       },
     },
     fusionLabel: "SCORING",
-    fusionTitle: "From signal to verdict",
+    fusionTitle: "How the result is calculated",
     fusion:
       "Every signal carries a weight that speaks for or against the link. The total per layer is capped, so no single check decides alone. At the end, the overall sum is converted into a risk score between 0 and 100. The weights are grounded in the research literature and checked against fresh phishing every week. Unlike a black box, every verdict can be traced back to its reasons.",
     bands: { safe: "Safe", suspicious: "Suspicious", dangerous: "Dangerous" },
@@ -527,7 +527,7 @@ export const en = {
       formula: "The formula for specialists",
     },
     modelLabel: "OWN MODEL",
-    modelTitle: "A model that can read domains",
+    modelTitle: "Our own model for web addresses",
     model: [
       "At the heart of the address check is a gradient boosting model we trained ourselves. It knows more than 300,000 domains: phishing from the scientific PhiUSIIL dataset and real websites from the Tranco list of the most visited sites.",
       "One detail from training shows what matters. In the PhiUSIIL dataset, every legitimate address starts with https://www. A model that reads whole links would learn only that pattern. Ours therefore rates the domain name alone and learns what really gives phishing away.",
@@ -562,7 +562,7 @@ export const en = {
     },
     modelLine: "{trees} decision trees · {features} features · {n} domains",
     loopLabel: "IMPROVEMENT",
-    loopTitle: "A little better every week",
+    loopTitle: "How we improve detection",
     loopLead: "Phishing changes constantly. That is why our work does not end with training but starts over every week.",
     loop: [
       ["Measure", "Every Monday, an automated test draws {phishing} fresh phishing links and {legitimate} random, little-known real websites. Blocklists and AI are off, so only our own analysis is measured."],
@@ -593,7 +593,7 @@ export const en = {
       ["2026-11-04", "The AI second opinion is protected against instructions hidden in pages. Such instructions now count as a warning sign themselves."],
     ] as [string, string][],
     limitsLabel: "LIMITS",
-    limitsTitle: "What we say openly",
+    limitsTitle: "Limits of the check",
     limitsLead: "No checking tool catches everything. We name the hard cases and show how Mailharpoon deals with them.",
     limits: [
       ["Cloaked pages", "Some scam pages show scanners a harmless facade. We counter this by opening pages in a real browser, and the warning lists often record such pages within a few hours."],
@@ -602,7 +602,7 @@ export const en = {
       ["An assessment, not a guarantee", "Even “Safe” is no substitute for healthy doubt. Whenever a page asks for a password, PIN or code, a second look is always worth it."],
     ],
     sourcesLabel: "RESEARCH",
-    sourcesTitle: "Research we build on",
+    sourcesTitle: "Scientific background",
     sourcesLead: "Mailharpoon implements methods from peer-reviewed research, including work presented at the USENIX Security and NDSS conferences.",
   },
 };

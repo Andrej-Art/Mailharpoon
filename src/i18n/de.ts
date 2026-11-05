@@ -139,7 +139,7 @@ export const de: Dict = {
       { value: "81 %", label: "der Betrugsmails und -SMS in einem öffentlichen Testdatensatz erkannt" },
       { value: "~3 s", label: "bis zur ersten Einschätzung. Der ausführliche Bericht ist nach etwa 20 Sekunden fertig." },
     ],
-    ctaTitle: "Nichts geschönt",
+    ctaTitle: "So testen wir",
     ctaText: "Wie wir testen, wo Mailharpoon Fehler macht und was wir daraus verbessern, zeigen wir offen auf der Methodik-Seite.",
     link: "Zur Methodik",
   },
@@ -450,7 +450,7 @@ export const de: Dict = {
       week: "Woche vom {date}",
     },
     resultsLabel: "ERGEBNISSE",
-    resultsTitle: "Gemessen an Phishing, das noch niemand kennt",
+    resultsTitle: "Getestet an brandneuen Betrugsseiten",
     resultsLead: "Diese Werte stammen aus der jüngsten Wochenmessung. Sperrlisten und KI waren dabei abgeschaltet. Im echten Einsatz arbeiten beide zusätzlich mit.",
     results: {
       dangerous: "der neuen Phishing-Links als „Gefährlich“ erkannt",
@@ -459,7 +459,7 @@ export const de: Dict = {
       model: "Treffer des Domain-Modells allein bei frischem Phishing",
     },
     layersLabel: "PRÜFSCHICHTEN",
-    layersTitle: "Acht Schichten, ein Urteil",
+    layersTitle: "Die acht Prüfungen im Detail",
     layersLead: "Jede Schicht sucht nach einer anderen Spur. Erst zusammen ergeben sie eine Bewertung, und keine Schicht kann sie allein kippen. So bleibt Mailharpoon treffsicher, auch wenn Betrüger einen einzelnen Trick ändern.",
     example: "Beispiel",
     layers: {
@@ -513,7 +513,7 @@ export const de: Dict = {
       },
     },
     fusionLabel: "BEWERTUNG",
-    fusionTitle: "Vom Signal zum Urteil",
+    fusionTitle: "Wie das Ergebnis berechnet wird",
     fusion:
       "Jedes Signal bringt ein Gewicht mit, das für oder gegen den Link spricht. Pro Schicht ist die Summe begrenzt, damit keine einzelne Prüfung allein entscheidet. Am Ende wird die Gesamtsumme in einen Risikowert zwischen 0 und 100 umgerechnet. Die Gewichte stützen sich auf die Fachliteratur und werden jede Woche an frischem Phishing überprüft. Anders als bei einer Blackbox lässt sich so jedes Urteil auf seine Gründe zurückführen.",
     bands: { safe: "Unbedenklich", suspicious: "Verdächtig", dangerous: "Gefährlich" },
@@ -528,7 +528,7 @@ export const de: Dict = {
       formula: "Die Formel für Fachleute",
     },
     modelLabel: "EIGENES MODELL",
-    modelTitle: "Ein Modell, das Domains lesen kann",
+    modelTitle: "Unser eigenes Modell für Webadressen",
     model: [
       "Das Herzstück der Adressprüfung ist ein Gradient-Boosting-Modell, das wir selbst trainiert haben. Es kennt über 300.000 Domains: Phishing aus dem wissenschaftlichen Datensatz PhiUSIIL und echte Websites aus der Tranco-Liste der meistbesuchten Seiten.",
       "Ein Detail aus dem Training zeigt, worauf es ankommt. Im PhiUSIIL-Datensatz beginnen alle echten Adressen mit https://www. Ein Modell, das ganze Links liest, würde nur dieses Muster lernen. Unseres bewertet deshalb ausschließlich den Domainnamen und lernt so, woran man Phishing wirklich erkennt.",
@@ -563,7 +563,7 @@ export const de: Dict = {
     },
     modelLine: "{trees} Entscheidungsbäume · {features} Merkmale · {n} Domains",
     loopLabel: "VERBESSERUNG",
-    loopTitle: "Jede Woche ein Stück besser",
+    loopTitle: "So verbessern wir die Erkennung",
     loopLead: "Phishing verändert sich ständig. Darum endet unsere Arbeit nicht mit dem Training, sondern beginnt jede Woche von vorn.",
     loop: [
       ["Messen", "Jeden Montag zieht ein automatischer Test {phishing} frische Phishing-Links und {legitimate} zufällige, wenig bekannte echte Websites. Sperrlisten und KI sind dabei aus, gemessen wird nur die eigene Analyse."],
@@ -594,7 +594,7 @@ export const de: Dict = {
       ["2026-11-04", "Die KI-Zweitmeinung ist gegen versteckte Anweisungen in Seiten abgesichert. Solche Anweisungen zählen jetzt selbst als Warnzeichen."],
     ] as [string, string][],
     limitsLabel: "GRENZEN",
-    limitsTitle: "Was wir offen sagen",
+    limitsTitle: "Grenzen der Prüfung",
     limitsLead: "Kein Prüfwerkzeug erkennt alles. Wir benennen die schwierigen Fälle und zeigen, wie Mailharpoon ihnen begegnet.",
     limits: [
       ["Getarnte Seiten", "Manche Betrugsseiten zeigen Scannern eine harmlose Fassade. Dagegen öffnen wir Seiten in einem echten Browser, und die Warnlisten erfassen solche Seiten oft innerhalb weniger Stunden."],
@@ -603,7 +603,7 @@ export const de: Dict = {
       ["Eine Einschätzung, keine Garantie", "Auch „Unbedenklich“ ersetzt nicht den gesunden Zweifel. Wenn eine Seite nach Passwort, PIN oder TAN fragt, lohnt sich immer ein zweiter Blick."],
     ],
     sourcesLabel: "FORSCHUNG",
-    sourcesTitle: "Forschung, auf der wir aufbauen",
+    sourcesTitle: "Wissenschaftliche Grundlagen",
     sourcesLead: "Mailharpoon setzt Methoden aus begutachteter Forschung um, unter anderem von den Sicherheitskonferenzen USENIX Security und NDSS.",
   },
 };
