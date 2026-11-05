@@ -55,7 +55,7 @@ export const de: Dict = {
     qrNone: "In diesem Bild wurde weder ein QR-Code noch lesbarer Text gefunden. Versuchen Sie einen schärferen Screenshot.",
     qrError: "Das Bild konnte nicht gelesen werden. Bitte versuchen Sie ein anderes Foto.",
     qrDecoded: "Inhalt des QR-Codes:",
-    qrPrivacy: "QR-Codes werden direkt auf Ihrem Gerät gelesen. Bei einem Screenshot wird das Bild verkleinert an unseren Server und zum Auslesen des Textes an die KI von Anthropic übertragen. Es wird nicht gespeichert.",
+    qrPrivacy: "QR-Codes werden direkt auf Ihrem Gerät gelesen. Bei einem Screenshot wird das Bild zum Auslesen des Textes verkleinert an unseren Server und einen KI-Dienst übertragen und nicht gespeichert.",
     messagePlaceholder: "Fügen Sie hier die E-Mail, SMS oder Chatnachricht ein. Für die genaueste Prüfung einer E-Mail fügen Sie den vollständigen Quelltext ein (in Gmail „Original anzeigen“, in Outlook „Quelle anzeigen“). Einen Screenshot können Sie einfach mit Strg+V einfügen.",
     messageExamples: ["Paketgebühr-SMS", "„Hallo Mama“-Nachricht", "Harmlose Nachricht"],
     messagePrivacy: "Nachrichten werden nicht gespeichert. Vor einer KI-Analyse werden Telefonnummern, E-Mail-Adressen, IBANs und Kartennummern automatisch entfernt.",
