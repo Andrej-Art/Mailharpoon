@@ -7,6 +7,7 @@ import { INJECTION_RE } from "@/lib/analyzers/page";
 import { parseTarget } from "@/lib/analyzers/url";
 import { signal, type LayerResult, type Signal } from "@/lib/analyzers/types";
 import { analyzeVisual } from "@/lib/analyzers/visual";
+import { transcriptToMessage } from "@/lib/analyzers/ocr";
 import { evalRow, stripUrl } from "@/lib/eval-record";
 import { wilson } from "@/lib/eval-stats";
 
@@ -142,5 +143,13 @@ describe("punycode", () => {
 
   it("still counts under a Latin TLD", () => {
     expect(analyzeLexical(parseTarget("https://xn--pypal-4ve.com/")).signals.map((s) => s.id)).toContain("punycode");
+  });
+});
+
+describe("screenshot transcript", () => {
+  it("does not repeat a sender the text already shows and adds links missing from the text", () => {
+    const msg = transcriptToMessage({ kind: "sms", sender: "+49 1577 3920114", text: "+49 1577 3920114\nIhr Paket wartet", urls: ["dhl-info.top/p"] });
+    expect(msg.match(/3920114/g)).toHaveLength(1);
+    expect(msg).toContain("dhl-info.top/p");
   });
 });

@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { Link2, Loader2, MessageSquareText, QrCode, Search, X } from "lucide-react";
+import { ImageUp, Link2, Loader2, MessageSquareText, Search, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Fused } from "@/lib/analyzers/fusion";
@@ -56,6 +56,16 @@ export function Scanner({ t, locale }: { t: Dict; locale: Locale }) {
   const scanMode: Mode = mode === "message" ? "message" : "url";
   const abortRef = useRef<AbortController | null>(null);
   const [slot, setSlot] = useState<HTMLElement | null>(null);
+  const [pasted, setPasted] = useState<File | null>(null);
+
+  // A screenshot pasted into the link or message field goes to the image tab.
+  const onPasteImage = (e: React.ClipboardEvent) => {
+    const file = [...e.clipboardData.files].find((f) => f.type.startsWith("image/"));
+    if (!file) return;
+    e.preventDefault();
+    setMode("qr");
+    setPasted(file);
+  };
 
   const scan = useCallback(
     async (m: Mode, raw: string) => {
@@ -166,6 +176,14 @@ export function Scanner({ t, locale }: { t: Dict; locale: Locale }) {
     scan(looksLikeLink ? "url" : "message", content);
   };
 
+  // Text read out of a screenshot is shown in the message tab and checked like a pasted message.
+  const onScreenshotText = (content: string) => {
+    setPasted(null);
+    setText(content);
+    setMode("message");
+    scan("message", content);
+  };
+
   const reset = () => {
     setState(initial(scanMode));
     setUrl("");
@@ -188,7 +206,7 @@ export function Scanner({ t, locale }: { t: Dict; locale: Locale }) {
               mode === m ? "border-line-strong bg-void text-harpoon" : "border-transparent text-dim hover:text-fg",
             )}
           >
-            {m === "url" ? <Link2 className="size-3.5" /> : m === "message" ? <MessageSquareText className="size-3.5" /> : <QrCode className="size-3.5" />}
+            {m === "url" ? <Link2 className="size-3.5" /> : m === "message" ? <MessageSquareText className="size-3.5" /> : <ImageUp className="size-3.5" />}
             <span className="sm:hidden">{t.hero.tabsShort[m]}</span>
             <span className="max-sm:hidden">{t.hero.tabs[m]}</span>
           </button>
@@ -197,7 +215,7 @@ export function Scanner({ t, locale }: { t: Dict; locale: Locale }) {
 
       {mode === "qr" ? (
         <div className="border border-line-strong bg-void">
-          <QrInput t={t} onDecoded={onQr} />
+          <QrInput t={t} onDecoded={onQr} onText={onScreenshotText} pasted={pasted} />
         </div>
       ) : (
       <form
@@ -222,6 +240,7 @@ export function Scanner({ t, locale }: { t: Dict; locale: Locale }) {
                 autoCapitalize="off"
                 spellCheck={false}
                 inputMode="url"
+                onPaste={onPasteImage}
                 className="min-w-0 flex-1 bg-transparent py-4 font-mono text-[15px] text-fg caret-harpoon outline-none placeholder:text-dim"
               />
               {url && (
@@ -251,6 +270,7 @@ export function Scanner({ t, locale }: { t: Dict; locale: Locale }) {
               placeholder={t.hero.messagePlaceholder}
               rows={7}
               maxLength={100_000}
+              onPaste={onPasteImage}
               spellCheck={false}
               className="block w-full resize-y bg-transparent p-4 font-mono text-[14px] leading-relaxed text-fg caret-harpoon outline-none placeholder:text-dim"
             />
