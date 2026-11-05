@@ -56,8 +56,8 @@ function Card({ item, n, featured }: { item: NewsCard; n: Dict["news"]; featured
           <span className="py-1 font-mono text-lg leading-none text-fg">{item.day}</span>
         </time>
         <div className="min-w-0">
-          <h3 className="line-clamp-2 text-[17px] leading-snug font-bold text-fg group-hover:text-harpoon-2">{item.headline}</h3>
-          {item.summary && <p className={clsx("mt-1.5 text-sm text-muted", featured ? "line-clamp-3" : "line-clamp-2")}>{item.summary}</p>}
+          <h3 className="text-[17px] leading-snug font-bold text-fg group-hover:text-harpoon-2">{item.headline}</h3>
+          {item.summary && <p className="mt-1.5 text-sm leading-relaxed text-muted">{item.summary}</p>}
           <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[12px] text-dim">
             <span>{item.source}</span>
             {item.topic && (

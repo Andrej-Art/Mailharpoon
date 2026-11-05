@@ -223,7 +223,7 @@ export function SpotDemo({ t, children }: { t: Learn; children?: ReactNode }) {
                 <span className={clsx("font-vt text-2xl leading-none", i === scene ? "text-harpoon" : "text-dim")}>{String(i + 1).padStart(2, "0")}</span>
                 <span>
                   <span className="block text-[16px] font-semibold">{title}</span>
-                  <span className={clsx("mt-1 block text-base leading-relaxed text-muted", i !== scene && "max-lg:hidden lg:line-clamp-1")}>{body}</span>
+                  <span className={clsx("mt-1 block text-base leading-relaxed text-muted", i !== scene && "hidden")}>{body}</span>
                 </span>
                 {i === scene && !paused && !still && (
                   <span

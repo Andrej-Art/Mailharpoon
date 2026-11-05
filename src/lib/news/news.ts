@@ -32,7 +32,7 @@ const cachedSummary = (item: FeedItem) =>
       if (!s) throw new Error("no summary");
       return s;
     },
-    ["news-summary-v3", item.id],
+    ["news-summary-v4", item.id],
     { revalidate: false },
   )().catch(() => null);
 
