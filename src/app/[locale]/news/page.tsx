@@ -189,9 +189,9 @@ export default async function News({ params }: { params: Promise<{ locale: strin
 
                 <div className="space-y-3">
                   <p className="text-sm text-muted">{n.subscribeText}</p>
-                  <a href={`/${locale}/news/feed.xml`} className="btn w-full">
+                  <Link href={`/${locale}/news/rss`} className="inline-flex items-center gap-2 font-mono text-[13px] text-harpoon hover:underline">
                     <Rss className="size-4" aria-hidden /> {n.rss}
-                  </a>
+                  </Link>
                 </div>
               </div>
             </aside>
