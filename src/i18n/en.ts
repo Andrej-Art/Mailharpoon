@@ -54,7 +54,7 @@ export const en = {
     qrNone: "Neither a QR code nor readable text was found in this image. Try a sharper screenshot.",
     qrError: "The image could not be read. Please try a different photo.",
     qrDecoded: "QR code content:",
-    qrPrivacy: "QR codes are read on your device. A screenshot is sent, scaled down, to our server and to Anthropic's AI to read its text. It is not stored.",
+    qrPrivacy: "QR codes are read on your device. To read its text, a screenshot is sent, scaled down, to our server and an AI service. It is not stored.",
     messagePlaceholder: "Paste the email, text message or chat message here. For the most accurate email check, paste the full source (\"Show original\" in Gmail, \"View source\" in Outlook). You can also paste a screenshot with Ctrl+V.",
     messageExamples: ["Parcel fee SMS", "\"Hi Mum\" message", "Harmless message"],
     messagePrivacy: "Messages are not stored. Before any AI analysis, phone numbers, email addresses, IBANs and card numbers are removed automatically.",
