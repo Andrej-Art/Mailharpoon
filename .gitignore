@@ -62,5 +62,5 @@ ml/data/
 # Checkout of the private data repository (per-link eval results, feed archive)
 /data/
 
-# Rendered promo videos
-/promo/short/out/
+# Promo videos and everything used to make them stay local
+/promo/
