@@ -125,16 +125,17 @@ body {
     pointer-events: none;
   }
   .win-bar {
-    @apply relative flex h-7 items-center justify-center border-b border-chrome px-2;
+    @apply relative flex h-10 items-center justify-center border-b border-chrome px-2;
     background: repeating-linear-gradient(to bottom, var(--color-chrome) 0 1px, transparent 1px 3px);
     background-clip: content-box;
     padding-block: 5px;
   }
   .win-title {
-    @apply relative z-10 bg-chrome px-3 py-1 font-pixel text-[13px] leading-none tracking-wide text-void;
+    @apply relative z-10 border border-chrome bg-harpoon px-4 py-1.5 font-pixel text-[16px] leading-none tracking-wide text-void sm:text-[17px];
+    box-shadow: 3px 3px 0 0 var(--color-chrome), 0 0 16px rgb(255 46 151 / 0.45);
   }
   .win-box {
-    @apply absolute top-1/2 z-10 size-3.5 -translate-y-1/2 border border-chrome bg-panel;
+    @apply absolute top-1/2 z-10 size-4 -translate-y-1/2 border border-chrome bg-panel;
   }
 
   /* Text-mode dialog: double violet frame with the title set into the top border. */
