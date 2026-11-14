@@ -207,3 +207,11 @@ describe("screenshot transcript", () => {
     expect(msg).toContain("dhl-info.top/p");
   });
 });
+
+describe("candidate rule", () => {
+  it("counts hidden iframes and inline blobs for little, and leaves the live rule alone", () => {
+    const layers: LayerResult[] = [{ layer: "page", status: "ok", ms: 0, signals: [signal("page", "hidden_iframe", 0.6), signal("page", "tech_large_base64_blob", 0.6)] }];
+    expect(fuse(layers, { candidate: true }).logit).toBeCloseTo(-1 + 0.2, 5);
+    expect(fuse(layers).logit).toBeCloseTo(-1 + 1.2, 5);
+  });
+});

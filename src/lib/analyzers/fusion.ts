@@ -65,6 +65,18 @@ function unconfirmedBrandPage(signals: Signal[]): boolean {
   return !signals.some((s) => s.override === "malicious") && !has(DAMNING) && !has(ASKS) && !signals.some((s) => s.id === "visual_brand_mismatch" || s.id === "brand_login_mismatch");
 }
 
+// Candidate, extended 2026-11-14 from the weekly rows of 4 and 9 November (tuning data, so only
+// later weeks count as evidence). Two page signals turned out more common on real sites than on
+// phishing: a hidden iframe (47 real vs. 25 phishing of 200 each; tag managers and analytics use
+// them) and a large inline base64 blob (17 vs. 1; inlined images and fonts). Signals about forms
+// and passwords stay untouched, because many feed pages are already taken down when scanned and
+// the sample underrates them.
+const CANDIDATE_WEIGHTS: Record<string, number> = { hidden_iframe: 0.2, tech_large_base64_blob: 0 };
+
+function candidateSignals(signals: Signal[]): Signal[] {
+  return softenOldBodyBrand(signals).map((s) => (s.id in CANDIDATE_WEIGHTS && s.weight > 0 ? { ...s, weight: CANDIDATE_WEIGHTS[s.id] } : s));
+}
+
 export interface FuseOptions {
   /** The rule currently tested alongside the live one in the weekly evaluation. */
   candidate?: boolean;
@@ -73,7 +85,7 @@ export interface FuseOptions {
 
 export function fuse(layers: LayerResult[], opts: FuseOptions = {}): Fused {
   const raw = layers.flatMap((l) => l.signals);
-  const signals = opts.candidate ? softenOldBodyBrand(raw) : raw;
+  const signals = opts.candidate ? candidateSignals(raw) : raw;
   const malicious = signals.some((s) => s.override === "malicious");
 
   // Cap each layer's total so a single noisy layer cannot decide alone.
