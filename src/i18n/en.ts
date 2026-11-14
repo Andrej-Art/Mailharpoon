@@ -226,6 +226,8 @@ export const en = {
     disclaimer: "Mailharpoon provides a risk assessment, not a guarantee. If in doubt, contact the sender through a channel you already know.",
     rights: "Open source under the MIT license",
     made: "Developed by Andrej Artuschenko",
+    imprint: "Legal notice",
+    privacy: "Privacy",
   },
   notice: {
     title: "Privacy note",

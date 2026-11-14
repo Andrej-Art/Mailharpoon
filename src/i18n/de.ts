@@ -227,6 +227,8 @@ export const de: Dict = {
     disclaimer: "Mailharpoon liefert eine Risikoeinschätzung und keine Garantie. Wenden Sie sich im Zweifel über einen Ihnen bekannten Kontaktweg an den Absender.",
     rights: "Open Source unter MIT-Lizenz",
     made: "Entwickelt von Andrej Artuschenko",
+    imprint: "Impressum",
+    privacy: "Datenschutz",
   },
   notice: {
     title: "Datenschutz-Hinweis",

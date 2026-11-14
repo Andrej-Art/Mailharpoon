@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { legalPagesLive } from "@/content/legal";
 import type { Dict, Locale } from "@/i18n";
 import { LangSwitch } from "./LangSwitch";
 import { Clock } from "./os/Clock";
@@ -155,6 +156,12 @@ export function SiteFooter({ t, locale }: { t: Dict; locale: Locale }) {
         </ul>
         <ul className="space-y-1.5 font-pixel text-[13px] text-muted">
           <li><a className="hover:text-harpoon" href={REPO} target="_blank" rel="noreferrer">GitHub ↗</a></li>
+          {legalPagesLive() && (
+            <>
+              <li><Link className="hover:text-harpoon" href={`/${locale}/impressum`}>{t.footer.imprint}</Link></li>
+              <li><Link className="hover:text-harpoon" href={`/${locale}/datenschutz`}>{t.footer.privacy}</Link></li>
+            </>
+          )}
           <li className="text-dim">{t.footer.rights}</li>
           <li className="text-dim">{t.footer.made}</li>
         </ul>
