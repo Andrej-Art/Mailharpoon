@@ -45,6 +45,7 @@ function navGroups(t: Dict, locale: Locale) {
   const pages: [string, string][] = [
     [`/${locale}/news`, t.nav.news],
     [`/${locale}/methodology`, t.nav.methodology],
+    [`/${locale}/kontakt`, t.nav.contact],
   ];
   return { home, pages };
 }
@@ -63,8 +64,8 @@ export function SiteNav({ t, locale, path = "" }: { t: Dict; locale: Locale; pat
             <Mark size={22} className="text-fg transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110" />
             <span className="brand-gradient text-[15px] font-semibold drop-shadow-[0_0_10px_rgb(255_46_151/0.35)]">Mailharpoon</span>
           </Link>
-          <span className="mx-1 hidden h-4 w-px bg-gradient-to-b from-harpoon to-violet lg:block" />
-          <div className="hidden items-center lg:flex">
+          <span className="mx-1 hidden h-4 w-px bg-gradient-to-b from-harpoon to-violet xl:block" />
+          <div className="hidden items-center xl:flex">
             {home.map(([href, label]) => (
               <Link key={href} href={href} className={item}>
                 {label}
@@ -87,8 +88,8 @@ export function SiteNav({ t, locale, path = "" }: { t: Dict; locale: Locale; pat
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-3 text-muted">
-          {/* Phones and tablets: the menu items collapse into a classic drop-down menu */}
-          <details className="group relative lg:hidden">
+          {/* Below desktop width the menu items collapse into a classic drop-down menu */}
+          <details className="group relative xl:hidden">
             <summary className="focus-ring cursor-pointer list-none border border-line-strong px-2 py-0.5 text-fg group-open:bg-harpoon group-open:text-void">
               {t.nav.menu}
             </summary>
@@ -158,7 +159,6 @@ export function SiteFooter({ t, locale }: { t: Dict; locale: Locale }) {
           <li><a className="hover:text-harpoon" href={REPO} target="_blank" rel="noreferrer">GitHub ↗</a></li>
           {legalPagesLive() && (
             <>
-              <li><Link className="hover:text-harpoon" href={`/${locale}/kontakt`}>{t.footer.contact}</Link></li>
               <li><Link className="hover:text-harpoon" href={`/${locale}/impressum`}>{t.footer.imprint}</Link></li>
               <li><Link className="hover:text-harpoon" href={`/${locale}/datenschutz`}>{t.footer.privacy}</Link></li>
             </>

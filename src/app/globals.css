@@ -174,7 +174,7 @@ body {
     outline-offset: 3px;
   }
   /* ---------- Header: neon links with a gradient underline that grows on hover ---------- */
-  .navlink { @apply relative px-2 py-1 transition-colors; }
+  .navlink { @apply relative px-2 py-1 whitespace-nowrap transition-colors; }
   .navlink::after {
     content: "";
     @apply absolute right-2 bottom-0 left-2 h-0.5 origin-left scale-x-0 transition-transform duration-300;
