@@ -362,8 +362,6 @@ export const en = {
     ai: "AI analysis",
     aiOff: "Not enabled on this deployment.",
     aiBrand: "The page likely imitates {brand}.",
-    screenshot: "Load screenshot safely",
-    screenshotNote: "The screenshot is rendered externally by microlink.io. The page is not opened in your browser.",
     screenshotOwn: "Captured in an isolated browser on our server. The page was not opened in your browser.",
     visualOfficial: "The page presents itself as {brand} and runs on an official domain.",
     visualMismatch: "The page presents itself as {brand} but runs on {domain}, which does not belong to {brand}.",

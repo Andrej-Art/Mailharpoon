@@ -77,7 +77,6 @@ const fmtDate = (iso: string | null | undefined) =>
 
 export function Report({ state, t, onReset }: { state: ScanState; t: Dict; onReset: () => void }) {
   const [copied, setCopied] = useState(false);
-  const [shot, setShot] = useState(false);
   const r = t.report;
 
   if (state.phase === "error") {
@@ -467,28 +466,11 @@ export function Report({ state, t, onReset }: { state: ScanState; t: Dict; onRes
             )}
           </Box>
 
-          {!isMsg && done && rendered?.screenshot ? (
+          {!isMsg && done && rendered?.screenshot && (
             <Box title="screenshot" icon={<Camera className="size-3.5" />}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={rendered.screenshot} alt="Screenshot" className="w-full border border-line" />
               <p className="mt-3 text-xs text-dim">{r.screenshotOwn}</p>
-            </Box>
-          ) : !isMsg && done && page?.fetched && (
-            <Box title="screenshot" icon={<Camera className="size-3.5" />}>
-              {shot ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={`https://api.microlink.io/?url=${encodeURIComponent(page.finalUrl)}&screenshot=true&meta=false&embed=screenshot.url`}
-                  alt="Screenshot"
-                  className="w-full border border-line"
-                  loading="lazy"
-                />
-              ) : (
-                <button className="btn w-full" onClick={() => setShot(true)}>
-                  <Camera className="size-4" /> {r.screenshot}
-                </button>
-              )}
-              <p className="mt-3 text-xs text-dim">{r.screenshotNote}</p>
             </Box>
           )}
         </div>

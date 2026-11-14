@@ -4,17 +4,17 @@
 
 /** Operator details. Fill in before publishing; the pages refuse to build with placeholders left. */
 export const OPERATOR = {
-  name: "‹Vorname Nachname›",
-  street: "‹Straße Hausnummer›",
-  city: "‹PLZ Ort›",
+  name: "Andrej Artuschenko",
+  street: "Erich-Kästner-Straße 110",
+  city: "63329 Egelsbach",
   country: "Deutschland",
-  email: "‹kontakt@example.de›",
+  email: "mailharpoon@gmail.com",
   /** A second fast way to reach the operator besides e-mail (phone number), or empty when e-mail only. */
   phone: "",
   /** Data protection authority of the operator's federal state. */
   authority: {
-    name: "‹Landesbeauftragte/r für Datenschutz›",
-    url: "‹https://…›",
+    name: "Der Hessische Beauftragte für Datenschutz und Informationsfreiheit, Gustav-Stresemann-Ring 1, 65189 Wiesbaden",
+    url: "https://datenschutz.hessen.de",
   },
   updated: "2026-11-14",
 };
@@ -136,24 +136,18 @@ export function privacyPolicy(locale: "de" | "en"): { title: string; lead: strin
           ],
         },
         {
-          h: "6. Vorschaubild der Zielseite",
-          p: [
-            "Im Prüfbericht kann ein Vorschaubild der Zielseite erscheinen. Es wird vom Dienst Microlink (microlink.io) erzeugt und direkt von Ihrem Browser geladen. Dabei erhält Microlink Ihre IP-Adresse und den geprüften Link. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse daran, Ihnen zu zeigen, wie die Seite aussieht, ohne dass Sie sie öffnen müssen).",
-          ],
-        },
-        {
-          h: "7. Liste gefährlicher Domains",
+          h: "6. Liste gefährlicher Domains",
           p: [
             "Stuft Mailharpoon einen Link als gefährlich ein, zählen wir nur seine Domain und die nachgeahmte Marke, um vor Seiten zu warnen, die gerade im Umlauf sind. Wie viele verschiedene Personen eine Domain geprüft haben, schätzen wir über einen täglich wechselnden, mit einem Geheimwert gebildeten Hashwert. Ihre IP-Adresse, der vollständige Link und Nachrichten werden dabei nicht gespeichert, und der Hashwert lässt sich nicht auf Ihre IP-Adresse zurückführen. Die Daten liegen bei Upstash Inc. und werden nach 9 Tagen automatisch gelöscht.",
             "Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse, andere vor aktuellen Betrugsseiten zu warnen).",
           ],
         },
         {
-          h: "8. Schutz vor Missbrauch",
+          h: "7. Schutz vor Missbrauch",
           p: ["Damit der Dienst nicht automatisiert überlastet wird, begrenzen wir die Zahl der Prüfungen pro IP-Adresse. Dafür wird Ihre IP-Adresse höchstens 10 Minuten im Arbeitsspeicher des Servers gehalten und nicht dauerhaft gespeichert. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO."],
         },
         {
-          h: "9. Cookies und lokaler Speicher",
+          h: "8. Cookies und lokaler Speicher",
           p: ["Mailharpoon setzt kein Tracking ein. Gespeichert wird nur, was Sie selbst einstellen:"],
           list: [
             "Cookie „mh-lang“: die Sprache, die Sie über den Sprachknopf gewählt haben. Es wird erst beim Umschalten gesetzt und ist ein Jahr gültig.",
@@ -163,18 +157,18 @@ export function privacyPolicy(locale: "de" | "en"): { title: string; lead: strin
           after: ["Diese Einträge sind für die von Ihnen gewünschte Funktion unbedingt erforderlich und brauchen deshalb keine Einwilligung (§ 25 Abs. 2 Nr. 2 TDDDG). Sie verlassen Ihr Gerät nicht, nur das Sprach-Cookie wird beim Seitenaufruf mitgesendet, damit die Seite in Ihrer Sprache öffnet. Sie können alle Einträge jederzeit in Ihrem Browser löschen."],
         },
         {
-          h: "10. Aktuelles und externe Links",
+          h: "9. Aktuelles und externe Links",
           p: [
             "Die Meldungen unter „Aktuelles“ lädt unser Server aus den öffentlichen Feeds der genannten Quellen und lässt sie von Claude zusammenfassen. Daten von Besuchern sind daran nicht beteiligt.",
             "Links zu anderen Websites, zu GitHub oder zu Feed-Readern wie Feedly und Inoreader werden erst aufgerufen, wenn Sie sie anklicken. Dann gilt die Datenschutzerklärung des jeweiligen Anbieters.",
           ],
         },
         {
-          h: "11. Kontakt per E-Mail",
+          h: "10. Kontakt per E-Mail",
           p: ["Wenn Sie uns schreiben, verwenden wir Ihre Angaben nur, um Ihre Anfrage zu beantworten, und löschen sie, wenn sie erledigt ist. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO."],
         },
         {
-          h: "12. Ihre Rechte",
+          h: "11. Ihre Rechte",
           p: [
             "Sie haben das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18) und Datenübertragbarkeit (Art. 20). Da wir geprüfte Inhalte nicht speichern und keine Konten führen, liegen zu Ihrer Person bei uns in der Regel keine Daten vor.",
             "Widerspruchsrecht: Soweit wir Daten auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO verarbeiten, können Sie aus Gründen, die sich aus Ihrer besonderen Situation ergeben, jederzeit widersprechen (Art. 21 DSGVO).",
@@ -182,7 +176,7 @@ export function privacyPolicy(locale: "de" | "en"): { title: string; lead: strin
           ],
         },
         {
-          h: "13. Automatisierte Bewertungen",
+          h: "12. Automatisierte Bewertungen",
           p: ["Mailharpoon bewertet Links und Nachrichten automatisch. Diese Bewertung betrifft den geprüften Inhalt, nicht Sie als Person, und hat für Sie keine rechtliche Wirkung. Eine automatisierte Entscheidung im Sinne von Art. 22 DSGVO findet nicht statt."],
         },
       ],
@@ -228,19 +222,15 @@ export function privacyPolicy(locale: "de" | "en"): { title: string; lead: strin
         ],
       },
       {
-        h: "6. Preview image of the destination",
-        p: ["The report may show a preview image of the destination. It is generated by the Microlink service (microlink.io) and loaded directly by your browser, so Microlink receives your IP address and the checked link. The legal basis is Art. 6(1)(f) GDPR (legitimate interest in showing you what the page looks like without you having to open it)."],
-      },
-      {
-        h: "7. List of dangerous domains",
+        h: "6. List of dangerous domains",
         p: [
           "When Mailharpoon rates a link as dangerous, we count only its domain and the imitated brand, to warn about sites currently in circulation. How many different people checked a domain is estimated from a hash that changes daily and is formed with a secret value. Your IP address, the full link and messages are not stored, and the hash cannot be traced back to your IP address. The data is held by Upstash Inc. and deleted automatically after 9 days.",
           "The legal basis is Art. 6(1)(f) GDPR (legitimate interest in warning others about current scam sites).",
         ],
       },
-      { h: "8. Abuse protection", p: ["To keep the service from being overloaded automatically, we limit the number of checks per IP address. For this, your IP address is kept in the server's memory for at most 10 minutes and never stored permanently. The legal basis is Art. 6(1)(f) GDPR."] },
+      { h: "7. Abuse protection", p: ["To keep the service from being overloaded automatically, we limit the number of checks per IP address. For this, your IP address is kept in the server's memory for at most 10 minutes and never stored permanently. The legal basis is Art. 6(1)(f) GDPR."] },
       {
-        h: "9. Cookies and local storage",
+        h: "8. Cookies and local storage",
         p: ["Mailharpoon uses no tracking. Only what you set yourself is stored:"],
         list: [
           "Cookie “mh-lang”: the language you picked with the language switch. It is only set when you switch and is valid for one year.",
@@ -250,22 +240,22 @@ export function privacyPolicy(locale: "de" | "en"): { title: string; lead: strin
         after: ["These entries are strictly necessary for the function you asked for and therefore need no consent (§ 25(2) no. 2 TDDDG). They stay on your device; only the language cookie is sent with page requests so the site opens in your language. You can delete all of them in your browser at any time."],
       },
       {
-        h: "10. News and external links",
+        h: "9. News and external links",
         p: [
           "Our server loads the items under “News” from the public feeds of the named sources and has Claude summarise them. No visitor data is involved.",
           "Links to other websites, to GitHub or to feed readers such as Feedly and Inoreader are only opened when you click them. The privacy policy of that provider then applies.",
         ],
       },
-      { h: "11. Contact by e-mail", p: ["If you write to us, we use your details only to answer your request and delete them once it is settled. The legal basis is Art. 6(1)(f) GDPR."] },
+      { h: "10. Contact by e-mail", p: ["If you write to us, we use your details only to answer your request and delete them once it is settled. The legal basis is Art. 6(1)(f) GDPR."] },
       {
-        h: "12. Your rights",
+        h: "11. Your rights",
         p: [
           "You have the right of access (Art. 15 GDPR), rectification (Art. 16), erasure (Art. 17), restriction of processing (Art. 18) and data portability (Art. 20). As we do not store checked content and keep no accounts, we usually hold no data about you.",
           "Right to object: where we process data on the basis of Art. 6(1)(f) GDPR, you may object at any time on grounds relating to your particular situation (Art. 21 GDPR).",
           `You can also lodge a complaint with a data protection authority, for example the one responsible for us: ${a.name}, ${a.url}`,
         ],
       },
-      { h: "13. Automated ratings", p: ["Mailharpoon rates links and messages automatically. The rating concerns the checked content, not you as a person, and has no legal effect on you. No automated decision within the meaning of Art. 22 GDPR takes place."] },
+      { h: "12. Automated ratings", p: ["Mailharpoon rates links and messages automatically. The rating concerns the checked content, not you as a person, and has no legal effect on you. No automated decision within the meaning of Art. 22 GDPR takes place."] },
     ],
   };
 }

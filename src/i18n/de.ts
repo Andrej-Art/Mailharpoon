@@ -363,8 +363,6 @@ export const de: Dict = {
     ai: "KI-Analyse",
     aiOff: "Auf dieser Instanz nicht aktiviert.",
     aiBrand: "Vermutlich wird {brand} nachgeahmt.",
-    screenshot: "Screenshot sicher laden",
-    screenshotNote: "Der Screenshot wird extern von microlink.io erstellt. Die Seite wird dabei nicht in Ihrem Browser geöffnet.",
     screenshotOwn: "Aufgenommen in einem abgeschotteten Browser auf unserem Server. Die Seite wurde nicht in Ihrem Browser geöffnet.",
     visualOfficial: "Die Seite tritt als {brand} auf und läuft auf einer offiziellen Domain.",
     visualMismatch: "Die Seite tritt als {brand} auf, läuft aber auf {domain}. Diese Domain gehört nicht zu {brand}.",

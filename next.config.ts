@@ -4,7 +4,7 @@ const csp = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline'" + (process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""),
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: https://api.microlink.io https://*.microlink.io https://iad.microlink.io",
+  "img-src 'self' data:",
   "font-src 'self'",
   "connect-src 'self'",
   "frame-ancestors 'none'",
