@@ -82,9 +82,6 @@ export function SiteNav({ t, locale, path = "" }: { t: Dict; locale: Locale; pat
                 {label}
               </Link>
             ))}
-            <a href={REPO} target="_blank" rel="noreferrer" className={`${item} text-muted`}>
-              {t.nav.github} ↗
-            </a>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-3 text-muted">
@@ -111,9 +108,6 @@ export function SiteNav({ t, locale, path = "" }: { t: Dict; locale: Locale; pat
                   {label}
                 </Link>
               ))}
-              <a href={REPO} target="_blank" rel="noreferrer" className="block px-4 py-2.5 text-muted hover:bg-harpoon hover:text-void">
-                {t.nav.github} ↗
-              </a>
             </div>
           </details>
           <span className="hidden items-center gap-1.5 xl:flex">
