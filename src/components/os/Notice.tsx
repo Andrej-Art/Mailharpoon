@@ -6,7 +6,7 @@ import type { Dict, Locale } from "@/i18n";
 
 const KEY = "mh-notice";
 
-/** One-time privacy note in the style of a text-mode dialog. Nothing to consent to: the site sets no cookies. */
+/** One-time privacy note in the style of a text-mode dialog. Nothing to consent to: the only cookie is the language picked with the switch. */
 export function Notice({ n, locale }: { n: Dict["notice"]; locale: Locale }) {
   const [open, setOpen] = useState(false);
   useEffect(() => {

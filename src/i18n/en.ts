@@ -229,7 +229,7 @@ export const en = {
   },
   notice: {
     title: "Privacy note",
-    body: "Mailharpoon uses no cookies and no tracking. Checked links and messages are not stored. If a link is dangerous, we count only its domain, anonymously, for the list of current warnings.",
+    body: "Mailharpoon uses no tracking. The only cookie stores your language if you switch it. Checked links and messages are not stored. If a link is dangerous, we count only its domain, anonymously, for the list of current warnings.",
     ok: "Got it",
     more: "Learn more",
   },

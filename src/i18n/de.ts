@@ -230,7 +230,7 @@ export const de: Dict = {
   },
   notice: {
     title: "Datenschutz-Hinweis",
-    body: "Mailharpoon setzt keine Cookies und kein Tracking ein. Geprüfte Links und Nachrichten werden nicht gespeichert. Ist ein Link gefährlich, zählen wir anonym nur seine Domain für die Liste aktueller Warnungen.",
+    body: "Mailharpoon setzt kein Tracking ein. Das einzige Cookie speichert die Sprache, wenn Sie sie umstellen. Geprüfte Links und Nachrichten werden nicht gespeichert. Ist ein Link gefährlich, zählen wir anonym nur seine Domain für die Liste aktueller Warnungen.",
     ok: "Verstanden",
     more: "Mehr erfahren",
   },

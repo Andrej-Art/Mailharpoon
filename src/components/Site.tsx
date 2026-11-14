@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Dict, Locale } from "@/i18n";
+import { LangSwitch } from "./LangSwitch";
 import { Clock } from "./os/Clock";
 import { ThemeToggle } from "./os/ThemeToggle";
 
@@ -121,14 +122,7 @@ export function SiteNav({ t, locale, path = "" }: { t: Dict; locale: Locale; pat
             {t.nav.scan}
           </Link>
           <ThemeToggle labels={{ light: t.nav.lightMode, dark: t.nav.darkMode }} />
-          <Link
-            href={`/${other}${path}`}
-            hrefLang={other}
-            className="focus-ring border border-line-strong px-1.5 uppercase hover:border-harpoon hover:text-fg"
-            aria-label={other === "de" ? "Deutsch" : "English"}
-          >
-            {other}
-          </Link>
+          <LangSwitch to={other} href={`/${other}${path}`} />
         </div>
       </nav>
       {/* The logo's stripe colours as a slowly moving neon line under the bar */}
