@@ -32,10 +32,16 @@ export interface LegalSection {
   after?: string[];
 }
 
+const SITE = "https://mailharpoon.vercel.app";
+
 const address = () => [OPERATOR.name, OPERATOR.street, OPERATOR.city].join("\n");
 
 export function legalNotice(locale: "de" | "en"): { title: string; lead: string; sections: LegalSection[] } {
-  const contact = [`E-Mail: ${OPERATOR.email}`, ...(OPERATOR.phone ? [`${locale === "de" ? "Telefon" : "Phone"}: ${OPERATOR.phone}`] : [])];
+  const contact = [
+    `E-Mail: ${OPERATOR.email}`,
+    `${locale === "de" ? "Kontaktformular" : "Contact form"}: ${SITE}/${locale}/kontakt`,
+    ...(OPERATOR.phone ? [`${locale === "de" ? "Telefon" : "Phone"}: ${OPERATOR.phone}`] : []),
+  ];
   if (locale === "de")
     return {
       title: "Impressum",
@@ -164,8 +170,11 @@ export function privacyPolicy(locale: "de" | "en"): { title: string; lead: strin
           ],
         },
         {
-          h: "10. Kontakt per E-Mail",
-          p: ["Wenn Sie uns schreiben, verwenden wir Ihre Angaben nur, um Ihre Anfrage zu beantworten, und löschen sie, wenn sie erledigt ist. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO."],
+          h: "10. Kontaktformular und E-Mail",
+          p: [
+            "Wenn Sie uns schreiben, verwenden wir Ihre Angaben nur, um Ihre Anfrage zu beantworten, und löschen sie, wenn sie erledigt ist. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO.",
+            "Nachrichten aus dem Kontaktformular (Thema, E-Mail-Adresse, Nachricht und freiwillig Name und betroffener Link) speichert Mailharpoon nicht. Sie werden über den Versanddienst Resend (Resend, Inc., USA) als E-Mail an uns weitergeleitet. Die Übermittlung in die USA erfolgt auf Grundlage der EU-Standardvertragsklauseln. Zum Schutz vor Spam wird Ihre IP-Adresse höchstens eine Stunde im Arbeitsspeicher des Servers gehalten.",
+          ],
         },
         {
           h: "11. Ihre Rechte",
@@ -246,7 +255,13 @@ export function privacyPolicy(locale: "de" | "en"): { title: string; lead: strin
           "Links to other websites, to GitHub or to feed readers such as Feedly and Inoreader are only opened when you click them. The privacy policy of that provider then applies.",
         ],
       },
-      { h: "10. Contact by e-mail", p: ["If you write to us, we use your details only to answer your request and delete them once it is settled. The legal basis is Art. 6(1)(f) GDPR."] },
+      {
+        h: "10. Contact form and e-mail",
+        p: [
+          "If you write to us, we use your details only to answer your request and delete them once it is settled. The legal basis is Art. 6(1)(f) GDPR.",
+          "Mailharpoon does not store messages from the contact form (topic, e-mail address, message and, optionally, name and the link concerned). They are forwarded to us as an e-mail through the delivery service Resend (Resend, Inc., USA). The transfer to the USA is based on the EU standard contractual clauses. To prevent spam, your IP address is kept in the server's memory for at most one hour.",
+        ],
+      },
       {
         h: "11. Your rights",
         p: [

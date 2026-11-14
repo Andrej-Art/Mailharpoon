@@ -158,6 +158,7 @@ export function SiteFooter({ t, locale }: { t: Dict; locale: Locale }) {
           <li><a className="hover:text-harpoon" href={REPO} target="_blank" rel="noreferrer">GitHub ↗</a></li>
           {legalPagesLive() && (
             <>
+              <li><Link className="hover:text-harpoon" href={`/${locale}/kontakt`}>{t.footer.contact}</Link></li>
               <li><Link className="hover:text-harpoon" href={`/${locale}/impressum`}>{t.footer.imprint}</Link></li>
               <li><Link className="hover:text-harpoon" href={`/${locale}/datenschutz`}>{t.footer.privacy}</Link></li>
             </>
