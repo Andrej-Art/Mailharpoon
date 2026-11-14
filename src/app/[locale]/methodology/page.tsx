@@ -521,7 +521,7 @@ verdict = dangerous  if p ≥ .70
             </div>
             <ul className="grid gap-px border border-line bg-line sm:grid-cols-2">
               {m.limits.map(([title, text]) => (
-                <li key={title} className="bg-panel p-5">
+                <li key={title} className="bg-panel p-5 sm:odd:last:col-span-2">
                   <h3 className="font-semibold">{title}</h3>
                   <p className="mt-2 text-[15px] leading-relaxed text-muted">{fill(text, { kb: kbCount })}</p>
                 </li>

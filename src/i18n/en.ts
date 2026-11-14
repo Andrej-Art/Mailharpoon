@@ -453,9 +453,9 @@ export const en = {
   },
   methodology: {
     title: "How Mailharpoon decides",
-    description: "Eight layers of checks, an in-house domain model and a weekly test against brand-new phishing: this is how the Mailharpoon link checker rates a link.",
+    description: "Eight layers of checks, in-house models for web addresses and a weekly test against brand-new phishing: this is how the Mailharpoon link checker rates a link.",
     label: "METHODOLOGY",
-    lead: "Mailharpoon never relies on a single signal. Eight independent layers of checks and our own model, trained on more than 300,000 domains, assess every link. Here we show how it works and how well it works.",
+    lead: "Mailharpoon never relies on a single signal. Eight independent layers of checks and two in-house models for web addresses assess every link. Here we show how it works and how well it works.",
     log: {
       caught: "{pct} of new phishing links caught",
       falseAlarms: "{pct} of real websites without a red warning",
@@ -494,7 +494,7 @@ export const en = {
       },
       lexical: {
         name: "Address structure",
-        text: "This is where our own model works. It reads a domain name the way an experienced analyst would: does it look randomly assembled, does it contain typical bait words, how risky is its ending? Additional rules catch tricks in the rest of the link.",
+        text: "This is where our own model works. It reads a domain name the way an experienced analyst would: does it look randomly assembled, does it contain typical bait words, how risky is its ending? On hosting platforms such as github.io, a second model rates the name the page owner chose. Additional rules catch tricks in the rest of the link.",
         tech: ["Gradient boosting", "19 features", "URL rules"],
         readout: [["domain", "secure-login-4821.top"], ["pattern", "random, bait word"], ["model", "phishing"]],
       },
@@ -586,10 +586,10 @@ export const en = {
     loopTitle: "How we improve detection",
     loopLead: "Phishing changes constantly. That is why our work does not end with training but starts over every week.",
     loop: [
-      ["Measure", "Every Monday, an automated test draws {phishing} fresh phishing links and {legitimate} random, little-known real websites. Blocklists and AI are off, so only our own analysis is measured."],
+      ["Measure", "Every Monday, an automated test draws {phishing} fresh phishing links and {legitimate} random, little-known real websites, plus 21 real pages on hosting platforms. Blocklists and AI are off, so only our own analysis is measured."],
       ["Review", "Every missed link and every false alarm is examined individually: which signal was missing, which one overreacted? The aggregate results of every week are public. The individual links stay in a private archive for privacy reasons."],
       ["Refine", "This produces new training data, new brands for the knowledge base and fine-tuned weights. The test links themselves never go into training, so the next test stays meaningful."],
-      ["Safeguard", "Every change passes more than 340 automated tests. One of them makes sure the model computes exactly the same inside Mailharpoon as it did in training."],
+      ["Safeguard", "Every change passes more than 400 automated tests. Some of them make sure both models compute exactly the same inside Mailharpoon as they did in training."],
     ],
     historyTitle: "Weekly test history",
     historyLead: "Share of new phishing links rated “Dangerous” and share of real websites with a false alarm. Each test covers {phishing} plus {legitimate} links, so individual weeks vary by a few percentage points. We show every test, not just the best ones.",
@@ -623,6 +623,7 @@ export const en = {
     limits: [
       ["Cloaked pages", "Some scam pages show scanners a harmless facade. We counter this by opening pages in a real browser, and the warning lists often record such pages within a few hours."],
       ["Hacked, well-known websites", "When phishing sits on a website that has been around for years, its age and reputation speak in its favour. Page analysis and the brand check then carry the rating."],
+      ["Brand names on hosting platforms", "Anyone can set up a page on platforms such as github.io. If a page demonstrably belongs to the brand, like microsoft.github.io, it counts as official. If the owner cannot be confirmed, the verdict is “Suspicious” at most, as long as the page asks for no data."],
       ["Unknown brands", "The brand check knows {kb} organisations. For a brand it does not know, this signal stays neutral instead of guessing."],
       ["An assessment, not a guarantee", "Even “Safe” is no substitute for healthy doubt. Whenever a page asks for a password, PIN or code, a second look is always worth it."],
     ],

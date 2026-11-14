@@ -454,9 +454,9 @@ export const de: Dict = {
   },
   methodology: {
     title: "Wie Mailharpoon entscheidet",
-    description: "Acht Prüfschichten, ein eigenes Domain-Modell und eine wöchentliche Messung an brandneuem Phishing: So bewertet der Mailharpoon Link-Checker einen Link.",
+    description: "Acht Prüfschichten, eigene Modelle für Webadressen und eine wöchentliche Messung an brandneuem Phishing: So bewertet der Mailharpoon Link-Checker einen Link.",
     label: "METHODIK",
-    lead: "Mailharpoon verlässt sich nie auf ein einzelnes Signal. Acht unabhängige Prüfschichten und ein eigenes, auf über 300.000 Domains trainiertes Modell bewerten jeden Link. Wie das funktioniert und wie gut es funktioniert, legen wir hier offen.",
+    lead: "Mailharpoon verlässt sich nie auf ein einzelnes Signal. Acht unabhängige Prüfschichten und zwei eigene Modelle für Webadressen bewerten jeden Link. Wie das funktioniert und wie gut es funktioniert, legen wir hier offen.",
     log: {
       caught: "{pct} der neuen Phishing-Links erkannt",
       falseAlarms: "{pct} der echten Websites ohne rote Warnung",
@@ -495,7 +495,7 @@ export const de: Dict = {
       },
       lexical: {
         name: "Aufbau der Adresse",
-        text: "Hier arbeitet unser eigenes Modell. Es liest einen Domainnamen so, wie es ein erfahrener Analyst tun würde: Wirkt er zufällig zusammengesetzt, enthält er typische Lockwörter, wie riskant ist seine Endung? Ergänzende Regeln erkennen Tricks im restlichen Link.",
+        text: "Hier arbeitet unser eigenes Modell. Es liest einen Domainnamen so, wie es ein erfahrener Analyst tun würde: Wirkt er zufällig zusammengesetzt, enthält er typische Lockwörter, wie riskant ist seine Endung? Auf Hosting-Plattformen wie github.io bewertet ein zweites Modell den Namen, den der Seitenbetreiber gewählt hat. Ergänzende Regeln erkennen Tricks im restlichen Link.",
         tech: ["Gradient Boosting", "19 Merkmale", "URL-Regeln"],
         readout: [["domain", "sicher-login-4821.top"], ["muster", "zufällig, Lockwort"], ["modell", "phishing"]],
       },
@@ -587,10 +587,10 @@ export const de: Dict = {
     loopTitle: "So verbessern wir die Erkennung",
     loopLead: "Phishing verändert sich ständig. Darum endet unsere Arbeit nicht mit dem Training, sondern beginnt jede Woche von vorn.",
     loop: [
-      ["Messen", "Jeden Montag zieht ein automatischer Test {phishing} frische Phishing-Links und {legitimate} zufällige, wenig bekannte echte Websites. Sperrlisten und KI sind dabei aus, gemessen wird nur die eigene Analyse."],
+      ["Messen", "Jeden Montag zieht ein automatischer Test {phishing} frische Phishing-Links und {legitimate} zufällige, wenig bekannte echte Websites, dazu 21 echte Seiten auf Hosting-Plattformen. Sperrlisten und KI sind dabei aus, gemessen wird nur die eigene Analyse."],
       ["Auswerten", "Jeder übersehene Link und jeder Fehlalarm wird einzeln untersucht: Welches Signal fehlte, welches hat überreagiert? Die zusammengefassten Ergebnisse jeder Woche sind öffentlich einsehbar. Die einzelnen Links bleiben aus Datenschutzgründen in einem privaten Archiv."],
       ["Nachschärfen", "Daraus entstehen neue Trainingsdaten, neue Marken für die Wissensbasis und fein justierte Gewichte. Die Testlinks selbst fließen nie ins Training ein, damit die nächste Messung aussagekräftig bleibt."],
-      ["Absichern", "Jede Änderung durchläuft über 340 automatische Tests. Einer davon stellt sicher, dass das Modell in Mailharpoon genau so rechnet wie im Training."],
+      ["Absichern", "Jede Änderung durchläuft über 400 automatische Tests. Einige davon stellen sicher, dass beide Modelle in Mailharpoon genau so rechnen wie im Training."],
     ],
     historyTitle: "Verlauf der Wochenmessung",
     historyLead: "Anteil der neuen Phishing-Links, die als „Gefährlich“ erkannt wurden, und Anteil der echten Websites mit Fehlalarm. Jede Messung umfasst {phishing} plus {legitimate} Links, daher schwanken einzelne Wochen um einige Prozentpunkte. Wir zeigen jede Messung, nicht nur die besten.",
@@ -624,6 +624,7 @@ export const de: Dict = {
     limits: [
       ["Getarnte Seiten", "Manche Betrugsseiten zeigen Scannern eine harmlose Fassade. Dagegen öffnen wir Seiten in einem echten Browser, und die Warnlisten erfassen solche Seiten oft innerhalb weniger Stunden."],
       ["Gehackte, bekannte Websites", "Liegt Phishing auf einer seit Jahren bekannten Website, sprechen Alter und Ruf für sie. Dann tragen Seitenanalyse und Markenabgleich die Bewertung."],
+      ["Markennamen auf Hosting-Plattformen", "Auf Plattformen wie github.io kann jeder eine Seite anlegen. Gehört eine Seite nachweislich der Marke, wie microsoft.github.io, gilt sie als offiziell. Lässt sich der Besitzer nicht bestätigen, lautet das Urteil höchstens „Verdächtig“, solange die Seite keine Daten abfragt."],
       ["Unbekannte Marken", "Der Markenabgleich kennt {kb} Organisationen. Bei einer Marke, die er nicht kennt, bleibt dieses Signal neutral, statt zu raten."],
       ["Eine Einschätzung, keine Garantie", "Auch „Unbedenklich“ ersetzt nicht den gesunden Zweifel. Wenn eine Seite nach Passwort, PIN oder TAN fragt, lohnt sich immer ein zweiter Blick."],
     ],
