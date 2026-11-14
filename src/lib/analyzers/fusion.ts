@@ -59,6 +59,12 @@ function softenOldBodyBrand(signals: Signal[]): Signal[] {
   return signals.map((s) => (s.id === "brand_login_mismatch" && s.weight === 1.4 ? { ...s, weight: 0.5 } : s));
 }
 
+function unconfirmedBrandPage(signals: Signal[]): boolean {
+  const has = (set: Set<string>) => signals.some((s) => set.has(s.id) && s.weight > 0);
+  if (!signals.some((s) => s.id === "brand_platform_unverified")) return false;
+  return !signals.some((s) => s.override === "malicious") && !has(DAMNING) && !has(ASKS) && !signals.some((s) => s.id === "visual_brand_mismatch" || s.id === "brand_login_mismatch");
+}
+
 export interface FuseOptions {
   /** The rule currently tested alongside the live one in the weekly evaluation. */
   candidate?: boolean;
@@ -79,6 +85,9 @@ export function fuse(layers: LayerResult[], opts: FuseOptions = {}): Fused {
   let probability = sigmoid(logit);
   if (malicious) probability = Math.max(probability, 0.98);
   if (opts.requireConfirmation && probability >= 0.7 && !confirmed(signals)) probability = CAPPED;
+  // A platform page named exactly after a brand whose owner could not be confirmed
+  // (facebook.github.io) stays "suspicious" unless the page asks for data or hard evidence exists.
+  if (probability >= 0.7 && unconfirmedBrandPage(signals)) probability = CAPPED;
 
   const verdict: Verdict = probability >= 0.7 ? "dangerous" : probability >= 0.35 ? "suspicious" : "safe";
   const ok = layers.filter((l) => l.status === "ok").map((l) => l.layer);

@@ -16,6 +16,8 @@ export const signalsEN: Record<string, string> = {
   long_url: "The address is unusually long ({length} characters).",
   executable_download: "The link immediately downloads a program or archive.",
   ml_domain: "Our model rates the domain name as {p}% typical of phishing.",
+  brand_platform_unverified: "The page is named like {brand} but sits on a hosting platform ({domain}). Whether it really belongs to {brand} could not be confirmed.",
+  ml_platform_label: "Our model for hosting platforms rates the page name \"{label}\" as {p}% typical of phishing.",
   brand_in_host: "The address uses the name \"{brand}\" but does not belong to {brand}. The actual domain is {domain}.",
   brand_in_path: "\"{brand}\" appears in the link, but the page is located on {domain}.",
   homoglyph: "The address resembles \"{brand}\" but uses swapped or similar-looking characters ({host}).",

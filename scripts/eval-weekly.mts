@@ -43,8 +43,11 @@ const phish = shuffle(feed.split("\n").map((l) => l.trim()).filter(Boolean), see
 const tranco = readFileSync(trancoFile, "utf8").split("\n").slice(300_000).map((l) => l.split(",")[1]?.trim()).filter(Boolean) as string[];
 const legit = shuffle(tranco, seed + 1).slice(0, SIZE).map((d) => `https://${d}`);
 
+// Legitimate pages on hosting platforms, a set the Tranco sample cannot contain (see the file header).
+const platform = readFileSync("scripts/data/legit-platform-pages.txt", "utf8").split("\n").map((l) => l.trim()).filter((l) => l && !l.startsWith("#"));
+
 const rows: EvalRow[] = [];
-for (const [set, urls] of [["phish", phish], ["legit", legit]] as const) {
+for (const [set, urls] of [["phish", phish], ["legit", legit], ["platform", platform]] as const) {
   for (let i = 0; i < urls.length; i += 6) {
     await Promise.all(urls.slice(i, i + 6).map(async (url) => {
       try {
@@ -63,7 +66,14 @@ const metrics = metricsOf(p.map((r) => r.score), n.map((r) => r.score));
 const candidate = metricsOf(p.map((r) => r.candidate), n.map((r) => r.candidate));
 
 const date = new Date().toISOString().slice(0, 10);
-const result = { date, sample: { phishing: p.length, legitimate: n.length }, metrics, candidate };
+const pf = rows.filter((r) => r.set === "platform");
+// Share of the platform pages rated suspicious (35+) or dangerous (70+); both should stay near zero.
+const platformResult = {
+  n: pf.length,
+  suspicious: Number((pf.filter((r) => r.score >= 35).length / Math.max(pf.length, 1)).toFixed(3)),
+  dangerous: Number((pf.filter((r) => r.score >= 70).length / Math.max(pf.length, 1)).toFixed(3)),
+};
+const result = { date, sample: { phishing: p.length, legitimate: n.length }, metrics, candidate, platform: platformResult };
 mkdirSync("ml/eval-history", { recursive: true });
 mkdirSync("data/eval-rows", { recursive: true });
 writeFileSync(`ml/eval-history/${date}.json`, JSON.stringify(result, null, 2) + "\n");
@@ -82,6 +92,8 @@ const table = [
   "| Threshold | Phishing detected | False alarms | Candidate: detected | Candidate: false alarms |",
   "|---|---|---|---|---|",
   ...metrics.map((m, i) => `| ${m.threshold} | ${ci(m.recall, p.length)} | ${ci(m.fpr, n.length)} | ${ci(candidate[i].recall, p.length)} | ${ci(candidate[i].fpr, n.length)} |`),
+  "",
+  `Legitimate pages on hosting platforms (${pf.length}): ${Math.round(platformResult.suspicious * 100)}% at least suspicious, ${Math.round(platformResult.dangerous * 100)}% dangerous.`,
 ].join("\n");
 console.log(table);
 if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, table + "\n");

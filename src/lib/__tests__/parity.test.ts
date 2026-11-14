@@ -18,3 +18,15 @@ describe("python/typescript parity", () => {
     expect(sigmoid(rawScore(x))).toBeCloseTo(s.p, 5);
   });
 });
+
+import platformParity from "@/lib/model/platform-parity.json";
+import { predictPlatformLabel } from "@/lib/analyzers/platform";
+
+describe("python/typescript parity, platform-label model", () => {
+  const rows = platformParity as { host: string; features: number[]; p: number }[];
+  it.each(rows.map((r) => [r.host, r] as const))("%s", (_host, r) => {
+    const pred = predictPlatformLabel(r.host);
+    Object.values(pred.features).forEach((v, i) => expect(v).toBeCloseTo(r.features[i], 5));
+    expect(pred.probability).toBeCloseTo(r.p, 5);
+  });
+});

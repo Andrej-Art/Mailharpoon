@@ -4,6 +4,7 @@
 import lexicon from "@/lib/data/lexicon.json";
 import { kbBrandAt } from "./brand-kb";
 import { BRANDS } from "./lexical-features";
+import { PLATFORM_OWNERS, platformOwner } from "./platform";
 import { isUserContentHost } from "./reputation";
 import { signal, type LayerResult, type Signal } from "./types";
 import type { ParsedTarget } from "./url";
@@ -53,17 +54,26 @@ function scripts(s: string): Set<string> {
 
 const OFFICIAL = new Map<string, string>(); // registrable -> brand
 for (const [brand, domains] of Object.entries(BRANDS)) for (const d of domains) OFFICIAL.set(d, brand);
+// Brand-owned pages on hosting platforms (microsoft.github.io), kept out of officialSlds below so
+// that "github" does not become a typosquatting target through every org page.
+const PLATFORM = new Map(Object.entries(PLATFORM_OWNERS));
+
+// "ebay" -> "ebay": the brand behind the name part of each official domain.
+const OFFICIAL_BY_SLD = new Map([...OFFICIAL].map(([d, b]) => [d.split(".")[0], b] as const).reverse());
 
 const officialSlds = [...new Set([...OFFICIAL.keys()].map((d) => d.split(".")[0]))].filter((s) => s.length >= 4);
 
-export const isOfficialDomain = (registrable: string) => OFFICIAL.has(registrable);
+/** Is the label exactly a brand name or the name part of an official domain ("paypal", "ebay")? */
+export const isBrandName = (label: string) => Boolean(BRANDS[label]) || OFFICIAL_BY_SLD.has(label);
+
+export const isOfficialDomain = (registrable: string) => OFFICIAL.has(registrable) || PLATFORM.has(registrable);
 
 /**
  * Is the domain an official site of the brand? Besides the curated list this asks the
  * Wikidata knowledge base, which knows group members such as the individual Sparkassen.
  */
 export function ownsBrand(registrable: string, brand: string): boolean {
-  return (BRANDS[brand]?.includes(registrable) ?? false) || kbBrandAt(brand, registrable);
+  return (BRANDS[brand]?.includes(registrable) ?? false) || platformOwner(registrable) === brand || kbBrandAt(brand, registrable);
 }
 
 /** Find brands mentioned as whole tokens (or long substrings) in a piece of text. */
@@ -98,7 +108,8 @@ export interface BrandData {
 export function analyzeBrand(t: ParsedTarget): LayerResult<BrandData> {
   const start = Date.now();
   const signals: Signal[] = [];
-  const officialBrand = OFFICIAL.get(t.registrable) ?? OFFICIAL.get(t.icannDomain) ?? null;
+  const ownedPlatformPage = PLATFORM.get(t.registrable) ?? null;
+  const officialBrand = ownedPlatformPage ?? OFFICIAL.get(t.registrable) ?? OFFICIAL.get(t.icannDomain) ?? null;
 
   // 1. Brand mentioned in subdomain / free-hosting label / path while the domain is not theirs.
   // Brands that are also everyday words ("booking", "apple", "orange") only count in the
@@ -117,10 +128,20 @@ export function analyzeBrand(t: ParsedTarget): LayerResult<BrandData> {
     (b) => !ownsBrand(t.registrable, b) && !ownsBrand(t.icannDomain, b),
   );
 
+  // A platform page named exactly after a brand (facebook.github.io) whose owner could not be
+  // confirmed: platform names are first come, first served, but the big brands usually hold their
+  // own. Without phishing vocabulary this alone stays a hint ("suspicious" at most); a login form or
+  // a brand logo on the page still makes it dangerous.
+  const exactBrand = BRANDS[t.sld] ? t.sld : (OFFICIAL_BY_SLD.get(t.sld) ?? null);
+  const unverifiedPlatformBrand = t.isPrivateSuffix && !officialBrand && !phishy && !subLabels.length ? exactBrand : null;
+
   if (!officialBrand) {
-    const inHost = claimed.filter((b) => hostClaims.includes(b) || sldClaims.includes(b));
+    const inHost = claimed.filter((b) => (hostClaims.includes(b) || sldClaims.includes(b)) && b !== unverifiedPlatformBrand);
     if (inHost.length) signals.push(signal("brand", "brand_in_host", 2.6, { brand: inHost[0], domain: t.registrable }));
-    else if (claimed.length) signals.push(signal("brand", "brand_in_path", 1.2, { brand: claimed[0], domain: t.registrable }));
+    else {
+      const inPath = claimed.filter((b) => b !== unverifiedPlatformBrand);
+      if (inPath.length) signals.push(signal("brand", "brand_in_path", 1.2, { brand: inPath[0], domain: t.registrable }));
+    }
   }
 
   // 2. Typosquatting / lookalike of an official brand domain.
@@ -156,7 +177,7 @@ export function analyzeBrand(t: ParsedTarget): LayerResult<BrandData> {
       }
     }
     // Same name, different TLD: paypal.co.in, amazon-de.net etc.
-    if (!typosquatOf && !homoglyphOf && officialSlds.includes(t.sld)) typosquatOf = t.sld;
+    if (!typosquatOf && !homoglyphOf && officialSlds.includes(t.sld) && !unverifiedPlatformBrand) typosquatOf = t.sld;
   }
   // Typosquats hidden in subdomains: "ehay.item.example.com".
   if (!officialBrand && !homoglyphOf && !typosquatOf) {
@@ -173,12 +194,15 @@ export function analyzeBrand(t: ParsedTarget): LayerResult<BrandData> {
   if (homoglyphOf) signals.push(signal("brand", "homoglyph", 3.5, { brand: homoglyphOf, host: t.unicodeHost }));
   else if (typosquatOf) signals.push(signal("brand", "typosquat", 2.8, { brand: typosquatOf, domain: t.registrable }));
 
+  if (unverifiedPlatformBrand && !homoglyphOf && !typosquatOf)
+    signals.push(signal("brand", "brand_platform_unverified", 1.2, { brand: unverifiedPlatformBrand, domain: t.registrable }));
+
   // 3. Mixed scripts in one label (Latin + Cyrillic) is almost never legitimate.
   const sc = scripts(t.unicodeHost);
   if (sc.size > 1) signals.push(signal("brand", "mixed_script", 2.5, { scripts: [...sc].join(" + ") }));
 
   // sites.google.com belongs to Google, the page on it does not: user content never earns the brand's credit.
-  if (officialBrand && !isUserContentHost(t)) signals.push({ ...signal("brand", "official_brand_domain", -2.5, { brand: officialBrand }) });
+  if (officialBrand && (ownedPlatformPage || !isUserContentHost(t))) signals.push({ ...signal("brand", "official_brand_domain", -2.5, { brand: officialBrand }) });
 
   return {
     layer: "brand",

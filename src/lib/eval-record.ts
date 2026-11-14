@@ -43,7 +43,8 @@ export interface StoredSignal {
 }
 
 export interface EvalRow {
-  set: "phish" | "legit";
+  /** "platform": legitimate pages on free hosting, reported apart from the random legitimate sample. */
+  set: "phish" | "legit" | "platform";
   url: string;
   score: number;
   /** Score under the candidate rule that is being tested alongside the live one. */

@@ -223,7 +223,12 @@ def main():
         {"domain": d, "features": Xs.iloc[i].tolist(), "p": round(float(p), 8)}
         for i, (d, p) in enumerate(zip(sample, model.predict_proba(Xs)[:, 1]))
     ]))
-    (ROOT / "ml" / "model-card.json").write_text(json.dumps(card, indent=2))
+    # Keep the hand-recorded evaluations (live_eval, audit) that this script does not produce.
+    card_path = ROOT / "ml" / "model-card.json"
+    if card_path.exists():
+        old = json.loads(card_path.read_text())
+        card.update({k: old[k] for k in ("live_eval", "audit") if k in old})
+    card_path.write_text(json.dumps(card, indent=2) + "\n")
 
 
 if __name__ == "__main__":

@@ -38,7 +38,7 @@ export function evalCounts() {
 }
 
 /** Every stored weekly evaluation, oldest first, read at build time for the methodology page. */
-export function evalHistory(): { date: string; metrics: EvalMetric[] }[] {
+export function evalHistory(): { date: string; sample?: { phishing: number; legitimate: number }; metrics: EvalMetric[]; candidate?: EvalMetric[] }[] {
   const dir = join(process.cwd(), "ml", "eval-history");
   return readdirSync(dir)
     .filter((f) => /^\d{4}-\d{2}-\d{2}\.json$/.test(f))

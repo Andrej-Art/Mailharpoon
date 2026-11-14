@@ -1,0 +1,52 @@
+{
+  "test_from": "2026-11-09",
+  "train_n": 21495,
+  "test_phishing_n": 844,
+  "test_legit_n": 1696,
+  "roc_auc": 0.8665,
+  "operating_points": [
+    {
+      "p": 0.5,
+      "recall": 0.706,
+      "false_positive_rate": 0.119
+    },
+    {
+      "p": 0.7,
+      "recall": 0.637,
+      "false_positive_rate": 0.055
+    },
+    {
+      "p": 0.8,
+      "recall": 0.601,
+      "false_positive_rate": 0.031
+    },
+    {
+      "p": 0.9,
+      "recall": 0.541,
+      "false_positive_rate": 0.012
+    },
+    {
+      "p": 0.95,
+      "recall": 0.494,
+      "false_positive_rate": 0.006
+    }
+  ],
+  "features": [
+    "sld_len",
+    "sld_digit_count",
+    "sld_digit_ratio",
+    "sld_hyphen_count",
+    "sld_entropy",
+    "sld_vowel_ratio",
+    "sld_max_consonant_run",
+    "sld_max_digit_run",
+    "sld_max_repeat_run",
+    "sld_token_count",
+    "sld_longest_token",
+    "sld_keyword_count",
+    "sld_brand_hit",
+    "is_punycode",
+    "sld_ngram_llr"
+  ],
+  "iterations": 115
+}

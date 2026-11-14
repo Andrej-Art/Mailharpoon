@@ -146,6 +146,60 @@ describe("punycode", () => {
   });
 });
 
+describe("domain model on free hosting", () => {
+  const ids = (url: string) => analyzeLexical(parseTarget(url)).signals.map((s) => s.id);
+
+  it("is not used for pages on hosting platforms", () => {
+    for (const url of ["https://kubernetes.github.io/", "https://hochzeit-anna.vercel.app/", "https://jonas-blog.pages.dev/"]) {
+      expect(ids(url)).toContain("free_hosting");
+      expect(ids(url)).not.toContain("ml_domain");
+    }
+  });
+
+  it("still rates own domains", () => {
+    expect(ids("https://secure-paypa1-login.top/")).toContain("ml_domain");
+  });
+
+  it("lets the platform model flag phishing page names, and only those", () => {
+    expect(ids("https://microsoft-account-verify.pages.dev/")).toContain("ml_platform_label");
+    expect(ids("https://paypal-secure-login.web.app/")).toContain("ml_platform_label");
+    for (const url of ["https://karpathy.github.io/", "https://hochzeit-anna-und-ben.vercel.app/", "https://todo-app-react.netlify.app/"])
+      expect(ids(url)).not.toContain("ml_platform_label");
+  });
+});
+
+describe("brand pages on hosting platforms", () => {
+  const brandIds = (url: string) => analyzeBrand(parseTarget(url)).signals.map((s) => s.id);
+
+  it("treats a verified brand account as the brand's own", () => {
+    for (const url of ["https://microsoft.github.io/", "https://google.github.io/", "https://netflix.github.io/"]) {
+      expect(brandIds(url)).toContain("official_brand_domain");
+      expect(brandIds(url)).not.toContain("typosquat");
+      expect(brandIds(url)).not.toContain("brand_in_host");
+      expect(analyzeLexical(parseTarget(url)).signals.map((s) => s.id)).not.toContain("free_hosting");
+    }
+  });
+
+  it("keeps an unconfirmed exact brand name to a hint", () => {
+    const ids = brandIds("https://facebook.github.io/");
+    expect(ids).toContain("brand_platform_unverified");
+    expect(ids).not.toContain("typosquat");
+    expect(ids).not.toContain("brand_in_host");
+  });
+
+  it("caps an unconfirmed brand page at suspicious unless it asks for data", () => {
+    const base = [signal("brand", "brand_platform_unverified", 1.2), signal("lexical", "free_hosting", 0.9), signal("page", "brand_title_mismatch", 0.9), signal("reputation", "user_content_platform", 0.4), signal("network", "x", 1)];
+    const layers = (sigs: Signal[]): LayerResult[] => [...new Set(sigs.map((s) => s.layer))].map((layer) => ({ layer, status: "ok", ms: 0, signals: sigs.filter((s) => s.layer === layer) }) as LayerResult);
+    expect(fuse(layers(base)).verdict).toBe("suspicious");
+    expect(fuse(layers([...base, signal("page", "password_field", 0.8)])).verdict).toBe("dangerous");
+  });
+
+  it("still treats brand plus phishing words as impersonation", () => {
+    expect(brandIds("https://paypal-login-secure.github.io/")).toContain("brand_in_host");
+    expect(brandIds("https://microsoft-verify.pages.dev/")).toContain("brand_in_host");
+  });
+});
+
 describe("screenshot transcript", () => {
   it("does not repeat a sender the text already shows and adds links missing from the text", () => {
     const msg = transcriptToMessage({ kind: "sms", sender: "+49 1577 3920114", text: "+49 1577 3920114\nIhr Paket wartet", urls: ["dhl-info.top/p"] });

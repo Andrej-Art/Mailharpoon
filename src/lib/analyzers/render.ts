@@ -6,8 +6,9 @@ import { parse } from "tldts";
 import { BLOCKED_HEADER, startEgressProxy } from "@/lib/net/egress-proxy";
 import { BROWSER_UA } from "@/lib/net/safe-fetch";
 import { acquireBrowser, renderEnabled, type Lease } from "@/lib/render/browser";
-import { analyzeBrand } from "./brand";
+import { analyzeBrand, isOfficialDomain, ownsBrand } from "./brand";
 import { emptyPageData, GATE_RE, inspectHtml, type PageData } from "./page";
+import { isUserContentHost, trancoRank } from "./reputation";
 import { signal, type LayerResult, type Signal } from "./types";
 import { parseTarget, type ParsedTarget } from "./url";
 
@@ -130,9 +131,17 @@ export function renderSignals(t: ParsedTarget, fetched: LayerResult<PageData> | 
   // The scripts sent the visitor to another site than the plain fetch did.
   const fetchedDomain = before?.finalDomain ?? t.registrable;
   if (r.finalDomain && r.finalDomain !== fetchedDomain && r.finalDomain !== t.registrable) {
-    out.push(signal(R, "js_redirect", 0.7, { domain: r.finalDomain }));
     try {
-      for (const s of analyzeBrand(parseTarget(r.finalUrl)).signals) if (s.weight > 0) out.push({ ...s, layer: R });
+      const dest = parseTarget(r.finalUrl);
+      // A brand's own page forwarding elsewhere (twitter.github.io to twitter.dev), or any page
+      // forwarding to a well-known site (jquery.github.io to github.com), is not a cloaking trick.
+      const rank = trancoRank(dest.registrable);
+      const harmless = isOfficialDomain(t.registrable) || (rank !== null && rank <= 100_000 && !isUserContentHost(dest));
+      if (!harmless) out.push(signal(R, "js_redirect", 0.7, { domain: r.finalDomain }));
+      for (const s of analyzeBrand(dest).signals) {
+        const brand = typeof s.params?.brand === "string" ? s.params.brand : null;
+        if (s.weight > 0 && !(brand && ownsBrand(t.registrable, brand))) out.push({ ...s, layer: R });
+      }
     } catch {}
   }
   return out;

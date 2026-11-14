@@ -4,6 +4,7 @@ import * as cheerio from "cheerio";
 import { parse } from "tldts";
 import { safeFetch, type Hop } from "@/lib/net/safe-fetch";
 import { brandsIn, isOfficialDomain, ownsBrand } from "./brand";
+import { isUserContentHost, trancoRank } from "./reputation";
 import { signal, type LayerResult, type Signal } from "./types";
 import type { ParsedTarget } from "./url";
 
@@ -42,6 +43,19 @@ export interface PageData {
 }
 
 const reg = (u: string) => parse(u, { allowPrivateDomains: true }).domain ?? null;
+
+/** A redirect target among the 100,000 most visited sites (and not user content there) is no cloaking trick. */
+function popularTarget(href: string, base: string): boolean {
+  try {
+    const url = new URL(href, base);
+    const d = reg(url.href);
+    const p = parse(url.href, { allowPrivateDomains: true });
+    const rank = d ? trancoRank(d) : null;
+    return rank !== null && rank <= 100_000 && !isUserContentHost({ hostname: url.hostname, subdomain: p.subdomain ?? "" } as ParsedTarget);
+  } catch {
+    return false;
+  }
+}
 
 export async function analyzePage(t: ParsedTarget): Promise<LayerResult<PageData>> {
   const start = Date.now();
@@ -164,9 +178,11 @@ export function inspectHtml(html: string, finalUrl: string, t: ParsedTarget, bas
   // reCAPTCHA notices ("protected by reCAPTCHA and the Google Privacy Policy") are not a brand claim either.
   const RECAPTCHA = /\b(google\s+)?re-?captcha\b|\bgoogle(['’]s)?\s+(privacy\s+policy|terms(\s+of\s+(service|use))?|datenschutzerkl\w+|nutzungsbedingungen)/gi;
   const OAUTH = /\b(sign\s*in|log\s*in|login|continue|sign\s*up|register|anmelden|einloggen|fortfahren|weiter|registrieren)\s+(with|via|using|mit|über)\s+(google|apple|facebook|microsoft|github|gitlab|twitter|x|discord|linkedin|amazon|paypal|steam|yahoo)\b/gi;
-  const brandText = `${base.title} ${base.description} ${$("img[alt]").map((_, i) => $(i).attr("alt")).get().join(" ")} ${visibleText.slice(0, 4000)}`.replace(OAUTH, " ").replace(RECAPTCHA, " ");
+  // The page's own address in its text ("Redirecting to https://mermaid-js.github.io/") names the platform, not a brand.
+  const ownHosts = new RegExp(`\\b(?:[a-z0-9-]+\\.)*(?:${[t.registrable, base.finalDomain].map((d) => d.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})\\b`, "gi");
+  const brandText = `${base.title} ${base.description} ${$("img[alt]").map((_, i) => $(i).attr("alt")).get().join(" ")} ${visibleText.slice(0, 4000)}`.replace(OAUTH, " ").replace(RECAPTCHA, " ").replace(ownHosts, " ");
   base.pageBrands = brandsIn(brandText).filter((b) => !ownsBrand(base.finalDomain, b) && !ownsBrand(t.registrable, b));
-  const titleBrands = brandsIn(base.title).filter((b) => base.pageBrands.includes(b));
+  const titleBrands = brandsIn(base.title.replace(ownHosts, " ")).filter((b) => base.pageBrands.includes(b));
   if ((hasPassword || hasCard) && titleBrands.length) {
     s.push(signal(P, "brand_login_mismatch", 3.0, { brand: titleBrands[0], domain: base.finalDomain }));
   } else if ((hasPassword || hasCard) && base.pageBrands.length) {
@@ -237,7 +253,8 @@ export function inspectHtml(html: string, finalUrl: string, t: ParsedTarget, bas
   }
 
   const refresh = $('meta[http-equiv="refresh" i]').attr("content");
-  if (refresh && /url=/i.test(refresh) && isExternal(refresh.split(/url=/i)[1]?.replace(/['"]/g, "")))
+  const refreshTo = refresh && /url=/i.test(refresh) ? refresh.split(/url=/i)[1]?.replace(/['"]/g, "").trim() : undefined;
+  if (refreshTo && isExternal(refreshTo) && !isOfficialDomain(t.registrable) && !popularTarget(refreshTo, finalUrl))
     s.push(signal(P, "meta_refresh_external", 0.8));
 
   // Thin page that only exists to bounce the visitor somewhere else

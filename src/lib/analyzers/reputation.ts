@@ -1,6 +1,7 @@
 // Reputation layer: popularity (Tranco), domain age (RDAP) and certificate history (CT logs).
 // Newly registered domains with freshly issued certificates are among the strongest
 // predictors of phishing in recent measurement studies.
+import { platformOwner } from "./platform";
 import tranco from "@/lib/data/tranco-top100k.json";
 import lexicon from "@/lib/data/lexicon.json";
 import { getJson } from "@/lib/net/safe-fetch";
@@ -110,7 +111,8 @@ export async function analyzeReputation(t: ParsedTarget): Promise<LayerResult<Re
     const w = userContent ? -0.4 : rank <= 1_000 ? -3.5 : rank <= 10_000 ? -2.8 : -1.8;
     s.push(signal(R, "tranco_rank", w, { rank }));
   }
-  if (userContent) s.push(signal(R, "user_content_platform", 0.4, { host: t.hostname }));
+  // A brand's own platform page (microsoft.github.io) is not anonymous user content.
+  if (userContent && !platformOwner(t.registrable)) s.push(signal(R, "user_content_platform", 0.4, { host: t.hostname }));
 
   const data: ReputationData = {
     trancoRank: rank,

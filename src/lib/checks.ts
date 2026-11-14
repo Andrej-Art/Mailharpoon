@@ -29,13 +29,13 @@ export const CHECK_GROUPS: { layer: Layer; checks: CheckDef[] }[] = [
       { id: "hiddenRedirect", signals: ["open_redirect_param", "double_slash_path"] },
       { id: "length", signals: ["long_url", "heavy_encoding"] },
       { id: "download", signals: ["executable_download"] },
-      { id: "model", signals: ["ml_domain"] },
+      { id: "model", signals: ["ml_domain", "ml_platform_label"] },
     ],
   },
   {
     layer: "brand",
     checks: [
-      { id: "brandName", signals: ["brand_in_host", "brand_in_path"] },
+      { id: "brandName", signals: ["brand_in_host", "brand_in_path", "brand_platform_unverified"] },
       { id: "typo", signals: ["typosquat", "typosquat_subdomain", "homoglyph"] },
       { id: "official", signals: ["official_brand_domain"], trust: true },
     ],

@@ -1,6 +1,8 @@
 // URL-structure heuristics + the ML domain model.
 import lexicon from "@/lib/data/lexicon.json";
+import { isBrandName } from "./brand";
 import { predictDomain } from "./domain-model";
+import { platformOwner, predictPlatformLabel } from "./platform";
 import { signal, type LayerResult, type Signal } from "./types";
 import type { ParsedTarget } from "./url";
 
@@ -8,6 +10,8 @@ const SHORTENERS = new Set(lexicon.shorteners);
 const PATH_KEYWORDS = lexicon.suspicious_keywords.filter((k) => k.length >= 4);
 // The model's list is frozen (it is a trained feature); heuristics may use a longer list.
 const FREE_HOSTING = [...lexicon.free_hosting_suffixes, ...lexicon.free_hosting_extra];
+// Below this the platform model stays silent; see ml/platform-model-card.json for the trade-off.
+const PLATFORM_MIN_P = 0.8;
 
 export interface LexicalData {
   modelProbability: number | null;
@@ -36,7 +40,10 @@ export function analyzeLexical(t: ParsedTarget): LayerResult<LexicalData> {
   const isShortener = SHORTENERS.has(t.registrable) || SHORTENERS.has(t.hostname);
   if (isShortener) s.push(signal(L, "shortener", 0.6, { domain: t.registrable }));
 
-  const isFreeHosting = FREE_HOSTING.some((f) => t.suffix === f || t.suffix.endsWith("." + f) || t.hostname.endsWith("." + f));
+  const onPlatform = FREE_HOSTING.some((f) => t.suffix === f || t.suffix.endsWith("." + f) || t.hostname.endsWith("." + f));
+  // A brand's own page on a platform (microsoft.github.io) carries none of the platform risk.
+  const owner = onPlatform ? platformOwner(t.registrable) : null;
+  const isFreeHosting = onPlatform && !owner;
   if (isFreeHosting) s.push(signal(L, "free_hosting", 0.9, { suffix: t.suffix }));
 
   const subdomainLabels = t.subdomain ? t.subdomain.split(".").filter((l) => l !== "www") : [];
@@ -57,7 +64,20 @@ export function analyzeLexical(t: ParsedTarget): LayerResult<LexicalData> {
 
   let modelProbability: number | null = null;
   let features: Record<string, number> | null = null;
-  if (!t.isIp && t.sld) {
+  if (isFreeHosting) {
+    // The domain model must not judge platform pages: its training data holds no legitimate page on
+    // a platform, so it rated every one of them as phishing, microsoft.github.io included (audit of
+    // 2026-11-14). The platform model reads only the label the page owner chose and was trained on
+    // real GitHub user and project names. It only adds evidence when it is confident (p >= 0.8, about
+    // 3 % of real names reach that), so an ordinary page name never counts against the page.
+    // Only where the platform is a public suffix, so the registrable domain is "<label>.<platform>".
+    // An exact brand name ("facebook") is left to the brand check, which knows the verified accounts.
+    const pred = t.isPrivateSuffix && !isBrandName(t.sld) ? predictPlatformLabel(t.registrable) : null;
+    modelProbability = pred?.probability ?? null;
+    features = pred?.features ?? null;
+    if (pred && pred.probability >= PLATFORM_MIN_P)
+      s.push(signal(L, "ml_platform_label", Number(Math.min(2.0, pred.logit * 0.7).toFixed(2)), { p: Math.round(pred.probability * 100), label: t.sld }));
+  } else if (!t.isIp && t.sld && !owner) {
     const pred = predictDomain(t.hostname);
     modelProbability = pred.probability;
     features = pred.features;

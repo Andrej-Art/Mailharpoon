@@ -3,6 +3,7 @@
 // the core of Phishpedia, PhishIntention, PhishLLM and KnowPhish. Claude only names the
 // brand and what the page asks for; whether the domain is official is decided here from the
 // curated list and the Wikidata knowledge base, so a page cannot talk its way into "official".
+import { platformOwner } from "./platform";
 import { BRANDS } from "./lexical-features";
 import { brandsIn } from "./brand";
 import { kbBrandAt, kbDomainsFor } from "./brand-kb";
@@ -53,7 +54,8 @@ export function analyzeVisual(ai: AiVerdict, finalUrl: string, ms = 0): LayerRes
   const known = new Set<string>([...kbDomainsFor(brand), ...brandsIn(brand).flatMap((b) => BRANDS[b] ?? [])]);
   data.known = [...known].slice(0, 8);
   const userContent = isUserContentHost(t);
-  const official = !userContent && (known.has(domain) || known.has(t.icannDomain) || kbBrandAt(brand, domain));
+  // A brand's verified platform page (microsoft.github.io) is official despite being on a user-content host.
+  const official = brandsIn(brand).includes(platformOwner(domain) ?? "") || (!userContent && (known.has(domain) || known.has(t.icannDomain) || kbBrandAt(brand, domain)));
   const sensitive = asks.some((a) => SENSITIVE.has(a));
   const personal = asks.includes(PERSONAL);
 

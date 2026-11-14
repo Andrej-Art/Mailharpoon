@@ -1,0 +1,27 @@
+# Legitimate pages on free hosting platforms, scanned by the weekly evaluation as a separate set.
+# The random legitimate sample comes from Tranco, which lists registrable domains only, so it never
+# contains a page on github.io, netlify.app or similar. Without this set, false alarms on such pages
+# stay invisible (audit of 2026-11-14: the domain model rated every one of them as phishing).
+# Each entry was checked on 2026-11-14: it loads and stays on the platform. Extend with care:
+# only pages whose owner is clear.
+https://microsoft.github.io/
+https://google.github.io/
+https://facebook.github.io/
+https://netflix.github.io/
+https://uber.github.io/
+https://twitter.github.io/
+https://square.github.io/
+https://spotify.github.io/
+https://aws.github.io/
+https://alibaba.github.io/
+https://jquery.github.io/
+https://mermaid-js.github.io/
+https://webpack.github.io/
+https://karpathy.github.io/
+https://lilianweng.github.io/
+https://colah.github.io/
+https://jalammar.github.io/
+https://gatsby-starter-blog-demo.netlify.app/
+https://gridsome-starter-blog.netlify.app/
+https://eleventy-base-blog.netlify.app/
+https://docusaurus-2.netlify.app/

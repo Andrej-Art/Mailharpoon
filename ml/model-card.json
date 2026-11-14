@@ -59,5 +59,18 @@
         "fpr": 0.0
       }
     ]
+  },
+  "audit": {
+    "date": "2026-11-14",
+    "description": "Shipped model on data it never saw. Phishing: OpenPhish domains first seen 2026-11-04..14, minus any domain in the training sources. Legitimate: 20,000 random Tranco domains ranked 300k-1M. Cut-off p >= 0.5. Since this audit the model no longer judges pages on free hosting platforms; the platform-label model (ml/platform-model-card.json) does.",
+    "phishing_n": 2299,
+    "phishing_recall": 0.853,
+    "own_domain_n": 821,
+    "own_domain_recall": 0.59,
+    "own_domain_roc_auc": 0.788,
+    "platform_n": 1478,
+    "platform_recall": 1.0,
+    "legit_n": 20000,
+    "legit_false_positive_rate": 0.159
   }
 }

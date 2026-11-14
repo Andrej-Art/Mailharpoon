@@ -5,18 +5,21 @@ import { domainFeatures, type FeatureContext } from "./lexical-features";
 
 type Node = [number, number, number, number, number, number];
 
-interface DomainModel extends FeatureContext {
+export interface TreeModel extends FeatureContext {
   version: number;
   features: string[];
   baseline: number;
   trees: Node[][];
 }
 
-const M = model as unknown as DomainModel;
+const M = model as unknown as TreeModel;
 
-export function rawScore(x: number[]): number {
-  let raw = M.baseline;
-  for (const tree of M.trees) {
+export const rawScore = (x: number[]): number => rawScoreWith(M, x);
+
+/** Sum of the tree outputs for one feature vector, in the order of `m.features`. */
+export function rawScoreWith(m: TreeModel, x: number[]): number {
+  let raw = m.baseline;
+  for (const tree of m.trees) {
     let i = 0;
     while (!tree[i][5]) {
       const [f, thr, left, right] = tree[i];

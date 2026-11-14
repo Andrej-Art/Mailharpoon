@@ -123,6 +123,23 @@ export default async function Methodology({ params }: { params: Promise<{ locale
   // The first live run from the model card, then every stored weekly run.
   const history = [{ date: card.live_eval.date, metrics: card.live_eval.rows }, ...evalHistory()];
 
+  // Change log: hand-written detection changes plus one entry per stored weekly run, newest first.
+  // Runs before 4 November used a smaller sample and are only shown in the chart above.
+  const runEntries = evalHistory()
+    .filter((run) => run.sample && run.date >= "2026-11-04")
+    .map((run) => {
+      const r = (rows: typeof run.metrics, threshold: number) => rows.find((x) => x.threshold === threshold)!;
+      const parts = (rows: typeof run.metrics) => ({
+        caught: pct(r(rows, 70).recall),
+        flagged: pct(r(rows, 35).recall),
+        falseAlarms: pct(r(rows, 70).fpr),
+        falseFlagged: pct(r(rows, 35).fpr),
+      });
+      const text = fill(m.changelogRun, { ...run.sample!, ...parts(run.metrics) });
+      return [run.date, run.candidate ? `${text} ${fill(m.changelogCandidate, parts(run.candidate))}` : text] as [string, string];
+    });
+  const changelog = [...runEntries, ...m.changelog].sort((a, b) => b[0].localeCompare(a[0]));
+
   const log = [
     [fill(m.log.caught, { pct: pct(at(70).recall) }), fill(m.log.week, { date: date(latestEval.date, "short") })],
     [fill(m.log.falseAlarms, { pct: pct(1 - at(70).fpr) }), fill(m.log.week, { date: date(latestEval.date, "short") })],
@@ -168,7 +185,7 @@ export default async function Methodology({ params }: { params: Promise<{ locale
                 [at(70).recall, phishing, m.results.dangerous],
                 [at(35).recall, phishing, m.results.flagged],
                 [at(70).fpr, legitimate, m.results.falseAlarms],
-                [card.openphish_fresh_recall, card.openphish_fresh_n, m.results.model],
+                [card.audit.own_domain_recall, card.audit.own_domain_n, m.results.model],
               ].map(([rate, n, label]) => (
                 <div key={label} className="flex min-h-40 flex-col justify-between bg-panel p-5">
                   <dd>
@@ -341,8 +358,9 @@ verdict = dangerous  if p ≥ .70
               <DomainReader readings={READINGS} t={m.reader} />
               <div className="border border-line-strong bg-panel/95 p-5">
                 {[
-                  [m.modelBars.fresh, fill(m.modelBars.freshNote, { n: card.openphish_fresh_n }), card.openphish_fresh_recall],
-                  [m.modelBars.auc, m.modelBars.aucNote, card.test.roc_auc],
+                  [m.modelBars.fresh, fill(m.modelBars.freshNote, { n: num.format(card.audit.own_domain_n) }), card.audit.own_domain_recall],
+                  [m.modelBars.falseAlarms, fill(m.modelBars.falseAlarmsNote, { n: num.format(card.audit.legit_n) }), card.audit.legit_false_positive_rate],
+                  [m.modelBars.auc, m.modelBars.aucNote, card.audit.own_domain_roc_auc],
                 ].map(([label, note, value]) => (
                   <div key={label as string} className="mb-6 last:mb-0">
                     <p className="flex items-baseline gap-3">
@@ -480,7 +498,7 @@ verdict = dangerous  if p ≥ .70
             <h3 className="text-xl font-bold">{m.changelogTitle}</h3>
             <p className="mt-2 text-muted">{m.changelogLead}</p>
             <ol className="mt-6 border-l border-line-strong">
-              {m.changelog.map(([day, text]) => (
+              {changelog.map(([day, text]) => (
                 <li key={text} className="relative pb-5 pl-6 last:pb-0">
                   <span className="absolute top-1.5 -left-[5px] size-2.5 bg-harpoon" aria-hidden />
                   <time dateTime={day} className="font-mono text-[12px] text-dim">
