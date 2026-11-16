@@ -415,6 +415,38 @@
 "chatgpt.com",
 "openai.com"
 ],
+"shopee": [
+"shopee.com",
+"shopee.co.id",
+"shopee.sg",
+"shopee.com.my",
+"shopee.ph",
+"shopee.vn",
+"shopee.co.th",
+"shopee.tw",
+"shopee.com.br"
+],
+"lazada": [
+"lazada.com",
+"lazada.co.id",
+"lazada.sg",
+"lazada.com.my",
+"lazada.com.ph",
+"lazada.vn",
+"lazada.co.th"
+],
+"mercadolibre": [
+"mercadolibre.com",
+"mercadolibre.com.ar",
+"mercadolibre.com.mx",
+"mercadolivre.com.br",
+"mercadopago.com"
+],
+"rakuten": [
+"rakuten.com",
+"rakuten.co.jp",
+"rakuten.de"
+],
 "anthropic": [
 "anthropic.com",
 "claude.ai"

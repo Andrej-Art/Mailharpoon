@@ -6,7 +6,7 @@ import { parse } from "tldts";
 import { BLOCKED_HEADER, startEgressProxy } from "@/lib/net/egress-proxy";
 import { BROWSER_UA } from "@/lib/net/safe-fetch";
 import { acquireBrowser, renderEnabled, type Lease } from "@/lib/render/browser";
-import { analyzeBrand, isOfficialDomain, ownsBrand } from "./brand";
+import { analyzeBrand, forwardsToOwnName, isOfficialDomain, ownsBrand } from "./brand";
 import { emptyPageData, GATE_RE, inspectHtml, type PageData } from "./page";
 import { isUserContentHost, trancoRank } from "./reputation";
 import { signal, type LayerResult, type Signal } from "./types";
@@ -136,7 +136,7 @@ export function renderSignals(t: ParsedTarget, fetched: LayerResult<PageData> | 
       // A brand's own page forwarding elsewhere (twitter.github.io to twitter.dev), or any page
       // forwarding to a well-known site (jquery.github.io to github.com), is not a cloaking trick.
       const rank = trancoRank(dest.registrable);
-      const harmless = isOfficialDomain(t.registrable) || (rank !== null && rank <= 100_000 && !isUserContentHost(dest));
+      const harmless = isOfficialDomain(t.registrable) || (rank !== null && rank <= 100_000 && !isUserContentHost(dest)) || forwardsToOwnName(t, r.finalUrl);
       if (!harmless) out.push(signal(R, "js_redirect", 0.7, { domain: r.finalDomain }));
       for (const s of analyzeBrand(dest).signals) {
         const brand = typeof s.params?.brand === "string" ? s.params.brand : null;

@@ -1,34 +1,34 @@
 {
-  "test_from": "2026-11-09",
-  "train_n": 21495,
-  "test_phishing_n": 844,
-  "test_legit_n": 1696,
-  "roc_auc": 0.8665,
+  "test_from": "2026-11-12",
+  "train_n": 22624,
+  "test_phishing_n": 934,
+  "test_legit_n": 1897,
+  "roc_auc": 0.9346,
   "operating_points": [
     {
       "p": 0.5,
-      "recall": 0.706,
-      "false_positive_rate": 0.119
+      "recall": 0.863,
+      "false_positive_rate": 0.132
     },
     {
       "p": 0.7,
-      "recall": 0.637,
-      "false_positive_rate": 0.055
+      "recall": 0.829,
+      "false_positive_rate": 0.063
     },
     {
       "p": 0.8,
-      "recall": 0.601,
-      "false_positive_rate": 0.031
+      "recall": 0.789,
+      "false_positive_rate": 0.036
     },
     {
       "p": 0.9,
-      "recall": 0.541,
-      "false_positive_rate": 0.012
+      "recall": 0.734,
+      "false_positive_rate": 0.018
     },
     {
       "p": 0.95,
-      "recall": 0.494,
-      "false_positive_rate": 0.006
+      "recall": 0.667,
+      "false_positive_rate": 0.009
     }
   ],
   "features": [
@@ -48,5 +48,5 @@
     "is_punycode",
     "sld_ngram_llr"
   ],
-  "iterations": 115
+  "iterations": 191
 }

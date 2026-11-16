@@ -89,6 +89,16 @@ def load(args) -> tuple[pd.DataFrame, pd.DataFrame]:
             if label:
                 rows.append((f"{label}.{rnd.choice(suffixes)}", 0, f"github-{kind}", ""))
 
+    # Real pages on platforms (homepage and blog fields of GitHub repositories and their owners),
+    # minus the hosts reserved for the holdout scan.
+    if args.extra_legit:
+        exclude = set(Path(args.exclude).read_text().split()) if args.exclude else set()
+        for line in Path(args.extra_legit).read_text().split():
+            h = host_of(line)
+            p = platform_host(h) if h else None
+            if p and p not in exclude:
+                rows.append((p, 0, "github-homepage", ""))
+
     df = pd.DataFrame(rows, columns=["host", "y", "source", "day"])
     df["label"] = df.host.map(lambda h: split_host(h)[0])
     # One row per label; a label seen on both sides is dropped.
@@ -112,6 +122,8 @@ def main():
     ap.add_argument("--feed", required=True)
     ap.add_argument("--github-labels", required=True)
     ap.add_argument("--test-from", required=True)
+    ap.add_argument("--extra-legit", help="real platform page URLs, one per line")
+    ap.add_argument("--exclude", help="platform hosts kept out of training (holdout), one per line")
     args = ap.parse_args()
 
     train, test = load(args)

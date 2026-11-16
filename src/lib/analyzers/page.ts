@@ -3,7 +3,7 @@
 import * as cheerio from "cheerio";
 import { parse } from "tldts";
 import { safeFetch, type Hop } from "@/lib/net/safe-fetch";
-import { brandsIn, isOfficialDomain, ownsBrand } from "./brand";
+import { brandsIn, forwardsToOwnName, hostOperator, isOfficialDomain, ownsBrand } from "./brand";
 import { isUserContentHost, trancoRank } from "./reputation";
 import { signal, type LayerResult, type Signal } from "./types";
 import type { ParsedTarget } from "./url";
@@ -43,6 +43,8 @@ export interface PageData {
 }
 
 const reg = (u: string) => parse(u, { allowPrivateDomains: true }).domain ?? null;
+
+const TELEGRAM_BOT = /api\.telegram\.org\/bot|\b\d{8,10}:AA[\w-]{33}\b/;
 
 /** A redirect target among the 100,000 most visited sites (and not user content there) is no cloaking trick. */
 function popularTarget(href: string, base: string): boolean {
@@ -183,12 +185,15 @@ export function inspectHtml(html: string, finalUrl: string, t: ParsedTarget, bas
   const brandText = `${base.title} ${base.description} ${$("img[alt]").map((_, i) => $(i).attr("alt")).get().join(" ")} ${visibleText.slice(0, 4000)}`.replace(OAUTH, " ").replace(RECAPTCHA, " ").replace(ownHosts, " ");
   base.pageBrands = brandsIn(brandText).filter((b) => !ownsBrand(base.finalDomain, b) && !ownsBrand(t.registrable, b));
   const titleBrands = brandsIn(base.title.replace(ownHosts, " ")).filter((b) => base.pageBrands.includes(b));
+  // Without a login or card form, the platform operator's name in the title is the platform talking (its error page, its footer).
+  const operator = hostOperator(t);
+  const claimedInTitle = titleBrands.filter((b) => b !== operator);
   if ((hasPassword || hasCard) && titleBrands.length) {
     s.push(signal(P, "brand_login_mismatch", 3.0, { brand: titleBrands[0], domain: base.finalDomain }));
   } else if ((hasPassword || hasCard) && base.pageBrands.length) {
     s.push(signal(P, "brand_login_mismatch", 1.4, { brand: base.pageBrands[0], domain: base.finalDomain }));
-  } else if (titleBrands.length) {
-    s.push(signal(P, "brand_title_mismatch", 0.9, { brand: titleBrands[0], domain: base.finalDomain }));
+  } else if (claimedInTitle.length) {
+    s.push(signal(P, "brand_title_mismatch", 0.9, { brand: claimedInTitle[0], domain: base.finalDomain }));
   }
 
   // Resource & link structure (UCI "Request_URL" / "URL_of_Anchor" / "Links_in_tags", modernised)
@@ -243,7 +248,9 @@ export function inspectHtml(html: string, finalUrl: string, t: ParsedTarget, bas
   for (const [id, re, w] of techniques) {
     if (re.test(scripts) || (id === "right_click_block" && re.test(html))) {
       base.techniques.push(id);
-      s.push(signal(P, `tech_${id}`, w));
+      // A bot address or bot token in the page is close to proof: genuine sites never send form data to a Telegram bot from the browser.
+      const sure = id === "telegram_exfil" && TELEGRAM_BOT.test(scripts);
+      s.push(signal(P, `tech_${id}`, sure ? 3.6 : w));
     }
   }
   const b64Blob = html.match(/[A-Za-z0-9+/=]{3000,}/);
@@ -254,7 +261,7 @@ export function inspectHtml(html: string, finalUrl: string, t: ParsedTarget, bas
 
   const refresh = $('meta[http-equiv="refresh" i]').attr("content");
   const refreshTo = refresh && /url=/i.test(refresh) ? refresh.split(/url=/i)[1]?.replace(/['"]/g, "").trim() : undefined;
-  if (refreshTo && isExternal(refreshTo) && !isOfficialDomain(t.registrable) && !popularTarget(refreshTo, finalUrl))
+  if (refreshTo && isExternal(refreshTo) && !isOfficialDomain(t.registrable) && !popularTarget(refreshTo, finalUrl) && !forwardsToOwnName(t, refreshTo))
     s.push(signal(P, "meta_refresh_external", 0.8));
 
   // Thin page that only exists to bounce the visitor somewhere else

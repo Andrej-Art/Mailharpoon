@@ -191,6 +191,8 @@
   "/cgi-bin/"
  ],
  "user_content_hosts": [
+  "craftum.io",
+  "apper.so",
   "backblazeb2.com",
   "contaboserver.net",
   "mybluehost.me",
@@ -327,6 +329,8 @@
   "outlook"
  ],
  "free_hosting_extra": [
+  "craftum.io",
+  "apper.so",
   "jimdofree.com",
   "jimdo.com",
   "freepage.cc",

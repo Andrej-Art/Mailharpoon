@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { AiVerdict } from "@/lib/analyzers/ai";
 import { confirmed, fuse } from "@/lib/analyzers/fusion";
-import { analyzeBrand } from "@/lib/analyzers/brand";
+import { analyzeBrand, forwardsToOwnName } from "@/lib/analyzers/brand";
 import { analyzeLexical } from "@/lib/analyzers/lexical";
 import { INJECTION_RE } from "@/lib/analyzers/page";
 import { parseTarget } from "@/lib/analyzers/url";
@@ -213,5 +213,49 @@ describe("candidate rule", () => {
     const layers: LayerResult[] = [{ layer: "page", status: "ok", ms: 0, signals: [signal("page", "hidden_iframe", 0.6), signal("page", "tech_large_base64_blob", 0.6)] }];
     expect(fuse(layers, { candidate: true }).logit).toBeCloseTo(-1 + 0.2, 5);
     expect(fuse(layers).logit).toBeCloseTo(-1 + 1.2, 5);
+  });
+});
+
+describe("forwarding to the project's own name", () => {
+  const fwd = (from: string, to: string) => forwardsToOwnName(parseTarget(from), to);
+
+  it("counts a platform page forwarding to its own project as harmless", () => {
+    expect(fwd("https://jquery.github.io/", "https://github.com/jquery/")).toBe(true);
+    expect(fwd("https://webpack.github.io/", "https://webpack.js.org/")).toBe(true);
+    expect(fwd("https://mermaid-js.github.io/", "https://mermaid.js.org/")).toBe(true);
+  });
+
+  it("does not excuse forwarding to another name or to a brand", () => {
+    expect(fwd("https://evil.github.io/", "https://github.com/someoneelse")).toBe(false);
+    expect(fwd("https://shop-x.vercel.app/", "https://login-x.top/")).toBe(false);
+    expect(fwd("https://paypal-verify.github.io/", "https://paypal-verify.top/")).toBe(false);
+    expect(fwd("https://example.com/", "https://example.org/")).toBe(false);
+  });
+});
+
+describe("quiet platform pages (candidate rule)", () => {
+  const page = (p: number, extra: Signal[] = []): LayerResult[] => [
+    { layer: "lexical", status: "ok", ms: 0, signals: [signal("lexical", "free_hosting", 0.9, { suffix: "github.io", p })] },
+    { layer: "reputation", status: "ok", ms: 0, signals: [signal("reputation", "user_content_platform", 0.4), ...extra] },
+  ];
+
+  it("rates a plain page with an ordinary name as safe", () => {
+    expect(fuse(page(10)).verdict).toBe("suspicious");
+    expect(fuse(page(10), { candidate: true }).verdict).toBe("safe");
+  });
+
+  it("keeps the platform weight for an odd name or any other hint", () => {
+    expect(fuse(page(70), { candidate: true }).score).toBe(fuse(page(70)).score);
+    const hint = page(10, [signal("reputation", "no_https", 0.4)]);
+    expect(fuse(hint, { candidate: true }).score).toBe(fuse(hint).score);
+  });
+});
+
+describe("site builders outside the public suffix list", () => {
+  it("are hosting platforms and get the platform name model", () => {
+    const sig = analyzeLexical(parseTarget("https://paypal-secure-login-verify.craftum.io/")).signals;
+    expect(sig.map((s) => s.id)).toContain("free_hosting");
+    expect(sig.map((s) => s.id)).not.toContain("ml_domain");
+    expect(sig.find((s) => s.id === "free_hosting")?.params?.p).toBeTypeOf("number");
   });
 });

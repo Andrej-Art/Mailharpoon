@@ -2,6 +2,12 @@
 
 Usage:
     python ml/train.py --phiusiil PhiUSIIL_Phishing_URL_Dataset.csv --tranco top-1m.csv --openphish feed.txt
+    python ml/train.py --phiusiil ... --tranco top-1m.csv --archive data/feeds/openphish/2026-11.tsv --test-from 2026-11-12
+
+With --archive, the OpenPhish archive days before --test-from become training data and the days from
+--test-from on are the recency test. Long-tail Tranco domains (ranks 200k-600k) join the legitimate
+side, ranks 600k-1M are kept back to measure false alarms on unknown domains. Pages on hosting
+platforms are left out: the platform model judges those (src/lib/analyzers/platform.ts).
 
 Outputs (consumed by the Next.js app):
     src/lib/model/domain-model.json   gradient-boosted trees + TLD risk table
@@ -28,6 +34,8 @@ from features import FEATURE_NAMES, domain_features, ngrams, split_host
 ROOT = Path(__file__).resolve().parent.parent
 MODEL_DIR = ROOT / "src" / "lib" / "model"
 TRANCO_LEGIT_TOP = 200_000
+LONG_TAIL = (200_000, 600_000, 60_000)  # ranks used as extra legitimate training data, sample size
+UNSEEN_TAIL = (600_000, 1_000_000, 20_000)  # ranks kept back for the false-alarm test
 SEED = 42
 
 
@@ -67,19 +75,35 @@ def load_rows(args) -> pd.DataFrame:
     tranco = pd.read_csv(args.tranco, header=None, names=["rank", "domain"], nrows=TRANCO_LEGIT_TOP)
     rows += [(d.lower(), 0, "tranco") for d in tranco.domain]
 
-    for line in Path(args.openphish).read_text().splitlines():
-        h = host_of(line)
-        if h:
-            rows.append((h, 1, "openphish"))
+    if args.archive:
+        lo, hi, n = LONG_TAIL
+        tail = pd.read_csv(args.tranco, header=None, names=["rank", "domain"], skiprows=lo, nrows=hi - lo)
+        n = args.long_tail if args.long_tail is not None else n
+        rows += [(d.lower(), 0, "tranco-tail") for d in tail.domain.sample(n, random_state=SEED)]
+        feed = pd.read_csv(args.archive, sep="\t", header=None, names=["day", "url"])
+        for day, url in zip(feed.day, feed.url):
+            h = host_of(url)
+            if h:
+                rows.append((h, 1, "openphish" if day >= args.test_from else "archive"))
+    else:
+        for line in Path(args.openphish).read_text().splitlines():
+            h = host_of(line)
+            if h:
+                rows.append((h, 1, "openphish"))
 
     df = pd.DataFrame(rows, columns=["host", "y", "source"])
     df["domain"] = df.host.map(registrable)
     df = df.dropna(subset=["domain"])
+    if args.archive:
+        df = df[[domain_features(d, EMPTY_CTX)["is_free_hosting"] == 0 for d in df.domain]]
 
     # One row per registrable domain; drop domains with conflicting labels.
     agg = df.groupby("domain").agg(y_min=("y", "min"), y_max=("y", "max"), source=("source", "first"))
     agg = agg[agg.y_min == agg.y_max].rename(columns={"y_min": "y"}).drop(columns="y_max").reset_index()
     return agg
+
+
+EMPTY_CTX = {"tldRisk": {}, "tldPrior": 0.0, "ngramLlr": {}, "ngramUnseen": 0.0}
 
 
 def tld_of(domain: str) -> str:
@@ -161,8 +185,13 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--phiusiil", required=True)
     ap.add_argument("--tranco", required=True)
-    ap.add_argument("--openphish", required=True)
+    ap.add_argument("--openphish")
+    ap.add_argument("--archive")
+    ap.add_argument("--test-from")
+    ap.add_argument("--long-tail", type=int, help="number of Tranco 200k-600k domains added as legitimate (default 60,000)")
     args = ap.parse_args()
+    if not (args.openphish or (args.archive and args.test_from)):
+        ap.error("--openphish, or --archive with --test-from")
 
     df = load_rows(args)
     print(df.groupby(["source", "y"]).size())
@@ -192,6 +221,14 @@ def main():
     p_top = model.predict_proba(featurize(top10k, ctx))[:, 1]
     card["tranco_top10k_false_positive_rate"] = round(float((p_top >= 0.5).mean()), 4)
 
+    if args.archive:
+        lo, hi, n = UNSEEN_TAIL
+        unseen = pd.read_csv(args.tranco, header=None, names=["rank", "domain"], skiprows=lo, nrows=hi - lo).domain.sample(n, random_state=SEED)
+        unseen = [r for r in (registrable(d) for d in unseen) if r and domain_features(r, EMPTY_CTX)["is_free_hosting"] == 0]
+        p_unseen = model.predict_proba(featurize(unseen, ctx))[:, 1]
+        card["unseen_tail_false_positive_rate"] = round(float((p_unseen >= 0.5).mean()), 4)
+        card["unseen_tail_n"] = len(unseen)
+
     if len(fresh):
         p_fresh = model.predict_proba(featurize(fresh.domain, ctx))[:, 1]
         card["openphish_fresh_recall"] = round(float((p_fresh >= 0.5).mean()), 4)
@@ -202,7 +239,9 @@ def main():
         "train_size": int(len(train)),
         "sources": {"phiusiil": "UCI PhiUSIIL (Prasad & Chandra, 2024)",
                     "tranco": f"Tranco top {TRANCO_LEGIT_TOP:,} (legitimate)",
-                    "openphish": "OpenPhish public feed (held out, recency test)"},
+                    "openphish": "OpenPhish public feed (held out, recency test)",
+                    **({"archive": f"OpenPhish archive before {args.test_from} (training)",
+                        "tranco-tail": "Tranco ranks 200k-600k, 60,000 sampled (legitimate)"} if args.archive else {})},
         "iterations": int(model.n_iter_),
     })
     print(json.dumps(card, indent=2))

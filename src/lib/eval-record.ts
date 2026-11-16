@@ -40,6 +40,8 @@ export interface StoredSignal {
   layer: string;
   weight: number;
   override?: "malicious" | "benign";
+  /** Model probability in percent, where a signal carries one (platform label model). */
+  p?: number;
 }
 
 export interface EvalRow {
@@ -62,6 +64,8 @@ export function evalRow(set: EvalRow["set"], url: string, layers: LayerResult[],
     score: live.score,
     candidate: fuse(layers, { candidate: true }).score,
     ok: layers.filter((l) => l.status === "ok").map((l) => l.layer),
-    signals: layers.flatMap((l) => l.signals).map(({ id, layer, weight, override }) => ({ id, layer, weight, ...(override ? { override } : {}) })),
+    signals: layers.flatMap((l) => l.signals).map(({ id, layer, weight, override, params }) => ({
+      id, layer, weight, ...(override ? { override } : {}), ...(typeof params?.p === "number" ? { p: params.p } : {}),
+    })),
   };
 }

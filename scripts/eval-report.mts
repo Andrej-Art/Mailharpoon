@@ -24,7 +24,7 @@ const rows: (EvalRow & { week: string })[] = files.flatMap((f) => {
 /** The stored signals rebuilt into layers, so the current fusion code can score them again. */
 function layersOf(r: EvalRow): LayerResult[] {
   const by = new Map<string, Signal[]>();
-  for (const s of r.signals) by.set(s.layer, [...(by.get(s.layer) ?? []), { ...s, layer: s.layer as Layer, severity: "info" }]);
+  for (const s of r.signals) by.set(s.layer, [...(by.get(s.layer) ?? []), { ...s, layer: s.layer as Layer, severity: "info", ...(s.p !== undefined ? { params: { p: s.p } } : {}) }]);
   for (const l of r.ok) if (!by.has(l)) by.set(l, []);
   return [...by].map(([layer, signals]) => ({ layer: layer as Layer, status: r.ok.includes(layer) ? "ok" : "skipped", ms: 0, signals }));
 }

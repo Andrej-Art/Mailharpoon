@@ -72,11 +72,17 @@ export function analyzeLexical(t: ParsedTarget): LayerResult<LexicalData> {
     // 3 % of real names reach that), so an ordinary page name never counts against the page.
     // Only where the platform is a public suffix, so the registrable domain is "<label>.<platform>".
     // An exact brand name ("facebook") is left to the brand check, which knows the verified accounts.
-    const pred = t.isPrivateSuffix && !isBrandName(t.sld) ? predictPlatformLabel(t.registrable) : null;
+    // Hosts outside the public suffix list (xu2724.craftum.io) put the page label in the subdomain. The
+    // model reads only the label (no suffix features), so it is scored under a stand-in platform suffix.
+    const label = t.isPrivateSuffix ? t.sld : (subdomainLabels.at(-1) ?? "");
+    const pred = label && !isBrandName(label) ? predictPlatformLabel(t.isPrivateSuffix ? t.registrable : `${label}.pages.dev`) : null;
     modelProbability = pred?.probability ?? null;
+    // How ordinary the page name looks is kept on the platform signal; the fusion uses it to tell a plain hobby page from a suspicious one.
+    const hosting = s.find((x) => x.id === "free_hosting");
+    if (hosting && pred) hosting.params = { ...hosting.params, p: Math.round(pred.probability * 100) };
     features = pred?.features ?? null;
     if (pred && pred.probability >= PLATFORM_MIN_P)
-      s.push(signal(L, "ml_platform_label", Number(Math.min(2.0, pred.logit * 0.7).toFixed(2)), { p: Math.round(pred.probability * 100), label: t.sld }));
+      s.push(signal(L, "ml_platform_label", Number(Math.min(2.0, pred.logit * 0.7).toFixed(2)), { p: Math.round(pred.probability * 100), label }));
   } else if (!t.isIp && t.sld && !owner) {
     const pred = predictDomain(t.hostname);
     modelProbability = pred.probability;

@@ -73,8 +73,26 @@ function unconfirmedBrandPage(signals: Signal[]): boolean {
 // the sample underrates them.
 const CANDIDATE_WEIGHTS: Record<string, number> = { hidden_iframe: 0.2, tech_large_base64_blob: 0 };
 
+// Being hosted on a platform is no evidence by itself: most pages there are hobby sites, project docs and
+// demos. The platform weights count in full only next to something else that points to phishing.
+const PLATFORM_BASE = new Set(["free_hosting", "user_content_platform"]);
+const PLATFORM_ALONE = 0.25;
+// The platform model's probability for the page name, below which the name counts as ordinary
+// (about 88 % of real GitHub names, 30 % of phishing names on platforms; ml/platform-model-card.json).
+const ORDINARY_NAME_P = 50;
+
+/** `raw` decides whether anything besides the platform points to phishing, before other candidate weights apply. */
+function quietPlatformPage(signals: Signal[], raw: Signal[]): Signal[] {
+  const hosting = raw.find((s) => s.id === "free_hosting");
+  const p = typeof hosting?.params?.p === "number" ? hosting.params.p : null;
+  if (p === null || p >= ORDINARY_NAME_P) return signals;
+  if (raw.some((s) => !PLATFORM_BASE.has(s.id) && s.weight >= 0.3)) return signals;
+  return signals.map((s) => (PLATFORM_BASE.has(s.id) ? { ...s, weight: Number((s.weight * PLATFORM_ALONE).toFixed(2)) } : s));
+}
+
 function candidateSignals(signals: Signal[]): Signal[] {
-  return softenOldBodyBrand(signals).map((s) => (s.id in CANDIDATE_WEIGHTS && s.weight > 0 ? { ...s, weight: CANDIDATE_WEIGHTS[s.id] } : s));
+  const weighted = softenOldBodyBrand(signals).map((s) => (s.id in CANDIDATE_WEIGHTS && s.weight > 0 ? { ...s, weight: CANDIDATE_WEIGHTS[s.id] } : s));
+  return quietPlatformPage(weighted, signals);
 }
 
 export interface FuseOptions {

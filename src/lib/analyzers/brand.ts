@@ -7,7 +7,7 @@ import { BRANDS } from "./lexical-features";
 import { PLATFORM_OWNERS, platformOwner } from "./platform";
 import { isUserContentHost } from "./reputation";
 import { signal, type LayerResult, type Signal } from "./types";
-import type { ParsedTarget } from "./url";
+import { parseTarget, type ParsedTarget } from "./url";
 
 // Unicode TR39-style skeleton for the confusables attackers actually use.
 const CONFUSABLES: Record<string, string> = {
@@ -124,8 +124,11 @@ export function analyzeBrand(t: ParsedTarget): LayerResult<BrandData> {
     .concat(Object.keys(BRANDS).filter((b) => b.length >= 5 && t.sld.includes(b) && t.sld !== b))
     .filter((b) => phishy || !AFFIX_STOP.has(b));
   const pathClaims = brandsIn(`${t.path} ${t.query}`);
+  // "github-laziji.github.io": the platform operator's name in a page name is common and harmless,
+  // unless phishing vocabulary sits next to it ("github-login-verify.github.io").
+  const operator = hostOperator(t);
   const claimed = [...new Set([...hostClaims, ...sldClaims, ...pathClaims])].filter(
-    (b) => !ownsBrand(t.registrable, b) && !ownsBrand(t.icannDomain, b),
+    (b) => !ownsBrand(t.registrable, b) && !ownsBrand(t.icannDomain, b) && (phishy || b !== operator),
   );
 
   // A platform page named exactly after a brand (facebook.github.io) whose owner could not be
@@ -212,3 +215,36 @@ export function analyzeBrand(t: ParsedTarget): LayerResult<BrandData> {
     data: { claimedBrands: claimed, officialBrand, typosquatOf, homoglyphOf, scripts: [...sc] },
   };
 }
+
+const CODE_HOSTS = new Set(["github.com", "gitlab.com", "codeberg.org", "bitbucket.org"]);
+
+/**
+ * A page on a hosting platform that forwards to its own project under the same name is no cloaking
+ * trick: jquery.github.io to github.com/jquery, webpack.github.io to webpack.js.org, mermaid-js.github.io
+ * to mermaid.js.org. Forwarding to anything that shows brand signals never counts as harmless.
+ */
+export function forwardsToOwnName(t: ParsedTarget, href: string): boolean {
+  if (!t.isPrivateSuffix || t.sld.length < 3) return false;
+  let dest: ParsedTarget;
+  let url: URL;
+  try {
+    url = new URL(href, `https://${t.hostname}/`);
+    dest = parseTarget(url.href);
+  } catch {
+    return false;
+  }
+  const name = t.sld.toLowerCase();
+  const same = (label: string) => label === name || (label.length >= 4 && name.split("-")[0] === label);
+  const owner = url.pathname.split("/")[1]?.toLowerCase() ?? "";
+  const matches = CODE_HOSTS.has(dest.registrable) ? same(owner) : same(dest.sld.toLowerCase().split(".")[0]);
+  return matches && !analyzeBrand(dest).signals.some((s) => s.weight > 0);
+}
+
+// The company that runs a hosting platform. Its name appears on every page there ("Site not found ·
+// GitHub Pages", "Deployed on Cloudflare Pages"), so it is no brand claim by the page owner.
+const HOST_OPERATOR: Record<string, string> = {
+  "github.io": "github", "gitlab.io": "gitlab", "pages.dev": "cloudflare", "workers.dev": "cloudflare",
+  "web.app": "google", "firebaseapp.com": "google", "azurewebsites.net": "microsoft",
+};
+
+export const hostOperator = (t: ParsedTarget): string | null => HOST_OPERATOR[t.suffix] ?? null;
