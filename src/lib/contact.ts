@@ -56,5 +56,7 @@ export async function sendContact(m: ContactMessage): Promise<boolean> {
     body: JSON.stringify(contactMail(m)),
     signal: AbortSignal.timeout(10_000),
   }).catch(() => null);
+  // Resend's reason (e.g. unverified recipient) goes to the server log; never the key or the message.
+  if (!res?.ok) console.error("contact: resend failed", res?.status ?? "network", res ? (await res.text().catch(() => "")).slice(0, 300) : "");
   return Boolean(res?.ok);
 }
