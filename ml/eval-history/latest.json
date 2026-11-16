@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-09",
+  "date": "2026-11-16",
   "sample": {
     "phishing": 100,
     "legitimate": 100
@@ -7,35 +7,40 @@
   "metrics": [
     {
       "threshold": 35,
-      "recall": 0.96,
+      "recall": 0.95,
       "fpr": 0.23
     },
     {
       "threshold": 50,
-      "recall": 0.89,
-      "fpr": 0.13
+      "recall": 0.95,
+      "fpr": 0.14
     },
     {
       "threshold": 70,
-      "recall": 0.83,
-      "fpr": 0.02
+      "recall": 0.91,
+      "fpr": 0.08
     }
   ],
   "candidate": [
     {
       "threshold": 35,
-      "recall": 0.96,
-      "fpr": 0.22
+      "recall": 0.95,
+      "fpr": 0.18
     },
     {
       "threshold": 50,
-      "recall": 0.89,
-      "fpr": 0.12
+      "recall": 0.95,
+      "fpr": 0.11
     },
     {
       "threshold": 70,
-      "recall": 0.83,
-      "fpr": 0.02
+      "recall": 0.91,
+      "fpr": 0.06
     }
-  ]
+  ],
+  "platform": {
+    "n": 21,
+    "suspicious": 0.714,
+    "dangerous": 0.095
+  }
 }
