@@ -580,7 +580,7 @@ export const en = {
     model: [
       "At the heart of the address check is a gradient boosting model we trained ourselves. It knows more than 300,000 domains: phishing from the scientific PhiUSIIL dataset and real websites from the Tranco list of the most visited sites.",
       "One detail from training shows what matters. In the PhiUSIIL dataset, every legitimate address starts with https://www. A model that reads whole links would learn only that pattern. Ours therefore rates the domain name alone and learns what really gives phishing away.",
-      "Free hosting platforms such as github.io, vercel.app or pages.dev have a second model. There the page owner only chooses the front part of the address, and that is what it rates. It learned from phishing on such platforms and from real names of GitHub users and projects. Pages that demonstrably belong to a brand, such as microsoft.github.io, are recognised as official.",
+      "Free hosting platforms such as github.io, vercel.app or pages.dev have a second model. There the page owner only chooses the front part of the address, and that is what it rates. It learned from phishing on such platforms, from real names of GitHub users and projects and from over 1,000 real project pages linked on GitHub. Pages that demonstrably belong to a brand, such as microsoft.github.io, are recognised as official.",
     ],
     modelFacts: ["Trained on {n} domains", "{features} explainable features, no black box", "Runs directly inside Mailharpoon, no external service", "Tested on scam sites it never saw while learning"],
     modelBars: {
@@ -619,7 +619,7 @@ export const en = {
     loop: [
       ["Measure", "Every Monday, an automated test draws {phishing} fresh phishing links and {legitimate} random, little-known real websites, plus 174 real pages on hosting platforms. Blocklists and AI are off, so only our own analysis is measured."],
       ["Review", "Every missed link and every false alarm is examined individually: which signal was missing, which one overreacted? The aggregate results of every week are public. The individual links stay in a private archive for privacy reasons."],
-      ["Refine", "This produces new training data, new brands for the knowledge base and fine-tuned weights. The test links themselves never go into training, so the next test stays meaningful."],
+      ["Refine", "This produces new training data, new brands for the knowledge base and fine-tuned weights. Training only uses links older than the next test, so every week measures on fresh phishing the models have never seen."],
       ["Safeguard", "Every change passes more than 400 automated tests. Some of them make sure both models compute exactly the same inside Mailharpoon as they did in training."],
     ],
     historyTitle: "Weekly test history",
@@ -632,7 +632,7 @@ export const en = {
     thresholdNames: { 35: "from “Suspicious”", 50: "from risk 50", 70: "“Dangerous”" } as Record<number, string>,
     interval: "95% range {low}–{high}",
     candidate: "Test variant",
-    candidateNote: "The test variant gives less weight to a brand that only appears in the page text next to a login, on domains older than a year. Since 14 November, hidden iframes and large embedded data blocks also count for little, because they are more common on real sites than on phishing. It is measured on the same links as the current rating and only adopted once it does better over several weeks.",
+    candidateNote: "The test variant gives less weight to a brand that only appears in the page text next to a login, on domains older than a year. Since 14 November, hidden iframes and large embedded data blocks also count for little, because they are more common on real sites than on phishing. Since 17 November, a page on a hosting platform with an ordinary name and no other hint is also rated safe instead of suspicious. The test variant is measured on the same links as the current rating and only adopted once it also does better in new tests.",
     changelogTitle: "Change log",
     changelogRun: "Weekly test with {phishing} plus {legitimate} links: {caught} of new phishing links rated “Dangerous”, {flagged} at least “Suspicious”. False alarms: {falseAlarms} rated “Dangerous”, {falseFlagged} at least “Suspicious”.",
     changelogCandidate: "Test variant: {falseAlarms} and {falseFlagged} false alarms, {caught} rated “Dangerous”.",
@@ -659,6 +659,7 @@ export const en = {
       ["Cloaked pages", "Some scam pages show scanners a harmless facade. We counter this by opening pages in a real browser, and the warning lists often record such pages within a few hours."],
       ["Hacked, well-known websites", "When phishing sits on a website that has been around for years, its age and reputation speak in its favour. Page analysis and the brand check then carry the rating."],
       ["Brand names on hosting platforms", "Anyone can set up a page on platforms such as github.io. If a page demonstrably belongs to the brand, like microsoft.github.io, it counts as official. If the owner cannot be confirmed, the verdict is “Suspicious” at most, as long as the page asks for no data."],
+      ["Pages on hosting platforms", "On github.io, vercel.app and similar platforms, a page has no age or reputation of its own domain. Mailharpoon relies on the page name and content there. Real project pages therefore see more false alarms than own domains: in the test of 17 November, 12 % of reachable real platform pages were rated dangerous."],
       ["Unknown brands", "The brand check knows {kb} organisations. For a brand it does not know, this signal stays neutral instead of guessing."],
       ["An assessment, not a guarantee", "Even “Safe” is no substitute for healthy doubt. Whenever a page asks for a password, PIN or code, a second look is always worth it."],
     ],

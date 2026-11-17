@@ -40,11 +40,12 @@ export function analyzeLexical(t: ParsedTarget): LayerResult<LexicalData> {
   const isShortener = SHORTENERS.has(t.registrable) || SHORTENERS.has(t.hostname);
   if (isShortener) s.push(signal(L, "shortener", 0.6, { domain: t.registrable }));
 
-  const onPlatform = FREE_HOSTING.some((f) => t.suffix === f || t.suffix.endsWith("." + f) || t.hostname.endsWith("." + f));
+  const platformHost = FREE_HOSTING.find((f) => t.suffix === f || t.suffix.endsWith("." + f) || t.hostname.endsWith("." + f));
+  const onPlatform = Boolean(platformHost);
   // A brand's own page on a platform (microsoft.github.io) carries none of the platform risk.
   const owner = onPlatform ? platformOwner(t.registrable) : null;
   const isFreeHosting = onPlatform && !owner;
-  if (isFreeHosting) s.push(signal(L, "free_hosting", 0.9, { suffix: t.suffix }));
+  if (isFreeHosting) s.push(signal(L, "free_hosting", 0.9, { suffix: t.isPrivateSuffix ? t.suffix : (platformHost ?? t.suffix) }));
 
   const subdomainLabels = t.subdomain ? t.subdomain.split(".").filter((l) => l !== "www") : [];
   if (subdomainLabels.length >= 3) s.push(signal(L, "deep_subdomains", 0.9, { count: subdomainLabels.length }));

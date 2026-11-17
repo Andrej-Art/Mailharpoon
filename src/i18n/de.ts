@@ -581,7 +581,7 @@ export const de: Dict = {
     model: [
       "Das Herzstück der Adressprüfung ist ein Gradient-Boosting-Modell, das wir selbst trainiert haben. Es kennt über 300.000 Domains: Phishing aus dem wissenschaftlichen Datensatz PhiUSIIL und echte Websites aus der Tranco-Liste der meistbesuchten Seiten.",
       "Ein Detail aus dem Training zeigt, worauf es ankommt. Im PhiUSIIL-Datensatz beginnen alle echten Adressen mit https://www. Ein Modell, das ganze Links liest, würde nur dieses Muster lernen. Unseres bewertet deshalb ausschließlich den Domainnamen und lernt so, woran man Phishing wirklich erkennt.",
-      "Für kostenlose Hosting-Plattformen wie github.io, vercel.app oder pages.dev gibt es ein zweites Modell. Dort wählt der Seitenbetreiber nur den vorderen Teil der Adresse, und genau den bewertet es. Gelernt hat es an Phishing auf solchen Plattformen und an echten Namen von GitHub-Nutzern und -Projekten. Seiten, die nachweislich einer Marke gehören, etwa microsoft.github.io, erkennt Mailharpoon als offiziell.",
+      "Für kostenlose Hosting-Plattformen wie github.io, vercel.app oder pages.dev gibt es ein zweites Modell. Dort wählt der Seitenbetreiber nur den vorderen Teil der Adresse, und genau den bewertet es. Gelernt hat es an Phishing auf solchen Plattformen, an echten Namen von GitHub-Nutzern und -Projekten und an über 1.000 echten Projektseiten, die auf GitHub verlinkt sind. Seiten, die nachweislich einer Marke gehören, etwa microsoft.github.io, erkennt Mailharpoon als offiziell.",
     ],
     modelFacts: ["Trainiert auf {n} Domains", "{features} nachvollziehbare Merkmale, keine Blackbox", "Rechnet direkt in Mailharpoon, ohne externen Dienst", "Geprüft an Betrugsseiten, die es beim Lernen nie gesehen hat"],
     modelBars: {
@@ -620,7 +620,7 @@ export const de: Dict = {
     loop: [
       ["Messen", "Jeden Montag zieht ein automatischer Test {phishing} frische Phishing-Links und {legitimate} zufällige, wenig bekannte echte Websites, dazu 174 echte Seiten auf Hosting-Plattformen. Sperrlisten und KI sind dabei aus, gemessen wird nur die eigene Analyse."],
       ["Auswerten", "Jeder übersehene Link und jeder Fehlalarm wird einzeln untersucht: Welches Signal fehlte, welches hat überreagiert? Die zusammengefassten Ergebnisse jeder Woche sind öffentlich einsehbar. Die einzelnen Links bleiben aus Datenschutzgründen in einem privaten Archiv."],
-      ["Nachschärfen", "Daraus entstehen neue Trainingsdaten, neue Marken für die Wissensbasis und fein justierte Gewichte. Die Testlinks selbst fließen nie ins Training ein, damit die nächste Messung aussagekräftig bleibt."],
+      ["Nachschärfen", "Daraus entstehen neue Trainingsdaten, neue Marken für die Wissensbasis und fein justierte Gewichte. Trainiert wird nur mit Links, die vor der nächsten Messung liegen. So misst jede Woche an frischem Phishing, das die Modelle beim Lernen nie gesehen haben."],
       ["Absichern", "Jede Änderung durchläuft über 400 automatische Tests. Einige davon stellen sicher, dass beide Modelle in Mailharpoon genau so rechnen wie im Training."],
     ],
     historyTitle: "Verlauf der Wochenmessung",
@@ -633,7 +633,7 @@ export const de: Dict = {
     thresholdNames: { 35: "ab „Verdächtig“", 50: "ab Risiko 50", 70: "„Gefährlich“" } as Record<number, string>,
     interval: "95-%-Bereich {low}–{high}",
     candidate: "Testvariante",
-    candidateNote: "Die Testvariante bewertet eine Marke, die nur im Seitentext neben einem Login steht, auf Domains älter als ein Jahr schwächer. Seit dem 14. November zählen außerdem versteckte iframes und große eingebettete Datenblöcke kaum noch, weil sie bei echten Seiten häufiger vorkommen als bei Phishing. Sie wird an denselben Links gemessen wie die aktuelle Bewertung und erst übernommen, wenn sie über mehrere Wochen besser abschneidet.",
+    candidateNote: "Die Testvariante bewertet eine Marke, die nur im Seitentext neben einem Login steht, auf Domains älter als ein Jahr schwächer. Seit dem 14. November zählen außerdem versteckte iframes und große eingebettete Datenblöcke kaum noch, weil sie bei echten Seiten häufiger vorkommen als bei Phishing. Seit dem 17. November gilt außerdem eine Seite auf einer Hosting-Plattform mit unauffälligem Namen und ohne jeden weiteren Hinweis als „Sicher“ statt „Verdächtig“. Die Testvariante wird an denselben Links gemessen wie die aktuelle Bewertung und erst übernommen, wenn sie auch in neuen Messungen besser abschneidet.",
     changelogTitle: "Änderungsprotokoll",
     changelogRun: "Wochenmessung mit {phishing} plus {legitimate} Links: {caught} der neuen Phishing-Links als „Gefährlich“ erkannt, {flagged} zumindest als „Verdächtig“. Fehlalarme: {falseAlarms} als „Gefährlich“, {falseFlagged} zumindest als „Verdächtig“.",
     changelogCandidate: "Testvariante: {falseAlarms} und {falseFlagged} Fehlalarme, {caught} als „Gefährlich“ erkannt.",
@@ -660,6 +660,7 @@ export const de: Dict = {
       ["Getarnte Seiten", "Manche Betrugsseiten zeigen Scannern eine harmlose Fassade. Dagegen öffnen wir Seiten in einem echten Browser, und die Warnlisten erfassen solche Seiten oft innerhalb weniger Stunden."],
       ["Gehackte, bekannte Websites", "Liegt Phishing auf einer seit Jahren bekannten Website, sprechen Alter und Ruf für sie. Dann tragen Seitenanalyse und Markenabgleich die Bewertung."],
       ["Markennamen auf Hosting-Plattformen", "Auf Plattformen wie github.io kann jeder eine Seite anlegen. Gehört eine Seite nachweislich der Marke, wie microsoft.github.io, gilt sie als offiziell. Lässt sich der Besitzer nicht bestätigen, lautet das Urteil höchstens „Verdächtig“, solange die Seite keine Daten abfragt."],
+      ["Seiten auf Hosting-Plattformen", "Auf github.io, vercel.app und ähnlichen Plattformen fehlen Alter und Ruf einer eigenen Domain. Mailharpoon stützt sich dort auf den Seitennamen und den Inhalt. Bei echten Projektseiten gibt es deshalb mehr Fehlalarme als bei eigenen Domains: In der Prüfung vom 17. November galten 12 % der erreichbaren echten Plattform-Seiten als „Gefährlich“."],
       ["Unbekannte Marken", "Der Markenabgleich kennt {kb} Organisationen. Bei einer Marke, die er nicht kennt, bleibt dieses Signal neutral, statt zu raten."],
       ["Eine Einschätzung, keine Garantie", "Auch „Unbedenklich“ ersetzt nicht den gesunden Zweifel. Wenn eine Seite nach Passwort, PIN oder TAN fragt, lohnt sich immer ein zweiter Blick."],
     ],
