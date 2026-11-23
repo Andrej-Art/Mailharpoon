@@ -1,6 +1,7 @@
 import { after } from "next/server";
 import { z } from "zod";
 import { aiEnabled } from "@/lib/analyzers/ai";
+import { clientIp } from "@/lib/client-ip";
 import { InvalidUrlError } from "@/lib/analyzers/url";
 import { rateLimit } from "@/lib/rate-limit";
 import { runScan, type ScanEvent } from "@/lib/scan";
@@ -17,7 +18,7 @@ const Body = z.discriminatedUnion("mode", [
 ]);
 
 export async function POST(req: Request) {
-  const ip = req.headers.get("x-real-ip") ?? req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "anon";
+  const ip = clientIp(req);
   const limit = rateLimit(ip);
   if (!limit.ok) {
     return Response.json({ error: "rate_limited", retryAfter: limit.retryAfter }, { status: 429, headers: { "retry-after": String(limit.retryAfter) } });

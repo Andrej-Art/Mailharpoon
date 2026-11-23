@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { aiEnabled } from "@/lib/analyzers/ai";
+import { clientIp } from "@/lib/client-ip";
 import { OcrError, transcribeScreenshot, transcriptToMessage } from "@/lib/analyzers/ocr";
 import { rateLimit } from "@/lib/rate-limit";
 
@@ -18,7 +19,7 @@ const Body = z.object({
 
 /** Turns a screenshot into message text. Nothing is stored; the image only passes through to the model. */
 export async function POST(req: Request) {
-  const ip = req.headers.get("x-real-ip") ?? req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "anon";
+  const ip = clientIp(req);
   const limit = rateLimit(ip);
   if (!limit.ok) return Response.json({ error: "rate_limited" }, { status: 429, headers: { "retry-after": String(limit.retryAfter) } });
   if (!aiEnabled()) return Response.json({ error: "unavailable" }, { status: 503 });
