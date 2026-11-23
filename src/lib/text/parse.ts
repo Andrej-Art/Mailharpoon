@@ -29,6 +29,9 @@ export interface ParsedMessage {
 }
 
 const MAX_LINKS = 10;
+// URL extraction only ever needs the part of the message that is kept anyway (body is sliced to
+// 20 KB). Scanning at most this many characters caps regex work regardless of the 100 KB input limit.
+const MAX_SCAN_CHARS = 20_000;
 
 function decodeEncodedWords(s: string): string {
   return s.replace(/=\?([^?]+)\?([bqBQ])\?([^?]*)\?=/g, (_, charset: string, enc: string, data: string) => {
@@ -124,13 +127,16 @@ function splitPart(part: string): { headers: Map<string, string[]>; body: string
   return { headers, body: p.slice(end).trim() };
 }
 
+// Each label is length-bounded ({1,63}, the DNS limit) and the number of labels is bounded
+// ({0,15}), so there is no unbounded nested quantifier: a long run of hyphens or dots cannot
+// drive catastrophic backtracking (was O(n^2); a 100 KB message blocked the event loop ~40 s).
 const URL_RE =
-  /\b(?:h[tx]{2}ps?:\/\/|www\.)[^\s<>"'()\]]+|\b(?:[a-z0-9-]+\.)+[a-z]{2,24}\/[^\s<>"'()]*|\b(?:[a-z0-9-]+(?:\[\.\]|\.))+(?:com|net|org|de|info|top|xyz|online|site|shop|app|dev|io|cc|me|link|click|help|live|co|eu|at|ch|ru|cn)\b/gi;
+  /\b(?:h[tx]{2}ps?:\/\/|www\.)[^\s<>"'()\]]+|\b[a-z0-9-]{1,63}(?:\.[a-z0-9-]{1,63}){0,15}\.[a-z]{2,24}\/[^\s<>"'()]*|\b[a-z0-9-]{1,63}(?:(?:\[\.\]|\.)[a-z0-9-]{1,63}){0,15}(?:\[\.\]|\.)(?:com|net|org|de|info|top|xyz|online|site|shop|app|dev|io|cc|me|link|click|help|live|co|eu|at|ch|ru|cn)\b/gi;
 
 /** Find URLs in free text, including defanged ones (hxxp://evil[.]com) and bare domains with a path. */
 export function extractUrls(raw: string): string[] {
   // Re-fang defanged indicators first: hxxp://, evil[.]com, evil(.)com, evil{.}com
-  const text = raw.replace(/\[\.\]|\(\.\)|\{\.\}/g, ".").replace(/\bhxxp/gi, "http");
+  const text = raw.slice(0, MAX_SCAN_CHARS).replace(/\[\.\]|\(\.\)|\{\.\}/g, ".").replace(/\bhxxp/gi, "http");
   const out = new Set<string>();
   for (const m of text.matchAll(URL_RE)) {
     let u = m[0].replace(/[.,;:!?…]+$/, "");
