@@ -1,6 +1,8 @@
 # <img src="public/logo-160.png" width="64" align="top" /> Mailharpoon 2.0 – Explainable Phishing URL Scanner
 
-Mailharpoon inspects a link live across **eight independent layers** and fuses the evidence into one explainable 0–100 risk score. You see the verdict and the evidence behind it.
+Mailharpoon inspects a link live across **eight layers of checks**, plus an optional AI analyst and visual brand check, and fuses the evidence into one explainable 0–100 risk score. You see the verdict and the evidence behind it.
+
+The layers produce their evidence separately, but some build on each other: the browser render, the threat lists for the final URL and the destination check start once the plain page fetch is in, and the visual brand check uses the AI analyst's reading of the screenshot.
 
 **Stack:** Next.js 15 (App Router, TypeScript) · one Vercel deployment · Python only for offline model training.
 
@@ -33,11 +35,21 @@ Evaluation (`scripts/eval-visual.mts`, 1 Nov 2026, AI on, threat lists off, 20 U
 
 ## Link unwrapping and QR codes
 
-Links rewritten by email security gateways and redirect services are unwrapped before the check, so the real destination is analysed. This covers Microsoft Safe Links, Proofpoint URL Defense v1/v2/v3, Barracuda, Trend Micro, and Google, Facebook, LinkedIn, YouTube, Steam and Slack redirects (`src/lib/analyzers/unwrap.ts`). QR codes are decoded in the browser with jsQR (Apache-2.0), and the image never leaves the device.
+Links rewritten by email security gateways and redirect services are unwrapped before the check, so the real destination is analysed. This covers Microsoft Safe Links, Proofpoint URL Defense v1/v2/v3, Barracuda, Trend Micro, and Google, Facebook, LinkedIn, YouTube, Steam and Slack redirects (`src/lib/analyzers/unwrap.ts`). QR codes are decoded in the browser with jsQR (Apache-2.0); an image that contains a QR code never leaves the device.
+
+## Screenshots of messages
+
+The same image input also takes screenshots of emails, SMS and chat messages. If no QR code is found, the browser scales the image down (long edge at most 1568 px), re-encodes it as JPEG and sends it to `/api/screenshot`. There Claude reads out the text (`src/lib/analyzers/ocr.ts`), which then runs through the message check below. The image is not stored. The route needs `ANTHROPIC_API_KEY` and shares the scan rate limit; without a key the UI asks for the message text instead.
 
 ## Weekly evaluation
 
-`.github/workflows/weekly-eval.yml` runs `scripts/eval-weekly.mts` every Monday. It pits 40 fresh OpenPhish URLs against 40 legitimate domains outside the popularity list, with all threat lists switched off, and stores the result in `ml/eval-history/`. The job fails on a clear breakdown (recall at 50 below 30 % or false alarms at 70 above 15 %).
+`.github/workflows/weekly-eval.yml` runs `scripts/eval-weekly.mts` every Monday with the AI layer and all threat lists switched off, so it measures what the detector itself can do. Three sets are scanned:
+
+- **Phishing:** 100 fresh OpenPhish URLs, one per registrable domain.
+- **Legitimate:** 100 random domains from Tranco ranks 300,000 to 1,000,000 (outside the bundled top 100k), scanned as their home page (`https://<domain>`). The phishing set consists of full URLs, so the two sets differ in shape.
+- **Hosting platforms:** the legitimate pages on github.io, netlify.app and similar in `scripts/data/legit-platform-pages.txt` (174 at present), reported as the share rated at least suspicious and dangerous.
+
+The aggregate result goes to `ml/eval-history/`, the per-link rows only to the private data repository. Each run also scores the candidate fusion rule next to the live one. The job fails on a clear breakdown (recall at 50 below 30 % or false alarms at 70 above 15 %, both on the Tranco set); the platform set has no failure threshold yet.
 
 ## Message check (email, SMS, chat)
 
@@ -47,11 +59,11 @@ Evaluation: `npx tsx scripts/eval-text.mts` (details in `ml/text-eval/README.md`
 
 ## News page (`/de/news`, `/en/news`)
 
-Current phishing and scam warnings from official feeds only (RSS, Atom, Mastodon), no article pages are scraped: Phishing-Radar of Verbraucherzentrale NRW, Watchlist Internet, Mimikama, heise Security, BleepingComputer, The Hacker News and Krebs on Security (`src/lib/news/sources.ts`, add more there). Claude (Haiku) filters general security news down to what matters to private users, removes duplicate reports, and writes a two-sentence summary in German and English in its own words with a link to the original. Each summary is cached by article link, so only new items cost a call; the page refreshes hourly via ISR. Without an API key, or when a call fails (for example with no API credit left), the consumer warning services are still shown under their own title. `npx tsx scripts/news-probe.mts` prints what the page would show.
+Current phishing and scam warnings from official feeds only (RSS, Atom, Mastodon), no article pages are scraped: Phishing-Radar of Verbraucherzentrale NRW, Watchlist Internet, Mimikama, heise Security, BleepingComputer, The Hacker News and Krebs on Security (`src/lib/news/sources.ts`, add more there). Claude (Sonnet by default, set `NEWS_MODEL` to change it) filters general security news down to what matters to private users, removes duplicate reports, and writes a two-sentence summary in German and English in its own words with a link to the original. Each summary is cached by article link, so only new items cost a call; the page refreshes hourly via ISR. Without an API key, or when a call fails (for example with no API credit left), the consumer warning services are still shown under their own title. `npx tsx scripts/news-probe.mts` prints what the page would show.
 
 ## Currently circulating phishing (news page)
 
-When a scan rates a link dangerous, only its registrable domain and the impersonated brand are counted in Upstash Redis (Vercel Marketplace, `KV_REST_API_URL` / `KV_REST_API_TOKEN`). Requesters are counted with HyperLogLog over a salted daily hash, so no IP address, full link or message is stored. Data expires after 9 days.
+When a scan rates a link dangerous, only its registrable domain and the impersonated brand are counted in Upstash Redis (Vercel Marketplace, `KV_REST_API_URL` / `KV_REST_API_TOKEN`, also with a custom prefix, or `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`). Without these variables scans are not counted and the list shows only domains reported by the external services below. Requesters are counted with HyperLogLog over a salted daily hash, so no IP address, full link or message is stored. Data expires after 9 days.
 
 The list also counts how many links per domain OpenPhish and URLhaus currently report (`src/lib/trends/external.ts`). A domain checked only on Mailharpoon is listed after `TREND_MIN_PEOPLE` (default 3) different people checked it within 7 days, or earlier when one of these services confirms it. Domains checked on Mailharpoon come first, then domains reported only by the services, by number of reported links. Sites in the Tranco top 10k, shared file hosts and IP addresses are never listed, and domains are shown defanged (`example[.]top`).
 
@@ -61,7 +73,7 @@ The list also counts how many links per domain OpenPhish and URLhaus currently r
 npm install
 cp .env.example .env.local   # all keys optional
 npm run dev                  # http://localhost:3000
-npm test                     # 345 tests incl. Python/TS model parity, SSRF guards and the browser egress proxy
+npm test                     # vitest suite (444 tests on 2026-11-27) incl. Python/TS model parity, SSRF guards and the browser egress proxy
 npx tsx scripts/scan-cli.mts https://example.com   # full pipeline in the terminal
 ```
 
@@ -69,7 +81,7 @@ npx tsx scripts/scan-cli.mts https://example.com   # full pipeline in the termin
 
 1. Push the repo to GitHub and import it at [vercel.com/new](https://vercel.com/new). The framework is detected automatically and needs no `vercel.json`.
 2. Optionally add the environment variables from `.env.example` (Settings → Environment Variables).
-3. Recommended: add a Vercel Firewall rate-limit rule for `/api/scan`. The built-in limiter only works per serverless instance.
+3. Recommended: add Vercel Firewall rate-limit rules for `/api/scan` and `/api/screenshot`. The built-in limiter only works per serverless instance and keys on `x-real-ip`, falling back to `x-forwarded-for`, which is only trustworthy behind Vercel's proxy.
 
 `/api/scan` runs on the Node.js runtime with `maxDuration = 60`, which fits the Hobby plan.
 
@@ -89,9 +101,10 @@ python -m venv .venv && .venv/bin/pip install scikit-learn pandas tldextract
 |---|---|
 | ROC-AUC (domain only) | 0.852 |
 | Recall on fresh OpenPhish domains | 87 % |
-| Full pipeline, blacklists and AI **off**, weekly live test @ threshold 70 (2026-11-02, 40 + 40) | 82.5 % recall, 2.5 % false alarms |
+| Full pipeline, blacklists and AI **off**, weekly live test @ threshold 70 (2026-11-23, 100 + 100) | 84 % recall, 4 % false alarms |
+| Same run, legitimate pages on hosting platforms (174) | 96 % at least suspicious, 6.3 % dangerous |
 
-The weekly test (`scripts/eval-weekly.mts`, every Monday via GitHub Actions) writes `ml/eval-history/<date>.json` and `latest.json`. The home and methodology pages read `latest.json`, so the published figures follow each run.
+The weekly test (`scripts/eval-weekly.mts`, every Monday via GitHub Actions) writes `ml/eval-history/<date>.json` and `latest.json`. The home and methodology pages read `latest.json`, so the published figures follow each run; the rows above are a snapshot and `latest.json` is the current source.
 
 Full methodology and limitations: `/en/methodology`.
 

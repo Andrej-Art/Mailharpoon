@@ -1,5 +1,22 @@
 # Mailharpoon 2.0 – Reverse Engineering & Modernisierungsplan
 
+> **Stand 27.11.2026:** Dieses Dokument ist der ursprüngliche Plan und bleibt als Begründung erhalten. Umgesetzt wurde vieles anders. Was heute gilt, steht im README und unter `/methodology`. Die wichtigsten Abweichungen:
+>
+> | Plan | Umgesetzt |
+> |---|---|
+> | 6 Schichten | 8 Prüfschichten (Threat Intel, Reputation, URL + ML, Marke, Live-Seite, Browser-Render, Ziel nach Weiterleitungen, Netzwerk/TLS) plus optional KI-Analyse und visueller Markencheck; dazu ein eigener Modus für Nachrichten (Inhalt, Absender, Links) |
+> | Gradient Boosting (LightGBM/XGBoost) auf ~40 URL-Features, isotonisch kalibriert | `HistGradientBoostingClassifier` aus scikit-learn auf 19 Features der registrierbaren Domain, ohne Kalibrierung; Pfadsignale laufen über erklärbare Heuristiken. Zweites Modell für Seitennamen auf Hosting-Plattformen (`ml/train_platform.py`) |
+> | Ensemble per Logit-Stacking | Fest gesetzte Log-Odds-Gewichte je Signal, pro Schicht gedeckelt, Sigmoid, Blacklist-Override (`src/lib/analyzers/fusion.ts`) |
+> | Dateien `tls.ts`, `llm.ts` | `network.ts`, `ai.ts`, dazu `render.ts`, `visual.ts`, `unwrap.ts`, `platform.ts`, `message.ts`, `ocr.ts` |
+> | Seiten `/scan`, `/scan/[id]`, `/how-it-works`, `/api-docs` | Scanner auf der Startseite, `/methodology`, `/news`, Ratgeber unter `/[slug]`, Kontakt, Impressum, Datenschutz; alles unter `/de` und `/en` |
+> | Streaming per Server-Sent Events | NDJSON-Stream aus `POST /api/scan` |
+> | Screenshot in eigener Function oder externem Dienst | Headless Chromium (`@sparticuz/chromium`) in derselben Function hinter einem eigenen Egress-Proxy; der Microlink-Fallback wurde entfernt |
+> | Rate-Limiting über Upstash, Ergebnis-Cache | Rate-Limit im Speicher je Instanz (`src/lib/rate-limit.ts`), kein Ergebnis-Cache; Upstash wird nur für die Liste aktuell kursierender Phishing-Domains genutzt |
+> | Vitest + Playwright E2E, Lighthouse ≥ 95 | Vitest (444 Tests am 27.11.2026); Playwright E2E und Lighthouse-Prüfung gibt es nicht |
+> | Evaluation auf zeitlich getrenntem Holdout | Zusätzlich wöchentlicher Live-Test (`.github/workflows/weekly-eval.yml`) und tägliches Archiv des OpenPhish-Feeds im privaten Data-Repo |
+>
+> Noch offen aus Schritt 1: Die großen Medien (`legacy/images/mailharpoon_demo.gif`, 84 MB, und `mailharpoon_preview.mp4`, 18 MB) und das doppelt eingecheckte Random-Forest-Modell (`legacy/backend/models/rf_full_final.joblib` und `rf_full/rf_full_final.joblib`, je 31 MB) liegen weiterhin im Arbeitsbaum.
+
 ## 1. Ist-Zustand (Reverse Engineering)
 
 **Architektur:** FastAPI-Backend (Render, per GitHub-Action alle 10 min „wachgepingt“) + Streamlit-Frontend, beide in Docker.
